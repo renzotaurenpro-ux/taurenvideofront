@@ -57,7 +57,7 @@ function PagoExitosoContent() {
 
   if (validPayment === null) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0B1928' }}>
         <p className="text-white/30">Verificando pago...</p>
       </div>
     )
@@ -65,10 +65,10 @@ function PagoExitosoContent() {
 
   if (validPayment === false) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#0B1928' }}>
         <div className="text-center">
           <p className="text-white/60 mb-4">No se encontró un pago válido.</p>
-          <Link href="/pagar" className="text-cyan-400 hover:text-cyan-300">
+          <Link href="/pagar" style={{ color: 'var(--scai-teal)' }} className="hover:brightness-125">
             Volver al pago
           </Link>
         </div>
@@ -77,12 +77,13 @@ function PagoExitosoContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12"
+      style={{ background: 'linear-gradient(160deg, #0B1928 0%, #0E2035 60%, #0B2240 100%)' }}>
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 bg-cyan-600 rounded-lg flex items-center justify-center">
-              <Microscope size={15} className="text-white" />
+        <div className="text-center mb-6 sm:mb-8">
+          <Link href="/" className="inline-flex items-center gap-2.5 mb-5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--scai-teal)' }}>
+              <Microscope size={17} className="text-white" />
             </div>
             <div className="text-left">
               <span className="text-white font-bold text-sm block leading-none">SCAI</span>
@@ -91,17 +92,18 @@ function PagoExitosoContent() {
           </Link>
           <div className="flex items-center justify-center gap-2 text-green-400 mb-3">
             <CheckCircle size={22} />
-            <span className="font-semibold">¡Pago exitoso!</span>
+            <span className="font-semibold text-base">¡Pago exitoso!</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">Crea tu cuenta</h1>
-          <p className="text-white/30 text-sm mt-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Crea tu cuenta</h1>
+          <p className="text-white/30 text-sm mt-2 max-w-xs mx-auto">
             Configura tus credenciales para acceder a las III Jornadas de Inmunología Clínica
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-[#111] border border-white/5 rounded-2xl p-8 space-y-5"
+          className="rounded-2xl p-5 sm:p-8 space-y-5 border"
+          style={{ background: 'rgba(14,32,53,0.9)', borderColor: 'rgba(18,180,198,0.2)' }}
         >
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
@@ -117,7 +119,8 @@ function PagoExitosoContent() {
               onChange={e => setEmail(e.target.value)}
               required
               placeholder="doctor@hospital.com"
-              className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500 transition-colors"
+              className="w-full rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none transition-colors text-base"
+              style={{ background: 'rgba(11,25,40,0.8)', border: '1px solid rgba(18,180,198,0.2)' }}
             />
           </div>
 
@@ -131,12 +134,13 @@ function PagoExitosoContent() {
                 required
                 minLength={8}
                 placeholder="Mínimo 8 caracteres"
-                className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 pr-12 text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500 transition-colors"
+                className="w-full rounded-xl px-4 py-3 pr-12 text-white placeholder:text-white/20 focus:outline-none transition-colors text-base"
+                style={{ background: 'rgba(11,25,40,0.8)', border: '1px solid rgba(18,180,198,0.2)' }}
               />
               <button
                 type="button"
                 onClick={() => setShowPass(!showPass)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors p-1"
               >
                 {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -151,14 +155,16 @@ function PagoExitosoContent() {
               onChange={e => setConfirmPassword(e.target.value)}
               required
               placeholder="Repite tu contraseña"
-              className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500 transition-colors"
+              className="w-full rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none transition-colors text-base"
+              style={{ background: 'rgba(11,25,40,0.8)', border: '1px solid rgba(18,180,198,0.2)' }}
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all duration-200"
+            className="w-full text-white font-semibold py-3.5 rounded-xl transition-all duration-200 active:scale-[0.98] text-base disabled:opacity-50"
+            style={{ background: 'var(--scai-teal)', boxShadow: '0 4px 16px rgba(18,180,198,0.3)' }}
           >
             {loading ? 'Creando cuenta...' : 'Crear cuenta y acceder'}
           </button>
@@ -172,7 +178,7 @@ export default function PagoExitosoPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center" style={{ background: '#0B1928' }}>
           <p className="text-white/30">Cargando...</p>
         </div>
       }
