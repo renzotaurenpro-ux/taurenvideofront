@@ -1,14 +1,20 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo } from 'react'
-import { ArrowLeft, CreditCard, Shield, ShoppingCart, Microscope, CalendarDays, Award, Users, Clock, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, CreditCard, Shield, ShoppingCart, CalendarDays, Award, Users, Clock, CheckCircle2 } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
+import Image from 'next/image'
+import ScaiLogo from '../../Logotipo-SCAI.png'
+
+const PRECIO_NETO = 25000
+const PRECIO_IVA = Math.round(PRECIO_NETO * 0.19)
+const PRECIO_TOTAL = PRECIO_NETO + PRECIO_IVA
+
+function formatCLP(n: number) {
+  return '$' + n.toLocaleString('es-CL')
+}
 
 export default function CarritoPage() {
-  const precio = Number(process.env.NEXT_PUBLIC_EVENTO_PRECIO || '99')
-  const subtotal = useMemo(() => precio, [precio])
-  const total = useMemo(() => subtotal, [subtotal])
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -20,10 +26,7 @@ export default function CarritoPage() {
             <span className="sm:hidden">Volver</span>
           </Link>
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: 'var(--scai-teal)' }}>
-              <Microscope size={13} className="text-white" />
-            </div>
-            <span className="font-bold text-sm">SCAI</span>
+            <Image src={ScaiLogo} alt="SCAI" priority className="h-7 w-auto" />
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -48,7 +51,7 @@ export default function CarritoPage() {
             <div className="flex items-start gap-3 sm:gap-4">
               <div className="flex h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 items-center justify-center rounded-xl border"
                 style={{ background: 'rgba(18,180,198,0.12)', borderColor: 'rgba(18,180,198,0.3)' }}>
-                <Microscope size={20} style={{ color: 'var(--scai-teal)' }} />
+                <Image src={ScaiLogo} alt="SCAI" className="h-8 w-auto" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--scai-teal)' }}>
@@ -67,7 +70,7 @@ export default function CarritoPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Users size={11} style={{ color: 'var(--scai-teal)' }} />
-                    15 expositores
+                    16 expositores
                   </div>
                   <div className="flex items-center gap-1">
                     <Award size={11} style={{ color: 'var(--scai-teal)' }} />
@@ -76,8 +79,8 @@ export default function CarritoPage() {
                 </div>
               </div>
               <div className="flex-shrink-0 text-right">
-                <p className="text-xl sm:text-2xl font-black">${precio}</p>
-                <p className="text-xs text-muted-foreground">USD</p>
+                <p className="text-xl sm:text-2xl font-black">{formatCLP(PRECIO_NETO)}</p>
+                <p className="text-xs text-muted-foreground">+ IVA</p>
               </div>
             </div>
           </div>
@@ -103,11 +106,15 @@ export default function CarritoPage() {
           <div className="space-y-3 text-sm">
             <div className="flex justify-between text-muted-foreground text-xs sm:text-sm">
               <span>III Jornadas de Inmunología Clínica</span>
-              <span className="flex-shrink-0 ml-2">${subtotal} USD</span>
+              <span className="flex-shrink-0 ml-2">{formatCLP(PRECIO_NETO)}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground text-xs sm:text-sm">
+              <span>IVA (19%)</span>
+              <span className="flex-shrink-0 ml-2">{formatCLP(PRECIO_IVA)}</span>
             </div>
             <div className="border-t border-border pt-3 flex justify-between font-bold text-sm sm:text-base">
               <span>Total</span>
-              <span style={{ color: 'var(--scai-teal)' }}>${total} USD</span>
+              <span style={{ color: 'var(--scai-teal)' }}>{formatCLP(PRECIO_TOTAL)}</span>
             </div>
           </div>
 

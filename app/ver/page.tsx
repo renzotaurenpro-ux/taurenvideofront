@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Microscope, LogOut, User, BookOpen, Clock, Award, Shield, ChevronRight, FlaskConical } from 'lucide-react'
 import SecureVideoPlayer from '@/components/SecureVideoPlayer'
+import Image from 'next/image'
+import ScaiLogo from '../../Logotipo-SCAI.png'
 
 interface UserData { email: string }
 
@@ -76,13 +78,7 @@ export default function VerPage() {
       <nav className="sticky top-0 z-40 border-b backdrop-blur flex items-center justify-between px-4 sm:px-6 py-3 flex-shrink-0"
         style={{ background: 'rgba(11,25,40,0.95)', borderColor: 'rgba(18,180,198,0.15)' }}>
         <Link href="/" className="flex items-center gap-2 min-w-0">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0" style={{ background: 'var(--scai-teal)' }}>
-            <Microscope size={14} className="text-white" />
-          </div>
-          <div className="hidden sm:block">
-            <span className="font-bold text-sm block leading-none">SCAI</span>
-            <span className="text-white/40 text-xs leading-none">Inmunología Clínica</span>
-          </div>
+          <Image src={ScaiLogo} alt="SCAI" priority className="h-7 w-auto sm:h-8" />
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">

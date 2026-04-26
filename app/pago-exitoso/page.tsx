@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Microscope, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import Image from 'next/image'
+import ScaiLogo from '../../Logotipo-SCAI.png'
 
 function PagoExitosoContent() {
   const searchParams = useSearchParams()
@@ -82,13 +84,7 @@ function PagoExitosoContent() {
       <div className="w-full max-w-md">
         <div className="text-center mb-6 sm:mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 mb-5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--scai-teal)' }}>
-              <Microscope size={17} className="text-white" />
-            </div>
-            <div className="text-left">
-              <span className="text-white font-bold text-sm block leading-none">SCAI</span>
-              <span className="text-white/40 text-xs leading-none">Inmunología Clínica</span>
-            </div>
+            <Image src={ScaiLogo} alt="SCAI" priority className="h-9 w-auto" />
           </Link>
           <div className="flex items-center justify-center gap-2 text-green-400 mb-3">
             <CheckCircle size={22} />

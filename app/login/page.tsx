@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Microscope, Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import Image from 'next/image'
+import ScaiLogo from '../../Logotipo-SCAI.png'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -38,14 +40,8 @@ export default function LoginPage() {
             <ArrowLeft size={14} />
             Volver al inicio
           </Link>
-          <Link href="/" className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--scai-teal)' }}>
-              <Microscope size={18} className="text-white" />
-            </div>
-            <div className="text-left">
-              <span className="text-white font-bold text-base block leading-none">SCAI</span>
-              <span className="text-white/40 text-xs leading-none">Sociedad Chilena de Alergia e Inmunología</span>
-            </div>
+          <Link href="/" className="flex items-center mb-5">
+            <Image src={ScaiLogo} alt="SCAI" priority className="h-10 w-auto" />
           </Link>
           <h1 className="text-2xl font-bold text-white">Iniciar sesión</h1>
           <p className="text-white/40 text-sm mt-1.5 text-center max-w-xs">

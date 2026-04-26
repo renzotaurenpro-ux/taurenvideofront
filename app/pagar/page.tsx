@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Microscope, Check, Shield, Clock, ArrowLeft } from 'lucide-react'
+import Image from 'next/image'
+import ScaiLogo from '../../Logotipo-SCAI.png'
 
 export default function PagarPage() {
   const router = useRouter()
@@ -28,13 +30,7 @@ export default function PagarPage() {
             Volver al carrito
           </Link>
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--scai-teal)' }}>
-              <Microscope size={17} className="text-white" />
-            </div>
-            <div className="text-left">
-              <span className="text-white font-bold text-base block leading-none">SCAI</span>
-              <span className="text-white/40 text-xs leading-none">Sociedad Chilena de Alergia e Inmunología</span>
-            </div>
+            <Image src={ScaiLogo} alt="SCAI" priority className="h-9 w-auto" />
           </div>
         </div>
 
