@@ -58,6 +58,9 @@ function SpeakerCard({ nombre, cv, index }: { nombre: string; cv: string; index:
   const iniciales = nombre
     .replace('Dra. ', '').replace('Dr. ', '')
     .split(' ').slice(0, 2).map((n: string) => n[0]).join('')
+  const isDaniela =
+    /daniela/i.test(nombre) &&
+    (/(budinich|buchini)/i.test(nombre))
   return (
     <div
       className="relative overflow-hidden rounded-xl border cursor-default"
@@ -77,12 +80,27 @@ function SpeakerCard({ nombre, cv, index }: { nombre: string; cv: string; index:
           transition: 'opacity 0.25s, transform 0.25s',
         }}
       >
-        <div
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
-          style={{ background: 'rgba(18,180,198,0.12)', border: '1px solid rgba(18,180,198,0.25)', color: 'var(--scai-teal)' }}
-        >
-          {iniciales}
-        </div>
+          {isDaniela ? (
+            <div
+              className="relative h-9 w-9 flex-shrink-0 overflow-hidden rounded-full"
+              style={{ border: '1px solid rgba(18,180,198,0.25)' }}
+            >
+              <Image
+                src="/doctora-perfil.jpg.jpeg"
+                alt={nombre}
+                fill
+                sizes="36px"
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <div
+              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+              style={{ background: 'rgba(18,180,198,0.12)', border: '1px solid rgba(18,180,198,0.25)', color: 'var(--scai-teal)' }}
+            >
+              {iniciales}
+            </div>
+          )}
         <div>
           <p className="text-sm font-medium leading-snug">{nombre}</p>
           <p className="text-[10px] text-muted-foreground tabular-nums mt-0.5">{String(index + 1).padStart(2, '0')}</p>
@@ -231,16 +249,15 @@ export default function Home() {
                 <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: 'var(--scai-teal)' }} />
                 <span className="text-[11px] font-semibold text-white/80">Grabación disponible</span>
               </div>
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="h-[280px] lg:h-[360px] w-full object-cover brightness-50"
-                poster="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1200&q=80"
-              >
-                <source src="https://cdn.coverr.co/videos/coverr-a-surgeon-prepares-for-an-operation-1579/1080p.mp4" type="video/mp4" />
-              </video>
+              <div className="relative h-[280px] lg:h-[360px] w-full">
+                <iframe
+                  src="https://player.vimeo.com/video/76979871?h=8272103f6e&title=0&byline=0&portrait=0&autoplay=1&muted=1&loop=1&background=1"
+                  className="absolute inset-0 h-full w-full"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                />
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(11,25,40,0.35)' }} />
+              </div>
               <div className="absolute inset-x-0 bottom-0 z-10 p-4"
                 style={{ background: 'linear-gradient(to top, rgba(11,25,40,0.95) 0%, transparent 100%)' }}>
                 <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'var(--scai-teal)' }}>
@@ -435,30 +452,6 @@ export default function Home() {
           <p className="text-sm text-muted-foreground">
             Sociedad Chilena de Alergia e Inmunología — SCAI
           </p>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-5 sm:px-8 py-20 sm:py-28">
-        <div className="grid md:grid-cols-[240px_1fr] gap-10 md:gap-24">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Dirigido a</p>
-          </div>
-          <div className="flex flex-col gap-0">
-            {[
-              'Médicos/as EDF — Ex-generales de zona',
-              'Médicos/as de Familia',
-              'Médicos/as Internistas',
-              'Médicos/as Pediatras',
-              'Otros Profesionales de la Salud',
-            ].map((item, i) => (
-              <div key={item} className="flex items-center gap-5 border-b border-border py-4 first:border-t">
-                <span className="text-[11px] tabular-nums text-muted-foreground w-6 flex-shrink-0">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span className="text-sm sm:text-base font-medium">{item}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

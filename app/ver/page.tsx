@@ -10,7 +10,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 
 interface UserData { email: string }
 
-const DEMO_VIDEO = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
+const DEMO_VIDEO = 'https://player.vimeo.com/video/76979871?h=8272103f6e&title=0&byline=0&portrait=0&autoplay=0&muted=0&loop=0'
 
 const PONENTES = [
   { nombre: 'Dra. Ligia Rodríguez', especialidad: 'Inmunología Clínica', avatar: 'LR' },
@@ -51,7 +51,7 @@ export default function VerPage() {
     const paid = localStorage.getItem('tauren-user-paid') === 'true'
     if (!email || !paid) { router.push('/login'); return }
     setUser({ email })
-    setVideoUrl(process.env.NEXT_PUBLIC_VIDEO_URL || DEMO_VIDEO)
+    setVideoUrl(DEMO_VIDEO)
     setLoading(false)
   }, [router])
 
@@ -101,7 +101,7 @@ export default function VerPage() {
       </nav>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5 xl:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5 lg:gap-6">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 mb-3 text-xs text-white/30 uppercase tracking-wider overflow-hidden">
               <FlaskConical size={11} className="flex-shrink-0" />
@@ -111,7 +111,7 @@ export default function VerPage() {
               <span className="text-white/50 flex-shrink-0">Grabación</span>
             </div>
 
-            <SecureVideoPlayer videoUrl={videoUrl} userEmail={user.email} />
+            <SecureVideoPlayer videoUrl={videoUrl} />
 
             <div className="mt-4">
               <h1 className="text-base sm:text-xl md:text-2xl font-bold leading-snug">
@@ -123,7 +123,7 @@ export default function VerPage() {
                 <span>·</span>
                 <span className="flex items-center gap-1"><Clock size={11} /> 19 Jun 2026</span>
                 <span>·</span>
-                <span>6 módulos · 15 ponentes</span>
+                <span>4 módulos · 16 ponentes</span>
                 <span>·</span>
                 <span>Acreditado CONACEM</span>
               </div>
@@ -157,15 +157,15 @@ export default function VerPage() {
                     conocidos como Inmunodeficiencias Primarias.
                   </p>
                   <p>
-                    Esta grabación reúne a 15 especialistas que presentan la fisiopatología, el
+                    Esta grabación reúne a 16 especialistas que presentan la fisiopatología, el
                     diagnóstico clínico y de laboratorio, y las estrategias terapéuticas más actualizadas
                     para el manejo de estas condiciones en distintos grupos etarios.
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mt-3">
                     {[
                       { label: 'Fecha', value: '19 Jun 2026' },
-                      { label: 'Módulos', value: '6' },
-                      { label: 'Expositores', value: '15' },
+                      { label: 'Módulos', value: '4' },
+                      { label: 'Expositores', value: '16' },
                       { label: 'Idioma', value: 'Español' },
                       { label: 'Modalidad', value: 'Online' },
                       { label: 'Acreditación', value: 'CONACEM' },
@@ -181,7 +181,7 @@ export default function VerPage() {
               )}
 
               {activeTab === 'ponentes' && (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
                   {PONENTES.map(p => (
                     <div key={p.nombre} className="rounded-2xl border p-3 flex flex-col items-center text-center gap-2"
                       style={{ background: 'rgba(14,32,53,0.8)', borderColor: 'rgba(18,180,198,0.12)' }}>
@@ -225,7 +225,7 @@ export default function VerPage() {
             </div>
           </div>
 
-          <aside className="space-y-3 xl:space-y-4">
+          <aside className="space-y-3 lg:space-y-4 lg:sticky lg:top-[76px] h-fit">
             <div className="rounded-2xl p-4 sm:p-5 border"
               style={{ background: 'linear-gradient(135deg, rgba(18,180,198,0.15) 0%, rgba(14,32,53,0.9) 100%)', borderColor: 'rgba(18,180,198,0.25)' }}>
               <div className="flex items-center gap-2 mb-3">
@@ -250,7 +250,7 @@ export default function VerPage() {
               {[
                 { icon: Microscope, label: 'Grabación completa HD' },
                 { icon: Award, label: 'Acreditación CONACEM' },
-                { icon: BookOpen, label: '6 módulos · 15 expositores' },
+                { icon: BookOpen, label: '4 módulos · 16 expositores' },
                 { icon: Shield, label: 'Protección anticopia activa' },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="flex items-center gap-3 text-sm text-white/50">
@@ -258,7 +258,7 @@ export default function VerPage() {
                     style={{ background: 'rgba(18,180,198,0.1)' }}>
                     <Icon size={13} style={{ color: 'var(--scai-teal)' }} />
                   </div>
-                  {label}
+                  <span className="leading-snug">{label}</span>
                 </div>
               ))}
             </div>

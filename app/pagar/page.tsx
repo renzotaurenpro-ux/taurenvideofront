@@ -7,16 +7,22 @@ import { Microscope, Check, Shield, Clock, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 
+const PRECIO_NETO = 25000
+const PRECIO_IVA = Math.round(PRECIO_NETO * 0.19)
+const PRECIO_TOTAL = PRECIO_NETO + PRECIO_IVA
+
+function formatCLP(n: number) {
+  return '$' + n.toLocaleString('es-CL')
+}
+
 export default function PagarPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const precio = process.env.NEXT_PUBLIC_EVENTO_PRECIO || '99'
 
   function handlePago() {
     setLoading(true)
     setError('')
-    if (!precio) { setError('No se pudo iniciar el pago. Intenta de nuevo.'); setLoading(false); return }
     setTimeout(() => { router.push('/pago-exitoso?session_id=demo-session-frontend') }, 500)
   }
 
@@ -58,7 +64,7 @@ export default function PagarPage() {
             <ul className="space-y-2.5 mb-6">
               {[
                 'Acceso completo a la grabación HD 1080p',
-                '15 ponencias de especialistas',
+                '16 ponencias de especialistas',
                 'Acreditación oficial CONACEM',
                 'Soporte técnico',
                 'Cuenta personal e intransferible',
@@ -80,8 +86,28 @@ export default function PagarPage() {
                 <div className="text-white/50 text-xs sm:text-sm">Sin suscripciones ni cargos adicionales</div>
               </div>
               <div className="text-right flex-shrink-0 ml-4">
-                <span className="text-3xl sm:text-4xl font-black text-white">${precio}</span>
-                <span className="text-white/30 text-sm ml-1">USD</span>
+                <div className="flex flex-col items-end">
+                  <span className="text-3xl sm:text-4xl font-black text-white">{formatCLP(PRECIO_NETO)}</span>
+                  <span className="text-white/30 text-xs sm:text-sm">+ IVA</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-xs text-white/30 flex items-center justify-between mb-6 px-1">
+              <span>IVA (19%)</span>
+              <span className="tabular-nums">{formatCLP(PRECIO_IVA)}</span>
+            </div>
+
+            <div className="rounded-xl px-4 sm:px-6 py-4 flex items-center justify-between mb-5"
+              style={{ background: 'rgba(18,180,198,0.08)', border: '1px solid rgba(18,180,198,0.2)' }}>
+              <div>
+                <div className="text-white/40 text-xs uppercase tracking-wider mb-0.5">Total</div>
+                <div className="text-white/50 text-xs sm:text-sm">Pago único</div>
+              </div>
+              <div className="text-right flex-shrink-0 ml-4">
+                <span className="text-2xl sm:text-3xl font-black" style={{ color: 'var(--scai-teal)' }}>
+                  {formatCLP(PRECIO_TOTAL)}
+                </span>
               </div>
             </div>
 
