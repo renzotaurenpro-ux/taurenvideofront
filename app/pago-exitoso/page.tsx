@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Microscope, Eye, EyeOff, CheckCircle } from 'lucide-react'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
+import { clearCart } from '@/lib/cart'
 
 function PagoExitosoContent() {
   const searchParams = useSearchParams()
@@ -51,6 +52,7 @@ function PagoExitosoContent() {
     setLoading(true)
     localStorage.setItem('tauren-user-email', email)
     localStorage.setItem('tauren-user-paid', 'true')
+    clearCart()
     setTimeout(() => {
       setLoading(false)
       router.push('/ver')

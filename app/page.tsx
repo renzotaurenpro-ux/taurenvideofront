@@ -167,14 +167,20 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground">
 
-      <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b border-white/5"
-        style={{ background: 'rgba(11,25,40,0.85)' }}>
+      <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b border-border bg-background/85 dark:border-white/5 dark:bg-[rgba(11,25,40,0.85)]">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-3.5 flex items-center justify-between">
           <Image src={ScaiLogo} alt="SCAI" priority className="h-7 w-auto" />
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Link href="/login" className="hidden sm:inline-flex text-sm font-medium text-white/50 hover:text-white/80 px-2 transition-colors">
+            <Link href="/login" className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground dark:text-white/50 dark:hover:text-white/80 px-2 transition-colors">
               Iniciar sesión
+            </Link>
+            <Link
+              href="/registro"
+              className="hidden sm:inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold border transition-colors"
+              style={{ borderColor: 'rgba(18,180,198,0.35)', color: 'var(--scai-teal)', background: 'rgba(18,180,198,0.08)' }}
+            >
+              Registrarme
             </Link>
             <Link
               href="/carrito"
@@ -190,17 +196,18 @@ export default function Home() {
       </nav>
 
       <section
-        className="relative flex min-h-screen flex-col justify-between overflow-hidden px-5 sm:px-8 pt-24 pb-8"
-        style={{ background: 'linear-gradient(155deg, #0B1928 0%, #0E2035 55%, #0B2240 100%)' }}
+        className="relative flex min-h-screen flex-col justify-between overflow-hidden px-5 sm:px-8 pt-24 pb-8 bg-gradient-to-br from-background via-secondary to-background dark:from-[#0B1928] dark:via-[#0E2035] dark:to-[#0B2240]"
       >
         <div className="pointer-events-none absolute inset-0"
           style={{ background: 'radial-gradient(ellipse at 65% 25%, rgba(18,180,198,0.11) 0%, transparent 58%)' }} />
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48"
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48 dark:block hidden"
           style={{ background: 'linear-gradient(to top, rgba(11,25,40,0.6) 0%, transparent 100%)' }} />
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48 dark:hidden block"
+          style={{ background: 'linear-gradient(to top, rgba(255,255,255,0.7) 0%, transparent 100%)' }} />
 
         <div className="relative z-10 mx-auto w-full max-w-7xl flex items-start justify-between pt-2">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-white/35">Jornadas Regionales</p>
-          <p className="text-[11px] text-white/25 tabular-nums">01</p>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground dark:text-white/35">Jornadas Regionales</p>
+          <p className="text-[11px] text-muted-foreground tabular-nums dark:text-white/25">01</p>
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl flex-1 grid md:grid-cols-2 gap-8 md:gap-12 items-center py-14 md:py-0">
@@ -214,14 +221,14 @@ export default function Home() {
               </span>
             </div>
 
-            <h1 className="mb-8 font-black leading-[0.88] tracking-tight text-white"
+            <h1 className="mb-8 font-black leading-[0.88] tracking-tight text-foreground dark:text-white"
               style={{ fontSize: 'clamp(2.6rem, 7vw, 6rem)' }}>
               Cuando el<br />
               <span style={{ color: 'var(--scai-teal)' }}>Sistema</span><br />
               Inmune Falla
             </h1>
 
-            <p className="text-white/45 text-sm sm:text-base max-w-xs leading-relaxed mb-6">
+            <p className="text-muted-foreground dark:text-white/45 text-sm sm:text-base max-w-xs leading-relaxed mb-6">
               III Jornadas Regionales de Inmunología Clínica — Desafíos en Errores Innatos de la Inmunidad.
             </p>
             <div className="flex flex-col gap-3">
@@ -233,7 +240,10 @@ export default function Home() {
                 <ShoppingCart size={15} />
                 $25.000 + IVA — Obtener acceso
               </Link>
-              <Link href="/login" className="text-xs text-white/30 hover:text-white/60 pl-1 transition-colors">
+              <Link href="/registro" className="text-xs text-muted-foreground hover:text-foreground dark:text-white/30 dark:hover:text-white/60 pl-1 transition-colors">
+                Soy nuevo/a · Registrarme →
+              </Link>
+              <Link href="/login" className="text-xs text-muted-foreground hover:text-foreground dark:text-white/30 dark:hover:text-white/60 pl-1 transition-colors">
                 Ya tengo acceso →
               </Link>
             </div>
@@ -256,10 +266,11 @@ export default function Home() {
                   allow="autoplay; fullscreen; picture-in-picture"
                   allowFullScreen
                 />
-                <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(11,25,40,0.35)' }} />
+                <div className="absolute inset-0 pointer-events-none dark:block hidden" style={{ background: 'rgba(11,25,40,0.35)' }} />
+                <div className="absolute inset-0 pointer-events-none dark:hidden block" style={{ background: 'rgba(255,255,255,0.25)' }} />
               </div>
               <div className="absolute inset-x-0 bottom-0 z-10 p-4"
-                style={{ background: 'linear-gradient(to top, rgba(11,25,40,0.95) 0%, transparent 100%)' }}>
+                style={{ background: 'linear-gradient(to top, rgba(11,25,40,0.85) 0%, transparent 100%)' }}>
                 <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'var(--scai-teal)' }}>
                   Conferencia destacada
                 </p>
@@ -273,7 +284,7 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl flex items-end justify-between">
-          <div className="flex items-center gap-1.5 text-white/25 text-xs">
+          <div className="flex items-center gap-1.5 text-muted-foreground dark:text-white/25 text-xs">
             <span>Scroll</span>
             <span>↓</span>
           </div>
@@ -284,8 +295,8 @@ export default function Home() {
               { label: 'Alcance', value: 'Online' },
             ].map(({ label, value }) => (
               <div key={label}>
-                <p className="text-[10px] uppercase tracking-wider text-white/25">{label}</p>
-                <p className="text-sm font-semibold text-white/60 mt-0.5">{value}</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground dark:text-white/25">{label}</p>
+                <p className="text-sm font-semibold text-foreground/70 dark:text-white/60 mt-0.5">{value}</p>
               </div>
             ))}
           </div>
@@ -378,6 +389,11 @@ export default function Home() {
                 {MODULOS[activeModulo].ponentes.map((p, i) => (
                   <div key={p} className="flex items-center gap-3 border-b border-border py-3.5 pr-6">
                     <span className="text-[10px] tabular-nums text-muted-foreground w-5">{String(i + 1).padStart(2, '0')}</span>
+                    {/daniela/i.test(p) && /budinich|buchini/i.test(p) ? (
+                      <div className="relative h-6 w-6 overflow-hidden rounded-full border flex-shrink-0" style={{ borderColor: 'rgba(18,180,198,0.25)' }}>
+                        <Image src="/doctora-perfil.jpg.jpeg" alt={p} fill sizes="24px" className="object-cover" />
+                      </div>
+                    ) : null}
                     <span className="text-sm font-medium">{p}</span>
                   </div>
                 ))}
@@ -387,15 +403,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-b border-border overflow-hidden"
-        style={{ background: 'linear-gradient(155deg, #0B1928 0%, #0E2035 100%)' }}>
+      <section className="border-b border-border overflow-hidden bg-background dark:bg-gradient-to-br dark:from-[#0B1928] dark:to-[#0E2035]">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-20 sm:py-28">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-16">Antes vs Ahora</p>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground dark:text-white/40 mb-16">Antes vs Ahora</p>
           <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-            <div className="rounded-2xl border border-white/8 p-7 sm:p-9"
-              style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <p className="text-xs uppercase tracking-widest text-white/30 mb-6">La forma antigua</p>
-              <p className="text-white/50 text-sm leading-relaxed mb-8 max-w-sm">
+            <div className="rounded-2xl border p-7 sm:p-9 bg-card dark:bg-white/[0.03] border-border dark:border-white/8">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground dark:text-white/30 mb-6">La forma antigua</p>
+              <p className="text-muted-foreground dark:text-white/50 text-sm leading-relaxed mb-8 max-w-sm">
                 Para acceder al conocimiento de expertos había que desplazarse, pagar alojamiento, perder días de trabajo y aún así perderse ponencias por solapamiento de horarios.
               </p>
               <div className="flex flex-col gap-3">
@@ -406,19 +420,19 @@ export default function Home() {
                   'Acceso limitado por cupos físicos',
                 ].map(item => (
                   <div key={item} className="flex items-center gap-3">
-                    <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-white/8">
-                      <X size={10} className="text-white/30" />
+                    <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-muted dark:bg-white/8">
+                      <X size={10} className="text-muted-foreground dark:text-white/30" />
                     </div>
-                    <span className="text-xs text-white/35">{item}</span>
+                    <span className="text-xs text-muted-foreground dark:text-white/35">{item}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-2xl border p-7 sm:p-9"
-              style={{ borderColor: 'rgba(18,180,198,0.3)', background: 'rgba(18,180,198,0.06)' }}>
+            <div className="rounded-2xl border p-7 sm:p-9 bg-card dark:bg-[rgba(18,180,198,0.06)]"
+              style={{ borderColor: 'rgba(18,180,198,0.3)' }}>
               <p className="text-xs uppercase tracking-widest mb-6" style={{ color: 'var(--scai-teal)' }}>La forma nueva</p>
-              <p className="text-white/70 text-sm leading-relaxed mb-8 max-w-sm">
+              <p className="text-foreground/70 dark:text-white/70 text-sm leading-relaxed mb-8 max-w-sm">
                 Accede a los 16 mejores especialistas en inmunología clínica desde donde estés, con grabación HD disponible en el momento y acreditación CONACEM incluida.
               </p>
               <div className="flex flex-col gap-3">
@@ -433,7 +447,7 @@ export default function Home() {
                       style={{ background: 'rgba(18,180,198,0.2)' }}>
                       <Check size={10} style={{ color: 'var(--scai-teal)' }} />
                     </div>
-                    <span className="text-xs text-white/70">{item}</span>
+                    <span className="text-xs text-foreground/70 dark:text-white/70">{item}</span>
                   </div>
                 ))}
               </div>
@@ -500,14 +514,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="overflow-hidden"
-        style={{ background: 'linear-gradient(140deg, #0B1928 0%, #0E2035 100%)' }}>
+      <section className="overflow-hidden bg-card dark:bg-gradient-to-br dark:from-[#0B1928] dark:to-[#0E2035]">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-24 sm:py-32 flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] mb-5" style={{ color: 'var(--scai-teal)' }}>
               Sociedad Chilena de Alergia e Inmunología
             </p>
-            <h2 className="font-black text-white leading-[0.9]" style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}>
+            <h2 className="font-black text-foreground dark:text-white leading-[0.9]" style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}>
               Accede a las<br />
               <span style={{ color: 'var(--scai-gold)' }}>Jornadas</span><br />
               ahora
@@ -522,7 +535,7 @@ export default function Home() {
               <ShoppingCart size={16} />
               Comprar acceso — $25.000 + IVA
             </Link>
-            <Link href="/login" className="text-sm text-white/35 hover:text-white/60 pl-1 transition-colors">
+            <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground dark:text-white/35 dark:hover:text-white/60 pl-1 transition-colors">
               Ya tengo acceso →
             </Link>
           </div>

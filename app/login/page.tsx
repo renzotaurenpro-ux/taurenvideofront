@@ -3,19 +3,26 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Microscope, Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+import { postPublic } from '@/lib/api'
+import { useAuth } from '@/lib/authContext'
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { setProfile } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     if (!email || !password) {
@@ -23,12 +30,41 @@ export default function LoginPage() {
       return
     }
     setLoading(true)
-    localStorage.setItem('tauren-user-email', email)
-    localStorage.setItem('tauren-user-paid', 'true')
-    setTimeout(() => {
+    try {
+      const credential = await signInWithEmailAndPassword(auth, email, password)
+      const idToken = await credential.user.getIdToken()
+
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      })
+
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.message || 'Error al verificar sesión')
+      }
+
+      setProfile(data.user ?? data)
+
+      if (!localStorage.getItem('tauren-user-paid')) {
+        localStorage.setItem('tauren-user-paid', 'false')
+      }
+
+      const paid = localStorage.getItem('tauren-user-paid') === 'true'
+      router.push(paid ? '/ver' : '/carrito')
+    } catch (err: any) {
+      const code = err?.code ?? ''
+      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        setError('Correo o contraseña incorrectos')
+      } else if (code === 'auth/too-many-requests') {
+        setError('Demasiados intentos. Intenta más tarde')
+      } else {
+        setError(err?.message || 'Error al iniciar sesión')
+      }
+    } finally {
       setLoading(false)
-      router.push('/ver')
-    }, 350)
+    }
   }
 
   return (
@@ -110,9 +146,9 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-white/25 text-sm mt-5">
-          ¿No tienes acceso?{' '}
-          <Link href="/carrito" style={{ color: 'var(--scai-teal)' }} className="hover:brightness-125">
-            Obtén acceso aquí
+          ¿No tienes cuenta?{' '}
+          <Link href="/registro" style={{ color: 'var(--scai-teal)' }} className="hover:brightness-125">
+            Regístrate aquí
           </Link>
         </p>
       </div>

@@ -11,10 +11,10 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     const saved = localStorage.getItem('tauren-theme') as Theme | null
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const activeTheme: Theme = saved ?? (prefersDark ? 'dark' : 'light')
+    const activeTheme: Theme = saved ?? 'dark'
     setTheme(activeTheme)
     document.documentElement.classList.toggle('dark', activeTheme === 'dark')
+    if (!saved) localStorage.setItem('tauren-theme', activeTheme)
     setMounted(true)
   }, [])
 

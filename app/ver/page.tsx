@@ -3,14 +3,20 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Microscope, LogOut, User, BookOpen, Clock, Award, Shield, ChevronRight, FlaskConical } from 'lucide-react'
+import { LogOut, BookOpen, Clock, Award, Shield, ChevronRight, FlaskConical, ShoppingCart, Lock } from 'lucide-react'
 import SecureVideoPlayer from '@/components/SecureVideoPlayer'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
-
-interface UserData { email: string }
+import { addToCart, hasItem } from '@/lib/cart'
+import { useAuth } from '@/lib/authContext'
 
 const DEMO_VIDEO = 'https://player.vimeo.com/video/76979871?h=8272103f6e&title=0&byline=0&portrait=0&autoplay=0&muted=0&loop=0'
+const PRODUCT = {
+  id: 'scai-jornadas-2026',
+  title: 'III Jornadas Regionales de Inmunología Clínica',
+  subtitle: 'Cuando el Sistema Inmune Falla: Desafíos en Errores Innatos de la Inmunidad',
+  priceNeto: 25000,
+}
 
 const PONENTES = [
   { nombre: 'Dra. Ligia Rodríguez', especialidad: 'Inmunología Clínica', avatar: 'LR' },
@@ -41,27 +47,37 @@ const MODULOS = [
 
 export default function VerPage() {
   const router = useRouter()
-  const [user, setUser] = useState<UserData | null>(null)
+  const { firebaseUser, profile, loading: authLoading, logout } = useAuth()
   const [videoUrl, setVideoUrl] = useState('')
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'descripcion' | 'ponentes' | 'programa'>('descripcion')
+  const [paid, setPaid] = useState(false)
+  const [inCart, setInCart] = useState(false)
 
   useEffect(() => {
-    const email = localStorage.getItem('tauren-user-email')
-    const paid = localStorage.getItem('tauren-user-paid') === 'true'
-    if (!email || !paid) { router.push('/login'); return }
-    setUser({ email })
+    if (authLoading) return
+    if (!firebaseUser) { router.push('/login'); return }
+    const paidFlag = localStorage.getItem('tauren-user-paid') === 'true'
+    setPaid(paidFlag)
+    setInCart(hasItem(PRODUCT.id))
     setVideoUrl(DEMO_VIDEO)
     setLoading(false)
-  }, [router])
+  }, [authLoading, firebaseUser, router])
 
-  function handleLogout() {
-    localStorage.removeItem('tauren-user-email')
-    localStorage.removeItem('tauren-user-paid')
+  function handleAddToCart() {
+    addToCart(PRODUCT, 1)
+    setInCart(true)
+    router.push('/carrito')
+  }
+
+  async function handleLogout() {
+    await logout()
     router.push('/')
   }
 
-  if (loading || !user) {
+  const displayEmail = profile?.email ?? firebaseUser?.email ?? ''
+
+  if (authLoading || loading || !firebaseUser) {
     return (
       <div className="min-h-screen flex items-center justify-center"
         style={{ background: 'linear-gradient(160deg, #0B1928 0%, #0E2035 100%)' }}>
@@ -86,9 +102,9 @@ export default function VerPage() {
             style={{ background: 'rgba(18,180,198,0.08)', border: '1px solid rgba(18,180,198,0.15)' }}>
             <div className="h-5 w-5 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 text-white"
               style={{ background: 'var(--scai-teal)' }}>
-              {user.email[0].toUpperCase()}
+              {displayEmail[0]?.toUpperCase() ?? '?'}
             </div>
-            <span className="hidden sm:block truncate max-w-[140px]">{user.email}</span>
+            <span className="hidden sm:block truncate max-w-[140px]">{displayEmail}</span>
           </div>
           <button
             onClick={handleLogout}
@@ -111,7 +127,47 @@ export default function VerPage() {
               <span className="text-white/50 flex-shrink-0">Grabación</span>
             </div>
 
-            <SecureVideoPlayer videoUrl={videoUrl} />
+            <div className="relative">
+              <SecureVideoPlayer videoUrl={videoUrl} />
+              {!paid && (
+                <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                  <div className="absolute inset-0" style={{ background: 'rgba(11,25,40,0.62)' }} />
+                  <div className="absolute inset-0" style={{ backdropFilter: 'blur(6px)' }} />
+                  <div className="absolute inset-0 flex items-center justify-center p-5 sm:p-10">
+                    <div className="w-full max-w-md rounded-2xl border p-5 sm:p-6 text-center"
+                      style={{ background: 'rgba(14,32,53,0.92)', borderColor: 'rgba(18,180,198,0.22)' }}>
+                      <div className="mx-auto mb-3 h-10 w-10 rounded-full flex items-center justify-center"
+                        style={{ background: 'rgba(18,180,198,0.18)' }}>
+                        <Lock size={18} style={{ color: 'var(--scai-teal)' }} />
+                      </div>
+                      <p className="text-white font-bold text-base sm:text-lg leading-snug">
+                        Agrega el acceso al carrito para ver la grabación completa
+                      </p>
+                      <p className="text-white/45 text-xs sm:text-sm mt-2 leading-relaxed">
+                        Pago único de $25.000 + IVA. Acceso inmediato tras el pago.
+                      </p>
+                      <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                        <button
+                          onClick={handleAddToCart}
+                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-transform"
+                          style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 24px rgba(18,180,198,0.25)' }}
+                        >
+                          <ShoppingCart size={16} />
+                          {inCart ? 'Ir al carrito' : 'Agregar al carrito'}
+                        </button>
+                        <Link
+                          href="/carrito"
+                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white/70 border active:scale-[0.98] transition-transform"
+                          style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.03)' }}
+                        >
+                          Ver carrito
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="mt-4">
               <h1 className="text-base sm:text-xl md:text-2xl font-bold leading-snug">
@@ -185,10 +241,16 @@ export default function VerPage() {
                   {PONENTES.map(p => (
                     <div key={p.nombre} className="rounded-2xl border p-3 flex flex-col items-center text-center gap-2"
                       style={{ background: 'rgba(14,32,53,0.8)', borderColor: 'rgba(18,180,198,0.12)' }}>
-                      <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0"
-                        style={{ background: 'rgba(18,180,198,0.12)', borderColor: 'rgba(18,180,198,0.3)', color: 'var(--scai-teal)' }}>
-                        {p.avatar}
-                      </div>
+                      {/daniela/i.test(p.nombre) && /budinich|buchini/i.test(p.nombre) ? (
+                        <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border flex-shrink-0" style={{ borderColor: 'rgba(18,180,198,0.3)' }}>
+                          <Image src="/doctora-perfil.jpg.jpeg" alt={p.nombre} fill sizes="48px" className="object-cover" />
+                        </div>
+                      ) : (
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0"
+                          style={{ background: 'rgba(18,180,198,0.12)', borderColor: 'rgba(18,180,198,0.3)', color: 'var(--scai-teal)' }}>
+                          {p.avatar}
+                        </div>
+                      )}
                       <div>
                         <p className="font-semibold text-[11px] sm:text-xs text-white leading-tight">{p.nombre}</p>
                         <p className="text-white/35 text-[10px] sm:text-[11px] mt-0.5 leading-relaxed hidden sm:block">{p.especialidad}</p>
@@ -238,10 +300,20 @@ export default function VerPage() {
                   <p className="text-sm text-white font-medium truncate max-w-full">{user.email}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
-                Acceso completo activo
-              </div>
+              {paid ? (
+                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
+                  Acceso completo activo
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-2 text-xs rounded-xl px-3 py-2 border"
+                  style={{ background: 'rgba(18,180,198,0.08)', borderColor: 'rgba(18,180,198,0.2)' }}>
+                  <span className="text-white/55">Acceso pendiente</span>
+                  <button onClick={handleAddToCart} className="text-xs font-semibold" style={{ color: 'var(--scai-teal)' }}>
+                    {inCart ? 'Ver carrito' : 'Agregar'}
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="rounded-2xl p-4 sm:p-5 border space-y-3"

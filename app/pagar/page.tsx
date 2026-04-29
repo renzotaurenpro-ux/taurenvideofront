@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Microscope, Check, Shield, Clock, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
+import { getCart } from '@/lib/cart'
 
 const PRECIO_NETO = 25000
 const PRECIO_IVA = Math.round(PRECIO_NETO * 0.19)
@@ -19,6 +20,10 @@ export default function PagarPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (getCart().length === 0) router.push('/carrito')
+  }, [router])
 
   function handlePago() {
     setLoading(true)
