@@ -57,7 +57,7 @@ export default function RegistroPage() {
   const [error, setError] = useState('')
   const [ok, setOk] = useState(false)
 
-  const apiBase = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001', [])
+  const apiBase = useMemo(() => '/api/proxy', [])
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -89,9 +89,8 @@ export default function RegistroPage() {
         setProfile(loginData.user ?? loginData)
       }
 
-      localStorage.setItem('tauren-user-paid', 'false')
       setOk(true)
-      setTimeout(() => router.push('/carrito'), 450)
+      setTimeout(() => router.push('/ver'), 450)
     } catch (err: any) {
       const code = err?.code ?? ''
       if (code === 'auth/email-already-in-use') {

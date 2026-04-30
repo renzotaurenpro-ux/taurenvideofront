@@ -1,6 +1,6 @@
 import { auth } from './firebase'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
+const API_BASE = '/api/proxy'
 
 async function getToken(forceRefresh = false): Promise<string> {
   const user = auth.currentUser
@@ -11,7 +11,7 @@ async function getToken(forceRefresh = false): Promise<string> {
 export async function fetchAuth(path: string, options: RequestInit = {}): Promise<Response> {
   let token = await getToken()
 
-  const makeHeaders = (t: string) => ({
+  const makeHeaders = (t: string): Record<string, string> => ({
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
     Authorization: `Bearer ${t}`,
@@ -25,6 +25,10 @@ export async function fetchAuth(path: string, options: RequestInit = {}): Promis
   }
 
   return res
+}
+
+export async function fetchPublic(path: string): Promise<Response> {
+  return fetch(`${API_BASE}${path}`)
 }
 
 export async function postPublic<T>(path: string, body: T): Promise<Response> {

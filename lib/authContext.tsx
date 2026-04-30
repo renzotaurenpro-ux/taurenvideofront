@@ -29,6 +29,11 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+function clearSessionCookies() {
+  document.cookie = '__tauren_session=; path=/; max-age=0'
+  document.cookie = '__tauren_name=; path=/; max-age=0'
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -41,16 +46,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const res = await fetchAuth('/auth/profile')
           if (res.ok) {
-            const data = await res.json()
+            const data: UserProfile = await res.json()
             setProfile(data)
+            const name = encodeURIComponent(`${data.firstName} ${data.lastName}`)
+            document.cookie = `__tauren_session=${fbUser.uid}; path=/; max-age=86400; SameSite=Strict`
+            document.cookie = `__tauren_name=${name}; path=/; max-age=86400; SameSite=Strict`
           } else {
             setProfile(null)
+            clearSessionCookies()
           }
         } catch {
           setProfile(null)
+          clearSessionCookies()
         }
       } else {
         setProfile(null)
+        clearSessionCookies()
       }
       setLoading(false)
     })
@@ -60,9 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function logout() {
     await signOut(auth)
     setProfile(null)
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('tauren-user-paid')
-    }
+    clearSessionCookies()
   }
 
   return (

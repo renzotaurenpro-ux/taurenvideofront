@@ -1,5 +1,6 @@
 export type CartItem = {
   id: string
+  videoId?: string
   title: string
   subtitle?: string
   priceNeto: number
@@ -25,6 +26,7 @@ export function getCart(): CartItem[] {
     .filter(Boolean)
     .map((x: any) => ({
       id: String(x.id || ''),
+      videoId: x.videoId ? String(x.videoId) : undefined,
       title: String(x.title || ''),
       subtitle: x.subtitle ? String(x.subtitle) : undefined,
       priceNeto: Number(x.priceNeto || 0),

@@ -8,10 +8,9 @@ import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { postPublic } from '@/lib/api'
 import { useAuth } from '@/lib/authContext'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
+const API_BASE = '/api/proxy'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -46,13 +45,7 @@ export default function LoginPage() {
       }
 
       setProfile(data.user ?? data)
-
-      if (!localStorage.getItem('tauren-user-paid')) {
-        localStorage.setItem('tauren-user-paid', 'false')
-      }
-
-      const paid = localStorage.getItem('tauren-user-paid') === 'true'
-      router.push(paid ? '/ver' : '/carrito')
+      router.push('/ver')
     } catch (err: any) {
       const code = err?.code ?? ''
       if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {

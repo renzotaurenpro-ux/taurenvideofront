@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LogOut, BookOpen, Clock, Award, Shield, ChevronRight, FlaskConical, ShoppingCart, Lock } from 'lucide-react'
+import { LogOut, BookOpen, Clock, Award, Shield, ChevronRight, FlaskConical, ShoppingCart, Lock, User, Microscope } from 'lucide-react'
 import SecureVideoPlayer from '@/components/SecureVideoPlayer'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
+import { fetchAuth } from '@/lib/api'
+import { fetchPublishedVideos } from '@/lib/videos'
 
 const DEMO_VIDEO = 'https://player.vimeo.com/video/76979871?h=8272103f6e&title=0&byline=0&portrait=0&autoplay=0&muted=0&loop=0'
 const PRODUCT = {
@@ -53,19 +55,37 @@ export default function VerPage() {
   const [activeTab, setActiveTab] = useState<'descripcion' | 'ponentes' | 'programa'>('descripcion')
   const [paid, setPaid] = useState(false)
   const [inCart, setInCart] = useState(false)
+  const [backendVideoId, setBackendVideoId] = useState<string | null>(null)
 
   useEffect(() => {
     if (authLoading) return
     if (!firebaseUser) { router.push('/login'); return }
-    const paidFlag = localStorage.getItem('tauren-user-paid') === 'true'
-    setPaid(paidFlag)
-    setInCart(hasItem(PRODUCT.id))
-    setVideoUrl(DEMO_VIDEO)
-    setLoading(false)
+
+    async function checkAccess() {
+      try {
+        const videos = await fetchPublishedVideos()
+        const video = videos[0] ?? null
+        if (video) {
+          setBackendVideoId(video.id)
+          const res = await fetchAuth(`/purchases/check/${video.id}`)
+          if (res.ok) {
+            const data = await res.json()
+            setPaid(data.purchased === true || data.hasPurchase === true)
+          }
+        }
+      } catch {
+        setPaid(false)
+      }
+      setInCart(hasItem(PRODUCT.id))
+      setVideoUrl(DEMO_VIDEO)
+      setLoading(false)
+    }
+
+    checkAccess()
   }, [authLoading, firebaseUser, router])
 
   function handleAddToCart() {
-    addToCart(PRODUCT, 1)
+    addToCart({ ...PRODUCT, videoId: backendVideoId ?? undefined }, 1)
     setInCart(true)
     router.push('/carrito')
   }
@@ -297,7 +317,7 @@ export default function VerPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-white/40 uppercase tracking-wide">Sesión activa</p>
-                  <p className="text-sm text-white font-medium truncate max-w-full">{user.email}</p>
+                  <p className="text-sm text-white font-medium truncate max-w-full">{displayEmail}</p>
                 </div>
               </div>
               {paid ? (
