@@ -43,21 +43,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser)
       if (fbUser) {
+        document.cookie = `__tauren_session=${fbUser.uid}; path=/; max-age=86400; SameSite=Strict`
         try {
           const res = await fetchAuth('/auth/profile')
           if (res.ok) {
             const data: UserProfile = await res.json()
             setProfile(data)
             const name = encodeURIComponent(`${data.firstName} ${data.lastName}`)
-            document.cookie = `__tauren_session=${fbUser.uid}; path=/; max-age=86400; SameSite=Strict`
             document.cookie = `__tauren_name=${name}; path=/; max-age=86400; SameSite=Strict`
           } else {
             setProfile(null)
-            clearSessionCookies()
+            document.cookie = '__tauren_name=; path=/; max-age=0'
           }
         } catch {
           setProfile(null)
-          clearSessionCookies()
+          document.cookie = '__tauren_name=; path=/; max-age=0'
         }
       } else {
         setProfile(null)
