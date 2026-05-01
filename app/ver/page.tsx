@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LogOut, BookOpen, Clock, Award, Shield, ChevronRight, FlaskConical, ShoppingCart, Lock, User, Microscope } from 'lucide-react'
+import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User } from 'lucide-react'
 import SecureVideoPlayer from '@/components/SecureVideoPlayer'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
@@ -39,12 +39,10 @@ const PONENTES = [
 ]
 
 const MODULOS = [
-  { titulo: 'Apertura: Errores Innatos de la Inmunidad — Generalidades', duracion: '20 min', activo: true },
-  { titulo: 'Inmunodeficiencias Primarias: Diagnóstico Temprano', duracion: '25 min', activo: false },
-  { titulo: 'Manifestaciones Clínicas y Abordaje Diagnóstico', duracion: '30 min', activo: false },
-  { titulo: 'Casos Clínicos: Presentaciones Complejas', duracion: '28 min', activo: false },
-  { titulo: 'Terapias Actuales y Perspectivas Futuras', duracion: '22 min', activo: false },
-  { titulo: 'Panel de Expertos y Cierre', duracion: '15 min', activo: false },
+  { titulo: 'Apertura: Errores Innatos de la Inmunidad', duracion: '20 min' },
+  { titulo: 'Inmunodeficiencias Primarias: Diagnóstico Temprano', duracion: '25 min' },
+  { titulo: 'Manifestaciones Clínicas y Abordaje Diagnóstico', duracion: '30 min' },
+  { titulo: 'Casos Clínicos: Presentaciones Complejas', duracion: '28 min' },
 ]
 
 export default function VerPage() {
@@ -56,6 +54,7 @@ export default function VerPage() {
   const [paid, setPaid] = useState(false)
   const [inCart, setInCart] = useState(false)
   const [backendVideoId, setBackendVideoId] = useState<string | null>(null)
+  const [activeModulo, setActiveModulo] = useState(0)
 
   useEffect(() => {
     if (authLoading) return
@@ -271,15 +270,15 @@ export default function VerPage() {
                   {MODULOS.map((m, i) => (
                     <div key={m.titulo}
                       className="flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border transition-colors"
-                      style={m.activo
+                      style={activeModulo === i && paid
                         ? { borderColor: 'rgba(18,180,198,0.4)', background: 'rgba(18,180,198,0.1)' }
                         : { borderColor: 'rgba(18,180,198,0.08)', background: 'rgba(14,32,53,0.5)' }}>
                       <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 text-white"
-                        style={m.activo ? { background: 'var(--scai-teal)' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
+                        style={activeModulo === i && paid ? { background: 'var(--scai-teal)' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
                         {i + 1}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-xs sm:text-sm font-medium leading-snug ${m.activo ? 'text-white' : 'text-white/55'}`}>
+                        <p className={`text-xs sm:text-sm font-medium leading-snug ${activeModulo === i && paid ? 'text-white' : 'text-white/55'}`}>
                           {m.titulo}
                         </p>
                       </div>
@@ -322,23 +321,57 @@ export default function VerPage() {
               )}
             </div>
 
-            <div className="rounded-2xl p-4 sm:p-5 border space-y-3"
+            <div className="rounded-2xl border overflow-hidden"
               style={{ background: 'rgba(14,32,53,0.9)', borderColor: 'rgba(18,180,198,0.12)' }}>
-              <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wide">Tu acceso incluye</h3>
-              {[
-                { icon: Microscope, label: 'Grabación completa HD' },
-                { icon: Award, label: 'Acreditación CONACEM' },
-                { icon: BookOpen, label: '4 módulos · 16 expositores' },
-                { icon: Shield, label: 'Protección anticopia activa' },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-3 text-sm text-white/50">
-                  <div className="h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'rgba(18,180,198,0.1)' }}>
-                    <Icon size={13} style={{ color: 'var(--scai-teal)' }} />
-                  </div>
-                  <span className="leading-snug">{label}</span>
-                </div>
-              ))}
+              <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+                <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wide">Módulos</h3>
+                <span className="text-xs text-white/25">{MODULOS.length} módulos</span>
+              </div>
+              <div className="divide-y" style={{ borderColor: 'rgba(18,180,198,0.08)' }}>
+                {MODULOS.map((m, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => { if (paid) setActiveModulo(i) }}
+                    className={`w-full text-left flex items-center gap-3 px-4 py-3 transition-colors ${
+                      paid ? 'cursor-pointer hover:bg-white/5' : 'cursor-default'
+                    } ${activeModulo === i && paid ? '' : ''}`}
+                    style={activeModulo === i && paid
+                      ? { background: 'rgba(18,180,198,0.12)' }
+                      : {}}
+                  >
+                    <div
+                      className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                      style={activeModulo === i && paid
+                        ? { background: 'var(--scai-teal)', color: '#fff' }
+                        : paid
+                          ? { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }
+                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)' }}
+                    >
+                      {i + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs leading-snug line-clamp-2 ${
+                        activeModulo === i && paid ? 'text-white font-semibold' : paid ? 'text-white/60' : 'text-white/25'
+                      }`}>
+                        {m.titulo}
+                      </p>
+                      <p className="text-[10px] mt-0.5 flex items-center gap-1"
+                        style={{ color: activeModulo === i && paid ? 'var(--scai-teal)' : 'rgba(255,255,255,0.2)' }}>
+                        <Clock size={9} />
+                        {m.duracion}
+                      </p>
+                    </div>
+                    {activeModulo === i && paid && (
+                      <div className="h-1.5 w-1.5 rounded-full flex-shrink-0 animate-pulse"
+                        style={{ background: 'var(--scai-teal)' }} />
+                    )}
+                    {!paid && (
+                      <Lock size={11} className="flex-shrink-0 text-white/15" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="rounded-2xl p-4 sm:p-5 border"
