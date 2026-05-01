@@ -97,7 +97,7 @@ export default function VerPage() {
 
   const displayEmail = profile?.email ?? firebaseUser?.email ?? ''
 
-  if (authLoading || loading || !firebaseUser) {
+  if (loading || (!firebaseUser && !authLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center"
         style={{ background: 'linear-gradient(160deg, #0B1928 0%, #0E2035 100%)' }}>

@@ -25,12 +25,37 @@ type AuthContextValue = {
   loading: boolean
   logout: () => Promise<void>
   setProfile: (p: UserProfile | null) => void
+  cacheProfile: (uid: string, p: UserProfile) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+const CACHE_KEY = '__tauren_profile_v1'
+const CACHE_TTL = 45 * 60 * 1000
+
+export function cacheProfileToStorage(uid: string, profile: UserProfile) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ uid, profile, ts: Date.now() }))
+  } catch {}
+}
+
+function loadProfileFromStorage(uid: string): UserProfile | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (parsed.uid !== uid) return null
+    if (Date.now() - parsed.ts > CACHE_TTL) return null
+    return parsed.profile
+  } catch { return null }
+}
+
+function clearProfileStorage() {
+  try { localStorage.removeItem(CACHE_KEY) } catch {}
+}
+
 function cookieFlags() {
-  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+  const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : ''
   return `path=/; max-age=86400; SameSite=Lax${secure}`
 }
 
@@ -51,27 +76,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+    const unsub = onAuthStateChanged(auth, (fbUser) => {
       setFirebaseUser(fbUser)
 
       if (fbUser) {
         document.cookie = `__tauren_session=${fbUser.uid}; ${cookieFlags()}`
 
-        try {
-          const res = await fetchAuth('/auth/profile')
-          if (res.ok) {
-            const data: UserProfile = await res.json()
-            setProfile(data)
-            document.cookie = `__tauren_name=${encodeURIComponent(`${data.firstName} ${data.lastName}`)}; ${cookieFlags()}`
-          }
-        } catch {
+        const cached = loadProfileFromStorage(fbUser.uid)
+        if (cached) {
+          setProfile(cached)
+          document.cookie = `__tauren_name=${encodeURIComponent(`${cached.firstName} ${cached.lastName}`)}; ${cookieFlags()}`
         }
+
+        setLoading(false)
+
+        fetchAuth('/auth/profile')
+          .then(r => (r.ok ? r.json() : null))
+          .then(data => {
+            if (!data) return
+            setProfile(data)
+            cacheProfileToStorage(fbUser.uid, data)
+            document.cookie = `__tauren_name=${encodeURIComponent(`${data.firstName} ${data.lastName}`)}; ${cookieFlags()}`
+          })
+          .catch(() => {})
       } else {
         setProfile(null)
         clearSessionCookies()
+        clearProfileStorage()
+        setLoading(false)
       }
-
-      setLoading(false)
     })
 
     return unsub
@@ -81,10 +114,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (auth) await signOut(auth)
     setProfile(null)
     clearSessionCookies()
+    clearProfileStorage()
+  }
+
+  function cacheProfile(uid: string, p: UserProfile) {
+    setProfile(p)
+    cacheProfileToStorage(uid, p)
+    document.cookie = `__tauren_name=${encodeURIComponent(`${p.firstName} ${p.lastName}`)}; ${cookieFlags()}`
   }
 
   return (
-    <AuthContext.Provider value={{ firebaseUser, profile, loading, logout, setProfile }}>
+    <AuthContext.Provider value={{ firebaseUser, profile, loading, logout, setProfile, cacheProfile }}>
       {children}
     </AuthContext.Provider>
   )

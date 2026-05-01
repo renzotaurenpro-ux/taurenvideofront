@@ -8,7 +8,7 @@ import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { useAuth } from '@/lib/authContext'
+import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
 
 const API_BASE = '/api/proxy'
 
@@ -42,7 +42,12 @@ export default function LoginPage() {
         body: JSON.stringify({ idToken }),
       })
         .then(r => (r.ok ? r.json() : null))
-        .then(data => { if (data) setProfile(data.user ?? data) })
+        .then(data => {
+          if (!data) return
+          const p = data.user ?? data
+          setProfile(p)
+          cacheProfileToStorage(credential.user.uid, p)
+        })
         .catch(() => {})
 
       router.push('/ver')

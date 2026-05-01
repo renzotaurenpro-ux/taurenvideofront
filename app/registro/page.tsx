@@ -8,7 +8,7 @@ import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { useAuth } from '@/lib/authContext'
+import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
 
 type FormState = {
   email: string
@@ -88,7 +88,12 @@ export default function RegistroPage() {
         body: JSON.stringify({ idToken }),
       })
         .then(r => (r.ok ? r.json() : null))
-        .then(d => { if (d) setProfile(d.user ?? d) })
+        .then(d => {
+          if (!d) return
+          const p = d.user ?? d
+          setProfile(p)
+          cacheProfileToStorage(credential.user.uid, p)
+        })
         .catch(() => {})
 
       setOk(true)
