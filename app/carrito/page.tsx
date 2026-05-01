@@ -14,7 +14,7 @@ import { fetchPublishedVideos, type BackendVideo } from '@/lib/videos'
 const PRECIO_NETO = 25000
 const PRECIO_IVA = Math.round(PRECIO_NETO * 0.19)
 const PRECIO_TOTAL = PRECIO_NETO + PRECIO_IVA
-const IS_SANDBOX = process.env.NODE_ENV !== 'production'
+const IS_SANDBOX = process.env.NEXT_PUBLIC_MP_MODE !== 'production'
 
 function formatCLP(n: number) {
   return '$' + n.toLocaleString('es-CL')
