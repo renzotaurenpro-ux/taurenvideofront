@@ -8,11 +8,11 @@ interface Props {
 
 export default function SecureVideoPlayer({ videoUrl }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const isVimeo = /vimeo\.com/i.test(videoUrl)
+  const isIframe = /vimeo\.com|mediadelivery\.net|iframe\./i.test(videoUrl)
 
   useEffect(() => {
     const video = videoRef.current
-    if (!videoUrl || isVimeo) return
+    if (!videoUrl || isIframe) return
     if (!video) return
 
     let cleanup: (() => void) | undefined
@@ -33,16 +33,16 @@ export default function SecureVideoPlayer({ videoUrl }: Props) {
     }
 
     return () => cleanup?.()
-  }, [videoUrl, isVimeo])
+  }, [videoUrl, isIframe])
 
   return (
     <div className="relative select-none w-full">
       <div className="relative bg-black rounded-2xl overflow-hidden w-full" style={{ aspectRatio: '16/9' }}>
-        {isVimeo ? (
+        {isIframe ? (
           <iframe
             src={videoUrl}
             className="absolute inset-0 h-full w-full"
-            allow="autoplay; fullscreen; picture-in-picture"
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
             allowFullScreen
           />
         ) : (

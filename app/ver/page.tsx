@@ -10,7 +10,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
-import { fetchPublishedVideos } from '@/lib/videos'
+import { fetchPublishedVideos, fetchVideoById } from '@/lib/videos'
 
 const DEMO_VIDEO = 'https://player.vimeo.com/video/76979871?h=8272103f6e&title=0&byline=0&portrait=0&autoplay=0&muted=0&loop=0'
 const PRODUCT = {
@@ -70,14 +70,25 @@ export default function VerPage() {
           const res = await fetchAuth(`/purchases/check/${video.id}`)
           if (res.ok) {
             const data = await res.json()
-            setPaid(data.purchased === true || data.hasPurchase === true)
+            const hasPurchased = data.purchased === true || data.hasPurchase === true
+            setPaid(hasPurchased)
+            if (hasPurchased) {
+              const full = await fetchVideoById(video.id)
+              setVideoUrl(full?.url ?? DEMO_VIDEO)
+            } else {
+              setVideoUrl(DEMO_VIDEO)
+            }
+          } else {
+            setVideoUrl(DEMO_VIDEO)
           }
+        } else {
+          setVideoUrl(DEMO_VIDEO)
         }
       } catch {
         setPaid(false)
+        setVideoUrl(DEMO_VIDEO)
       }
       setInCart(hasItem(PRODUCT.id))
-      setVideoUrl(DEMO_VIDEO)
       setLoading(false)
     }
 

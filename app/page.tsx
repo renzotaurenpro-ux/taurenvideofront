@@ -183,7 +183,7 @@ export default function Home() {
               Registrarme
             </Link>
             <Link
-              href="/carrito"
+              href="/registro"
               className="inline-flex items-center gap-2 rounded-full px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-85"
               style={{ background: 'var(--scai-teal)' }}
             >
@@ -233,7 +233,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col gap-3">
               <Link
-                href="/carrito"
+                href="/registro"
                 className="self-start inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-80"
                 style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 32px rgba(18,180,198,0.32)' }}
               >
