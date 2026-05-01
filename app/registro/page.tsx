@@ -79,6 +79,8 @@ export default function RegistroPage() {
       const credential = await signInWithEmailAndPassword(auth, form.email, form.password)
       const idToken = await credential.user.getIdToken()
 
+      document.cookie = `__tauren_session=${credential.user.uid}; path=/; max-age=86400; SameSite=Strict`
+
       const loginRes = await fetch(`${apiBase}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

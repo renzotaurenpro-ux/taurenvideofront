@@ -33,6 +33,8 @@ export default function LoginPage() {
       const credential = await signInWithEmailAndPassword(auth, email, password)
       const idToken = await credential.user.getIdToken()
 
+      document.cookie = `__tauren_session=${credential.user.uid}; path=/; max-age=86400; SameSite=Strict`
+
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
