@@ -111,32 +111,7 @@ export default function VerPage() {
 
   return (
     <div className="min-h-screen text-white flex flex-col" style={{ background: 'linear-gradient(160deg, #0B1928 0%, #0E2035 100%)' }}>
-      <nav className="sticky top-0 z-40 border-b backdrop-blur flex items-center justify-between px-4 sm:px-6 py-3 flex-shrink-0"
-        style={{ background: 'rgba(11,25,40,0.95)', borderColor: 'rgba(18,180,198,0.15)' }}>
-        <Link href="/" className="flex items-center gap-2 min-w-0">
-          <Image src={ScaiLogo} alt="SCAI" priority className="h-7 w-auto sm:h-8" />
-        </Link>
-
-        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-          <div className="flex items-center gap-2 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs text-white/50 min-w-0"
-            style={{ background: 'rgba(18,180,198,0.08)', border: '1px solid rgba(18,180,198,0.15)' }}>
-            <div className="h-5 w-5 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 text-white"
-              style={{ background: 'var(--scai-teal)' }}>
-              {displayEmail[0]?.toUpperCase() ?? '?'}
-            </div>
-            <span className="hidden sm:block truncate max-w-[140px]">{displayEmail}</span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 text-white/30 hover:text-white/70 text-xs transition-colors px-2 py-1.5 rounded-lg hover:bg-white/5 flex-shrink-0"
-          >
-            <LogOut size={14} />
-            <span className="hidden sm:block">Salir</span>
-          </button>
-        </div>
-      </nav>
-
-      <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-8">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-8 pt-10">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5 lg:gap-6">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 mb-3 text-xs text-white/30 uppercase tracking-wider overflow-hidden">

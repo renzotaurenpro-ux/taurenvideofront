@@ -169,7 +169,7 @@ export default function Home() {
 
       <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b border-border bg-background/85 dark:border-white/5 dark:bg-[rgba(11,25,40,0.85)]">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-3.5 flex items-center justify-between">
-          <Image src={ScaiLogo} alt="SCAI" priority className="h-7 w-auto" />
+          <Image src={ScaiLogo} alt="SCAI" priority className="h-11 sm:h-12 w-auto" />
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Link href="/login" className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground dark:text-white/50 dark:hover:text-white/80 px-2 transition-colors">
