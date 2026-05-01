@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, User, Lock, LogOut, CheckCircle2, Loader2, Shield, Building2, Phone, MapPin } from 'lucide-react'
@@ -12,9 +12,14 @@ import { auth } from '@/lib/firebase'
 type Tab = 'perfil' | 'seguridad' | 'cuenta'
 
 export default function AjustesPage() {
-  const { firebaseUser, profile, logout } = useAuth()
+  const { firebaseUser, loading: authLoading, profile, logout } = useAuth()
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('perfil')
+
+  useEffect(() => {
+    if (authLoading) return
+    if (!firebaseUser) router.push('/login')
+  }, [authLoading, firebaseUser, router])
 
   const [profileForm, setProfileForm] = useState({
     firstName: profile?.firstName ?? '',

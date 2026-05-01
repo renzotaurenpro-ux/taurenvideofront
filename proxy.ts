@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const PROTECTED_PREFIXES = ['/ver', '/carrito', '/payment', '/admin', '/ajustes']
 const AUTH_ONLY_PATHS = ['/', '/login', '/registro']
 const API_PROXY_PREFIX = '/api/proxy/'
 const BACKEND_URL = process.env.API_BASE_URL ?? 'http://localhost:3001'
@@ -22,19 +21,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.rewrite(url)
   }
 
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))
-  if (!isProtected) return NextResponse.next()
-
-  if (!session?.value) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('from', pathname)
-    return NextResponse.redirect(loginUrl)
-  }
-
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/', '/login', '/registro', '/api/proxy/:path*', '/ver/:path*', '/carrito/:path*', '/payment/:path*', '/admin/:path*', '/ajustes/:path*', '/ajustes'],
+  matcher: ['/', '/login', '/registro', '/api/proxy/:path*'],
 }
-
