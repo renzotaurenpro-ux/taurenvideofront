@@ -69,9 +69,9 @@ export default function CarritoPage() {
     <main className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3.5">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <Link href="/ver" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft size={15} />
-            <span className="hidden sm:inline">Volver al inicio</span>
+            <span className="hidden sm:inline">Volver al video</span>
             <span className="sm:hidden">Volver</span>
           </Link>
           <Image src={ScaiLogo} alt="SCAI" priority className="h-7 w-auto" />
@@ -107,9 +107,9 @@ export default function CarritoPage() {
               </div>
               <p className="text-base sm:text-lg font-bold">Sin videos disponibles</p>
               <p className="text-sm text-muted-foreground mt-2">Vuelve pronto para ver el contenido disponible.</p>
-              <Link href="/" className="mt-5 inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold border"
+              <Link href="/ver" className="mt-5 inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold border"
                 style={{ borderColor: 'rgba(18,180,198,0.2)' }}>
-                Volver al inicio
+                Volver al video
               </Link>
             </div>
           ) : (

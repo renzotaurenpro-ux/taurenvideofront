@@ -1,5 +1,5 @@
-import { initializeApp, getApps, getApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app'
+import { getAuth, Auth } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,22 +10,20 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-function hasValidFirebaseConfig() {
-  return Boolean(
-    firebaseConfig.apiKey &&
-      firebaseConfig.authDomain &&
-      firebaseConfig.projectId &&
-      firebaseConfig.appId
-  )
+function isClient() {
+  return typeof window !== 'undefined'
 }
 
-const isBrowser = typeof window !== 'undefined'
+function hasConfig() {
+  return Boolean(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId)
+}
 
-const app =
-  isBrowser && hasValidFirebaseConfig()
-    ? getApps().length === 0
-      ? initializeApp(firebaseConfig)
-      : getApp()
-    : null
+let _auth: Auth | null = null
 
-export const auth = app ? getAuth(app) : (null as any)
+if (isClient() && hasConfig()) {
+  const app: FirebaseApp =
+    getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
+  _auth = getAuth(app)
+}
+
+export const auth: Auth = _auth as Auth

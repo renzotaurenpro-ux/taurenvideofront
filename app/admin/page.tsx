@@ -148,9 +148,9 @@ export default function AdminPage() {
       <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 sm:py-14">
         <div className="flex items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3 min-w-0">
-            <Link href="/" className="inline-flex items-center gap-2 text-white/40 hover:text-white/70 transition-colors flex-shrink-0">
+            <Link href="/ver" className="inline-flex items-center gap-2 text-white/40 hover:text-white/70 transition-colors flex-shrink-0">
               <ArrowLeft size={16} />
-              <span className="text-sm">Inicio</span>
+              <span className="text-sm">Video</span>
             </Link>
             <div className="h-4 w-px bg-white/10" />
             <div className="flex items-center gap-2 min-w-0">

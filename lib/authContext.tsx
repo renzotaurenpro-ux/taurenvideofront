@@ -29,9 +29,15 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+function cookieFlags() {
+  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+  return `path=/; max-age=86400; SameSite=Lax${secure}`
+}
+
 function clearSessionCookies() {
-  document.cookie = '__tauren_session=; path=/; max-age=0'
-  document.cookie = '__tauren_name=; path=/; max-age=0'
+  const flags = `path=/; max-age=0; SameSite=Lax`
+  document.cookie = `__tauren_session=; ${flags}`
+  document.cookie = `__tauren_name=; ${flags}`
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -40,36 +46,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!auth) {
+      setLoading(false)
+      return
+    }
+
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser)
+
       if (fbUser) {
-        document.cookie = `__tauren_session=${fbUser.uid}; path=/; max-age=86400; SameSite=Strict`
+        document.cookie = `__tauren_session=${fbUser.uid}; ${cookieFlags()}`
+
         try {
           const res = await fetchAuth('/auth/profile')
           if (res.ok) {
             const data: UserProfile = await res.json()
             setProfile(data)
-            const name = encodeURIComponent(`${data.firstName} ${data.lastName}`)
-            document.cookie = `__tauren_name=${name}; path=/; max-age=86400; SameSite=Strict`
-          } else {
-            setProfile(null)
-            document.cookie = '__tauren_name=; path=/; max-age=0'
+            document.cookie = `__tauren_name=${encodeURIComponent(`${data.firstName} ${data.lastName}`)}; ${cookieFlags()}`
           }
         } catch {
-          setProfile(null)
-          document.cookie = '__tauren_name=; path=/; max-age=0'
         }
       } else {
         setProfile(null)
         clearSessionCookies()
       }
+
       setLoading(false)
     })
+
     return unsub
   }, [])
 
   async function logout() {
-    await signOut(auth)
+    if (auth) await signOut(auth)
     setProfile(null)
     clearSessionCookies()
   }

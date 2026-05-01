@@ -15,7 +15,7 @@ function FailureContent() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12"
       style={{ background: 'linear-gradient(160deg, #0B1928 0%, #0E2035 60%, #0B2240 100%)' }}>
       <div className="w-full max-w-md text-center">
-        <Link href="/" className="inline-flex justify-center mb-6">
+        <Link href="/ver" className="inline-flex justify-center mb-6">
           <Image src={ScaiLogo} alt="SCAI" priority className="h-9 w-auto" />
         </Link>
 
@@ -43,12 +43,12 @@ function FailureContent() {
               Intentar nuevamente
             </Link>
             <Link
-              href="/"
+              href="/ver"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold border text-white/60 hover:text-white"
               style={{ borderColor: 'rgba(255,255,255,0.1)' }}
             >
               <ArrowLeft size={15} />
-              Volver al inicio
+              Volver al video
             </Link>
           </div>
         </div>

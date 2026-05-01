@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const PROTECTED_PREFIXES = ['/ver', '/carrito', '/payment', '/admin']
+const PROTECTED_PREFIXES = ['/ver', '/carrito', '/payment', '/admin', '/ajustes']
+const AUTH_ONLY_PATHS = ['/', '/login', '/registro']
 const API_PROXY_PREFIX = '/api/proxy/'
 const BACKEND_URL = process.env.API_BASE_URL ?? 'http://localhost:3001'
 
@@ -9,7 +10,7 @@ export function proxy(request: NextRequest) {
 
   const session = request.cookies.get('__tauren_session')
 
-  if (pathname === '/' && session?.value) {
+  if (AUTH_ONLY_PATHS.includes(pathname) && session?.value) {
     return NextResponse.redirect(new URL('/ver', request.url))
   }
 
@@ -34,6 +35,6 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/api/proxy/:path*', '/ver/:path*', '/carrito/:path*', '/payment/:path*', '/admin/:path*'],
+  matcher: ['/', '/login', '/registro', '/api/proxy/:path*', '/ver/:path*', '/carrito/:path*', '/payment/:path*', '/admin/:path*', '/ajustes/:path*', '/ajustes'],
 }
 

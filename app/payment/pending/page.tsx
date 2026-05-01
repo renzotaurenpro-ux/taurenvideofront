@@ -15,7 +15,7 @@ function PendingContent() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12"
       style={{ background: 'linear-gradient(160deg, #0B1928 0%, #0E2035 60%, #0B2240 100%)' }}>
       <div className="w-full max-w-md text-center">
-        <Link href="/" className="inline-flex justify-center mb-6">
+        <Link href="/ver" className="inline-flex justify-center mb-6">
           <Image src={ScaiLogo} alt="SCAI" priority className="h-9 w-auto" />
         </Link>
 

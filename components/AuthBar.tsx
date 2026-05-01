@@ -1,12 +1,14 @@
 'use client'
 
 import { useAuth } from '@/lib/authContext'
-import { useRouter } from 'next/navigation'
-import { LogOut, UserCircle2 } from 'lucide-react'
+import { useRouter, usePathname } from 'next/navigation'
+import { LogOut, UserCircle2, Settings } from 'lucide-react'
+import Link from 'next/link'
 
 export default function AuthBar() {
   const { firebaseUser, profile, loading, logout } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   if (loading || !firebaseUser) return null
 
@@ -54,6 +56,15 @@ export default function AuthBar() {
           <UserCircle2 size={10} />
           Sesión activa
         </span>
+        <Link
+          href="/ajustes"
+          className="flex items-center gap-1 transition-colors"
+          style={{ color: pathname === '/ajustes' ? 'var(--scai-teal)' : 'rgba(255,255,255,0.3)' }}
+          title="Ajustes"
+        >
+          <Settings size={13} className={pathname === '/ajustes' ? 'rotate-45' : ''} style={{ transition: 'transform 0.3s' }} />
+          <span className="hidden sm:inline text-[11px]">Ajustes</span>
+        </Link>
         <button
           onClick={handleLogout}
           className="flex items-center gap-1 text-white/30 hover:text-white/70 transition-colors"

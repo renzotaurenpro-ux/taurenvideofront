@@ -33,20 +33,18 @@ export default function LoginPage() {
       const credential = await signInWithEmailAndPassword(auth, email, password)
       const idToken = await credential.user.getIdToken()
 
-      document.cookie = `__tauren_session=${credential.user.uid}; path=/; max-age=86400; SameSite=Strict`
+      const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+      document.cookie = `__tauren_session=${credential.user.uid}; path=/; max-age=86400; SameSite=Lax${secure}`
 
-      const res = await fetch(`${API_BASE}/auth/login`, {
+      fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
       })
+        .then(r => (r.ok ? r.json() : null))
+        .then(data => { if (data) setProfile(data.user ?? data) })
+        .catch(() => {})
 
-      const data = await res.json().catch(() => null)
-      if (!res.ok) {
-        throw new Error(data?.message || 'Error al verificar sesión')
-      }
-
-      setProfile(data.user ?? data)
       router.push('/ver')
     } catch (err: any) {
       const code = err?.code ?? ''
@@ -54,6 +52,8 @@ export default function LoginPage() {
         setError('Correo o contraseña incorrectos')
       } else if (code === 'auth/too-many-requests') {
         setError('Demasiados intentos. Intenta más tarde')
+      } else if (code.startsWith('auth/')) {
+        setError('Error de autenticación. Intenta de nuevo')
       } else {
         setError(err?.message || 'Error al iniciar sesión')
       }

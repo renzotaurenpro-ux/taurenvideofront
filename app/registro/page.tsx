@@ -79,20 +79,20 @@ export default function RegistroPage() {
       const credential = await signInWithEmailAndPassword(auth, form.email, form.password)
       const idToken = await credential.user.getIdToken()
 
-      document.cookie = `__tauren_session=${credential.user.uid}; path=/; max-age=86400; SameSite=Strict`
+      const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+      document.cookie = `__tauren_session=${credential.user.uid}; path=/; max-age=86400; SameSite=Lax${secure}`
 
-      const loginRes = await fetch(`${apiBase}/auth/login`, {
+      fetch(`${apiBase}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
       })
-      const loginData = await loginRes.json().catch(() => null)
-      if (loginRes.ok) {
-        setProfile(loginData.user ?? loginData)
-      }
+        .then(r => (r.ok ? r.json() : null))
+        .then(d => { if (d) setProfile(d.user ?? d) })
+        .catch(() => {})
 
       setOk(true)
-      setTimeout(() => router.push('/ver'), 450)
+      setTimeout(() => router.push('/ver'), 300)
     } catch (err: any) {
       const code = err?.code ?? ''
       if (code === 'auth/email-already-in-use') {
