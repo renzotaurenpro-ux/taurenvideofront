@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User } from 'lucide-react'
+import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User, X } from 'lucide-react'
 import SecureVideoPlayer from '@/components/SecureVideoPlayer'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
@@ -45,6 +45,16 @@ const MODULOS = [
   { titulo: 'Casos Clínicos: Presentaciones Complejas', duracion: '28 min' },
 ]
 
+const TEST = [
+  { q: '¿Qué significa EII en el contexto de estas jornadas?', opts: ['Errores Innatos de la Inmunidad', 'Enfermedad Infecciosa Intestinal', 'Evolución Inmunológica Inicial', 'Examen Inmunológico Integral'], correct: 0 },
+  { q: '¿Cuántos módulos componen el evento?', opts: ['2', '3', '4', '6'], correct: 2 },
+  { q: '¿Qué acreditación se menciona?', opts: ['MINSAL', 'CONACEM', 'OMS', 'COLMED'], correct: 1 },
+  { q: '¿La grabación está disponible en qué modalidad?', opts: ['Presencial', 'Online', 'Híbrida', 'Solo audio'], correct: 1 },
+  { q: '¿Cuál es el objetivo principal del contenido?', opts: ['Entretenimiento', 'Actualización médica', 'Publicidad', 'Networking'], correct: 1 },
+  { q: '¿Qué enfoque se menciona para el diagnóstico?', opts: ['Citometría de flujo y genética', 'Radiografías', 'Electrocardiograma', 'Endoscopía'], correct: 0 },
+  { q: '¿El acceso es por?', opts: ['Suscripción mensual', 'Pago único', 'Gratis', 'Donación'], correct: 1 },
+] as const
+
 export default function VerPage() {
   const router = useRouter()
   const { firebaseUser, profile, loading: authLoading, logout } = useAuth()
@@ -55,6 +65,10 @@ export default function VerPage() {
   const [inCart, setInCart] = useState(false)
   const [backendVideoId, setBackendVideoId] = useState<string | null>(null)
   const [activeModulo, setActiveModulo] = useState(0)
+  const [testOpen, setTestOpen] = useState(false)
+  const [answers, setAnswers] = useState<number[]>(Array(TEST.length).fill(-1))
+  const [testResult, setTestResult] = useState<{ score: number; passed: boolean } | null>(null)
+  const [certUnlocked, setCertUnlocked] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -382,10 +396,26 @@ export default function VerPage() {
             </div>
 
             <button className="w-full flex items-center justify-center gap-2 border text-white/60 hover:text-white text-sm font-medium py-3 rounded-xl transition-all active:scale-95"
+              onClick={() => { setTestOpen(true); setTestResult(null) }}
               style={{ background: 'rgba(18,180,198,0.08)', borderColor: 'rgba(18,180,198,0.2)' }}>
               <Award size={15} />
-              Descargar certificado
+              Realizar test
             </button>
+
+            <a
+              href={certUnlocked ? '/certificado' : undefined}
+              onClick={(e) => { if (!certUnlocked) e.preventDefault() }}
+              className={`w-full flex items-center justify-center gap-2 border text-sm font-medium py-3 rounded-xl transition-all active:scale-95 ${
+                certUnlocked ? 'text-white hover:text-white' : 'text-white/25 cursor-not-allowed'
+              }`}
+              style={{
+                background: certUnlocked ? 'rgba(18,180,198,0.16)' : 'rgba(255,255,255,0.03)',
+                borderColor: certUnlocked ? 'rgba(18,180,198,0.35)' : 'rgba(255,255,255,0.08)',
+              }}
+            >
+              <Award size={15} style={{ color: certUnlocked ? 'var(--scai-teal)' : 'rgba(255,255,255,0.25)' }} />
+              Descargar certificado
+            </a>
 
             <div className="rounded-2xl p-4 border" style={{ background: 'rgba(14,32,53,0.6)', borderColor: 'rgba(18,180,198,0.08)' }}>
               <p className="text-xs text-white/20 leading-relaxed text-center">
@@ -395,6 +425,79 @@ export default function VerPage() {
           </aside>
         </div>
       </main>
+
+      {testOpen && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+          <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.55)' }} onClick={() => setTestOpen(false)} />
+          <div className="relative w-full max-w-2xl rounded-2xl border overflow-hidden"
+            style={{ background: 'rgba(14,32,53,0.98)', borderColor: 'rgba(18,180,198,0.22)' }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b"
+              style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+              <div>
+                <p className="text-xs text-white/40 uppercase tracking-wide">Evaluación</p>
+                <p className="text-white font-semibold">Test rápido (7 preguntas)</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTestOpen(false)}
+                className="h-9 w-9 rounded-xl border flex items-center justify-center text-white/60 hover:text-white"
+                style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="max-h-[70vh] overflow-auto px-5 py-4 space-y-4">
+              {TEST.map((t, i) => (
+                <div key={i} className="rounded-2xl border p-4"
+                  style={{ borderColor: 'rgba(18,180,198,0.12)', background: 'rgba(18,180,198,0.05)' }}>
+                  <p className="text-white font-semibold text-sm leading-snug">{i + 1}. {t.q}</p>
+                  <div className="mt-3 grid sm:grid-cols-2 gap-2">
+                    {t.opts.map((opt, j) => {
+                      const active = answers[i] === j
+                      return (
+                        <button
+                          key={j}
+                          type="button"
+                          onClick={() => setAnswers(a => { const n = [...a]; n[i] = j; return n })}
+                          className="text-left rounded-xl border px-3.5 py-2.5 text-sm transition-colors"
+                          style={active
+                            ? { borderColor: 'rgba(18,180,198,0.6)', background: 'rgba(18,180,198,0.12)', color: '#fff' }
+                            : { borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.65)' }}
+                        >
+                          {opt}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="px-5 py-4 border-t flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between"
+              style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+              <div className="text-xs text-white/35">
+                {testResult
+                  ? <span>Resultado: <span style={{ color: testResult.passed ? '#4ade80' : '#fbbf24' }}>{testResult.score}/7</span></span>
+                  : <span>Selecciona tus respuestas y presiona validar.</span>}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const score = answers.reduce((acc, v, i) => acc + (v === TEST[i].correct ? 1 : 0), 0)
+                  const passed = score >= 5
+                  setTestResult({ score, passed })
+                  if (passed) setCertUnlocked(true)
+                }}
+                className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white"
+                style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 24px rgba(18,180,198,0.25)' }}
+              >
+                Validar test
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
