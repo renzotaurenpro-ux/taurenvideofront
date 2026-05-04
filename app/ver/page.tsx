@@ -74,38 +74,39 @@ export default function VerPage() {
     if (authLoading) return
     if (!firebaseUser) { router.push('/login'); return }
 
-    async function checkAccess() {
+    setVideoUrl(DEMO_VIDEO)
+    setLoading(false)
+    setInCart(hasItem(PRODUCT.id))
+
+    const ac = new AbortController()
+    const timeout = setTimeout(() => ac.abort(), 4500)
+
+    ;(async () => {
       try {
         const videos = await fetchPublishedVideos()
         const video = videos[0] ?? null
-        if (video) {
-          setBackendVideoId(video.id)
-          const res = await fetchAuth(`/purchases/check/${video.id}`)
-          if (res.ok) {
-            const data = await res.json()
-            const hasPurchased = data.purchased === true || data.hasPurchase === true
-            setPaid(hasPurchased)
-            if (hasPurchased) {
-              const full = await fetchVideoById(video.id)
-              setVideoUrl(full?.url ?? DEMO_VIDEO)
-            } else {
-              setVideoUrl(DEMO_VIDEO)
-            }
-          } else {
-            setVideoUrl(DEMO_VIDEO)
-          }
-        } else {
-          setVideoUrl(DEMO_VIDEO)
-        }
-      } catch {
-        setPaid(false)
-        setVideoUrl(DEMO_VIDEO)
-      }
-      setInCart(hasItem(PRODUCT.id))
-      setLoading(false)
-    }
+        if (!video) return
 
-    checkAccess()
+        setBackendVideoId(video.id)
+
+        const res = await fetchAuth(`/purchases/check/${video.id}`, { signal: ac.signal })
+        if (!res.ok) return
+
+        const data = await res.json()
+        const hasPurchased = data.purchased === true || data.hasPurchase === true
+        setPaid(hasPurchased)
+        if (!hasPurchased) return
+
+        const full = await fetchVideoById(video.id)
+        if (full?.url) setVideoUrl(full.url)
+      } catch {
+      }
+    })()
+
+    return () => {
+      clearTimeout(timeout)
+      ac.abort()
+    }
   }, [authLoading, firebaseUser, router])
 
   function handleAddToCart() {
