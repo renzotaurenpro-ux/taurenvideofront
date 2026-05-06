@@ -6,10 +6,20 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { XCircle, ArrowLeft, RefreshCw } from 'lucide-react'
 import ScaiLogo from '../../../Logotipo-SCAI.png'
+import { useRequireAuth } from '@/lib/useRequireAuth'
 
 function FailureContent() {
+  const { ready } = useRequireAuth()
   const searchParams = useSearchParams()
   const paymentId = searchParams.get('payment_id')
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0B1928' }}>
+        <div className="h-10 w-10 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--scai-teal)', borderTopColor: 'transparent' }} />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12"

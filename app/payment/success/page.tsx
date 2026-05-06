@@ -9,10 +9,10 @@ import ScaiLogo from '../../../Logotipo-SCAI.png'
 import { clearCart } from '@/lib/cart'
 import { fetchAuth } from '@/lib/api'
 import { fetchPublishedVideos } from '@/lib/videos'
-import { useAuth } from '@/lib/authContext'
+import { useRequireAuth } from '@/lib/useRequireAuth'
 
 function SuccessContent() {
-  const { firebaseUser, loading: authLoading } = useAuth()
+  const { firebaseUser, ready } = useRequireAuth()
   const searchParams = useSearchParams()
   const paymentId = searchParams.get('payment_id')
   const status = searchParams.get('status')
@@ -21,7 +21,7 @@ function SuccessContent() {
   const [purchased, setPurchased] = useState(false)
 
   useEffect(() => {
-    if (authLoading) return
+    if (!ready) return
 
     clearCart()
 
@@ -50,7 +50,7 @@ function SuccessContent() {
     }
 
     verify()
-  }, [authLoading, firebaseUser, paymentId, status])
+  }, [ready, firebaseUser, paymentId, status])
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12"

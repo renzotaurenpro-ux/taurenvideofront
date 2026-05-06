@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User, X } from 'lucide-react'
+import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User, ChevronDown } from 'lucide-react'
 import SecureVideoPlayer from '@/components/SecureVideoPlayer'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
@@ -11,6 +11,8 @@ import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
 import { fetchPublishedVideos, fetchVideoById } from '@/lib/videos'
+import { CERT_PASSED_KEY } from '@/lib/certTest'
+import { fetchMyCertificates } from '@/lib/exams'
 
 const DEMO_VIDEO = 'https://player.vimeo.com/video/76979871?h=8272103f6e&title=0&byline=0&portrait=0&autoplay=0&muted=0&loop=0'
 const PRODUCT = {
@@ -38,26 +40,48 @@ const PONENTES = [
   { nombre: 'Dr. Alonso Hernández', especialidad: 'Medicina Interna', avatar: 'AH' },
 ]
 
-const MODULOS = [
-  { titulo: 'Apertura: Errores Innatos de la Inmunidad', duracion: '20 min' },
-  { titulo: 'Inmunodeficiencias Primarias: Diagnóstico Temprano', duracion: '25 min' },
-  { titulo: 'Manifestaciones Clínicas y Abordaje Diagnóstico', duracion: '30 min' },
-  { titulo: 'Casos Clínicos: Presentaciones Complejas', duracion: '28 min' },
+const MODULOS_DATA = [
+  {
+    titulo: 'Módulo 1 · Errores Innatos de la Inmunidad',
+    videos: [
+      { titulo: 'Apertura y marco conceptual', duracion: '18 min' },
+      { titulo: 'Bases moleculares y fenotípicas', duracion: '22 min' },
+      { titulo: 'Enfoque clínico inicial', duracion: '24 min' },
+      { titulo: 'Mesa de preguntas — bloque 1', duracion: '16 min' },
+    ],
+  },
+  {
+    titulo: 'Módulo 2 · Diagnóstico y laboratorio',
+    videos: [
+      { titulo: 'Inmunodeficiencias primarias: enfoque temprano', duracion: '25 min' },
+      { titulo: 'Citometría de flujo en práctica clínica', duracion: '28 min' },
+      { titulo: 'Genética molecular y utilidad práctica', duracion: '26 min' },
+      { titulo: 'Correlación clínico-laboratorio', duracion: '21 min' },
+    ],
+  },
+  {
+    titulo: 'Módulo 3 · Manifestaciones y abordaje',
+    videos: [
+      { titulo: 'Manifestaciones sistémicas complejas', duracion: '30 min' },
+      { titulo: 'Solapamiento autoinmune y autoinflamación', duracion: '27 min' },
+      { titulo: 'Casos clínicos transversales', duracion: '29 min' },
+      { titulo: 'Estrategias de derivación y seguimiento', duracion: '19 min' },
+    ],
+  },
+  {
+    titulo: 'Módulo 4 · Tratamiento y perspectivas',
+    videos: [
+      { titulo: 'Terapias de reemplazo e inmunomodulación', duracion: '22 min' },
+      { titulo: 'Trasplante y cuidados perioperatorios', duracion: '24 min' },
+      { titulo: 'Terapia génica e innovación', duracion: '23 min' },
+      { titulo: 'Panel de cierre y Q&A final', duracion: '15 min' },
+    ],
+  },
 ]
-
-const TEST = [
-  { q: '¿Qué significa EII en el contexto de estas jornadas?', opts: ['Errores Innatos de la Inmunidad', 'Enfermedad Infecciosa Intestinal', 'Evolución Inmunológica Inicial', 'Examen Inmunológico Integral'], correct: 0 },
-  { q: '¿Cuántos módulos componen el evento?', opts: ['2', '3', '4', '6'], correct: 2 },
-  { q: '¿Qué acreditación se menciona?', opts: ['MINSAL', 'CONACEM', 'OMS', 'COLMED'], correct: 1 },
-  { q: '¿La grabación está disponible en qué modalidad?', opts: ['Presencial', 'Online', 'Híbrida', 'Solo audio'], correct: 1 },
-  { q: '¿Cuál es el objetivo principal del contenido?', opts: ['Entretenimiento', 'Actualización médica', 'Publicidad', 'Networking'], correct: 1 },
-  { q: '¿Qué enfoque se menciona para el diagnóstico?', opts: ['Citometría de flujo y genética', 'Radiografías', 'Electrocardiograma', 'Endoscopía'], correct: 0 },
-  { q: '¿El acceso es por?', opts: ['Suscripción mensual', 'Pago único', 'Gratis', 'Donación'], correct: 1 },
-] as const
 
 export default function VerPage() {
   const router = useRouter()
-  const { firebaseUser, profile, loading: authLoading, logout } = useAuth()
+  const { firebaseUser, profile, loading: authLoading } = useAuth()
   const [videoUrl, setVideoUrl] = useState('')
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'descripcion' | 'ponentes' | 'programa'>('descripcion')
@@ -65,10 +89,26 @@ export default function VerPage() {
   const [inCart, setInCart] = useState(false)
   const [backendVideoId, setBackendVideoId] = useState<string | null>(null)
   const [activeModulo, setActiveModulo] = useState(0)
-  const [testOpen, setTestOpen] = useState(false)
-  const [answers, setAnswers] = useState<number[]>(Array(TEST.length).fill(-1))
-  const [testResult, setTestResult] = useState<{ score: number; passed: boolean } | null>(null)
+  const [activeVideoIdx, setActiveVideoIdx] = useState(0)
+  const [openModuloIdx, setOpenModuloIdx] = useState(0)
   const [certUnlocked, setCertUnlocked] = useState(false)
+
+  useEffect(() => {
+    const sync = () => {
+      try { setCertUnlocked(typeof window !== 'undefined' && sessionStorage.getItem(CERT_PASSED_KEY) === '1') } catch { setCertUnlocked(false) }
+    }
+    sync()
+    window.addEventListener('focus', sync)
+    return () => window.removeEventListener('focus', sync)
+  }, [])
+
+  useEffect(() => {
+    if (authLoading) return
+    if (!firebaseUser) return
+    fetchMyCertificates()
+      .then(list => { if (Array.isArray(list) && list.length > 0) setCertUnlocked(true) })
+      .catch(() => {})
+  }, [authLoading, firebaseUser])
 
   useEffect(() => {
     if (authLoading) return
@@ -115,12 +155,8 @@ export default function VerPage() {
     router.push('/carrito')
   }
 
-  async function handleLogout() {
-    await logout()
-    router.push('/')
-  }
-
   const displayEmail = profile?.email ?? firebaseUser?.email ?? ''
+  const clipActual = MODULOS_DATA[activeModulo]?.videos[activeVideoIdx]
 
   if (loading || (!firebaseUser && !authLoading)) {
     return (
@@ -135,16 +171,16 @@ export default function VerPage() {
   }
 
   return (
-    <div className="min-h-screen text-white flex flex-col" style={{ background: 'linear-gradient(160deg, #0B1928 0%, #0E2035 100%)' }}>
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-8 pt-10">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5 lg:gap-6">
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 mb-3 text-xs text-white/30 uppercase tracking-wider overflow-hidden">
+            <div className="flex items-center gap-1.5 mb-3 text-xs text-muted-foreground uppercase tracking-wider overflow-hidden">
               <FlaskConical size={11} className="flex-shrink-0" />
               <span className="truncate hidden sm:block">III Jornadas Regionales de Inmunología Clínica</span>
               <span className="truncate sm:hidden">III Jornadas · SCAI</span>
               <ChevronRight size={11} className="flex-shrink-0" />
-              <span className="text-white/50 flex-shrink-0">Grabación</span>
+              <span className="text-muted-foreground flex-shrink-0">Grabación</span>
             </div>
 
             <div className="relative">
@@ -193,19 +229,49 @@ export default function VerPage() {
               <h1 className="text-base sm:text-xl md:text-2xl font-bold leading-snug">
                 Cuando el Sistema Inmune Falla: Desafíos en Errores Innatos de la Inmunidad
               </h1>
+              {clipActual && paid && (
+                <p className="mt-2 text-xs sm:text-sm font-medium" style={{ color: 'var(--scai-teal)' }}>
+                  {MODULOS_DATA[activeModulo]?.titulo?.split(' · ')[1] ?? ''} · {clipActual.titulo}
+                  <span className="text-white/35 font-normal"> · {clipActual.duracion}</span>
+                </p>
+              )}
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-white/40">
-                <span className="hidden sm:inline">Sociedad Chilena de Alergia e Inmunología · SCAI</span>
+                <span className="hidden sm:inline text-muted-foreground">Sociedad Chilena de Alergia e Inmunología · SCAI</span>
                 <span className="sm:hidden">SCAI</span>
                 <span>·</span>
-                <span className="flex items-center gap-1"><Clock size={11} /> 19 Jun 2026</span>
+                <span className="flex items-center gap-1 text-muted-foreground"><Clock size={11} /> 19 Jun 2026</span>
                 <span>·</span>
-                <span>4 módulos · 16 ponentes</span>
+                <span className="text-muted-foreground">4 módulos · 16 ponentes</span>
                 <span>·</span>
-                <span>Acreditado CONACEM</span>
+                <span className="text-muted-foreground">Acreditado CONACEM</span>
+              </div>
+              <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                <Link
+                  href="/ver/test"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl py-3 px-4 text-sm font-bold text-white active:scale-[0.98] transition-transform"
+                  style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 24px rgba(18,180,198,0.18)' }}
+                >
+                  <Award size={16} />
+                  Realizar examen
+                </Link>
+                <a
+                  href={certUnlocked ? '/certificado' : undefined}
+                  onClick={(e) => { if (!certUnlocked) e.preventDefault() }}
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl py-3 px-4 text-sm font-bold border active:scale-[0.98] transition-transform ${
+                    certUnlocked ? 'text-white hover:text-white' : 'text-white/25 cursor-not-allowed'
+                  }`}
+                  style={{
+                    background: certUnlocked ? 'rgba(18,180,198,0.16)' : 'rgba(255,255,255,0.03)',
+                    borderColor: certUnlocked ? 'rgba(18,180,198,0.35)' : 'rgba(255,255,255,0.08)',
+                  }}
+                >
+                  <Award size={16} style={{ color: certUnlocked ? 'var(--scai-teal)' : 'rgba(255,255,255,0.25)' }} />
+                  Descargar certificado
+                </a>
               </div>
             </div>
 
-            <div className="mt-4 flex gap-0.5 border-b border-white/10 overflow-x-auto scrollbar-none">
+            <div className="mt-4 flex gap-0.5 border-b border-border overflow-x-auto scrollbar-none">
               {([
                 { key: 'descripcion', label: 'Descripción' },
                 { key: 'ponentes', label: 'Expositores' },
@@ -215,7 +281,7 @@ export default function VerPage() {
                   key={key}
                   onClick={() => setActiveTab(key)}
                   className={`px-3 sm:px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap flex-shrink-0 ${
-                    activeTab === key ? 'text-white' : 'border-transparent text-white/40 hover:text-white/70'
+                    activeTab === key ? 'text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                   style={activeTab === key ? { borderBottomColor: 'var(--scai-teal)' } : {}}
                 >
@@ -226,7 +292,7 @@ export default function VerPage() {
 
             <div className="mt-4">
               {activeTab === 'descripcion' && (
-                <div className="space-y-3 text-white/60 text-sm leading-relaxed max-w-2xl">
+                <div className="space-y-3 text-muted-foreground text-sm leading-relaxed max-w-2xl">
                   <p>
                     Las III Jornadas Regionales de Inmunología Clínica de la Sociedad Chilena de Alergia
                     e Inmunología (SCAI) abordan los Errores Innatos de la Inmunidad (EII), también
@@ -246,10 +312,12 @@ export default function VerPage() {
                       { label: 'Modalidad', value: 'Online' },
                       { label: 'Acreditación', value: 'CONACEM' },
                     ].map(({ label, value }) => (
-                      <div key={label} className="rounded-xl p-3 border"
-                        style={{ background: 'rgba(18,180,198,0.06)', borderColor: 'rgba(18,180,198,0.15)' }}>
-                        <p className="text-white/30 text-xs uppercase tracking-wide">{label}</p>
-                        <p className="text-white font-semibold text-sm mt-0.5">{value}</p>
+                      <div
+                        key={label}
+                        className="rounded-xl p-3 border border-border bg-card"
+                      >
+                        <p className="text-muted-foreground text-xs uppercase tracking-wide">{label}</p>
+                        <p className="text-foreground font-semibold text-sm mt-0.5">{value}</p>
                       </div>
                     ))}
                   </div>
@@ -281,25 +349,41 @@ export default function VerPage() {
               )}
 
               {activeTab === 'programa' && (
-                <div className="space-y-2">
-                  {MODULOS.map((m, i) => (
-                    <div key={m.titulo}
-                      className="flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border transition-colors"
-                      style={activeModulo === i && paid
-                        ? { borderColor: 'rgba(18,180,198,0.4)', background: 'rgba(18,180,198,0.1)' }
-                        : { borderColor: 'rgba(18,180,198,0.08)', background: 'rgba(14,32,53,0.5)' }}>
-                      <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 text-white"
-                        style={activeModulo === i && paid ? { background: 'var(--scai-teal)' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
-                        {i + 1}
+                <div className="space-y-4">
+                  {MODULOS_DATA.map((mod, mi) => (
+                    <div key={mi} className="rounded-xl border overflow-hidden"
+                      style={{ borderColor: 'rgba(18,180,198,0.12)', background: 'rgba(14,32,53,0.5)' }}>
+                      <p className="text-[11px] font-bold uppercase tracking-wider px-3.5 py-2.5"
+                        style={{ color: 'var(--scai-teal)', background: 'rgba(18,180,198,0.08)' }}>
+                        {mod.titulo}
+                      </p>
+                      <div className="divide-y" style={{ borderColor: 'rgba(18,180,198,0.08)' }}>
+                        {mod.videos.map((v, vi) => {
+                          const sel = activeModulo === mi && activeVideoIdx === vi && paid
+                          return (
+                            <div
+                              key={vi}
+                              className="flex items-center gap-3 p-3 sm:p-3.5 transition-colors"
+                              style={sel
+                                ? { background: 'rgba(18,180,198,0.1)', borderLeft: '3px solid var(--scai-teal)' }
+                                : {}}
+                            >
+                              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 text-white tabular-nums"
+                                style={sel ? { background: 'var(--scai-teal)' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
+                                {mi + 1}.{vi + 1}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-xs sm:text-sm font-medium leading-snug ${sel ? 'text-white' : 'text-white/55'}`}>
+                                  {v.titulo}
+                                </p>
+                              </div>
+                              <span className="text-white/25 text-xs flex-shrink-0 flex items-center gap-1">
+                                <Clock size={10} />{v.duracion}
+                              </span>
+                            </div>
+                          )
+                        })}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-xs sm:text-sm font-medium leading-snug ${activeModulo === i && paid ? 'text-white' : 'text-white/55'}`}>
-                          {m.titulo}
-                        </p>
-                      </div>
-                      <span className="text-white/25 text-xs flex-shrink-0 flex items-center gap-1">
-                        <Clock size={10} />{m.duracion}
-                      </span>
                     </div>
                   ))}
                 </div>
@@ -338,53 +422,78 @@ export default function VerPage() {
 
             <div className="rounded-2xl border overflow-hidden"
               style={{ background: 'rgba(14,32,53,0.9)', borderColor: 'rgba(18,180,198,0.12)' }}>
-              <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-                <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wide">Módulos</h3>
-                <span className="text-xs text-white/25">{MODULOS.length} módulos</span>
+              <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
+                <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wide">Contenido</h3>
+                <span className="text-xs text-white/25 text-right">4 módulos · 16 videos</span>
               </div>
               <div className="divide-y" style={{ borderColor: 'rgba(18,180,198,0.08)' }}>
-                {MODULOS.map((m, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => { if (paid) setActiveModulo(i) }}
-                    className={`w-full text-left flex items-center gap-3 px-4 py-3 transition-colors ${
-                      paid ? 'cursor-pointer hover:bg-white/5' : 'cursor-default'
-                    } ${activeModulo === i && paid ? '' : ''}`}
-                    style={activeModulo === i && paid
-                      ? { background: 'rgba(18,180,198,0.12)' }
-                      : {}}
-                  >
-                    <div
-                      className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                      style={activeModulo === i && paid
-                        ? { background: 'var(--scai-teal)', color: '#fff' }
-                        : paid
-                          ? { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }
-                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)' }}
+                {MODULOS_DATA.map((mod, mi) => (
+                  <div key={mi}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenModuloIdx(o => o === mi ? -1 : mi)}
+                      className={`w-full flex items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-white/5`}
+                      style={openModuloIdx === mi ? { background: 'rgba(18,180,198,0.08)' } : {}}
                     >
-                      {i + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-xs leading-snug line-clamp-2 ${
-                        activeModulo === i && paid ? 'text-white font-semibold' : paid ? 'text-white/60' : 'text-white/25'
-                      }`}>
-                        {m.titulo}
-                      </p>
-                      <p className="text-[10px] mt-0.5 flex items-center gap-1"
-                        style={{ color: activeModulo === i && paid ? 'var(--scai-teal)' : 'rgba(255,255,255,0.2)' }}>
-                        <Clock size={9} />
-                        {m.duracion}
-                      </p>
-                    </div>
-                    {activeModulo === i && paid && (
-                      <div className="h-1.5 w-1.5 rounded-full flex-shrink-0 animate-pulse"
-                        style={{ background: 'var(--scai-teal)' }} />
+                      <div
+                        className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                        style={paid
+                          ? { background: 'rgba(255,255,255,0.1)', color: 'var(--scai-teal)' }
+                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)' }}
+                      >
+                        {mi + 1}
+                      </div>
+                      <span className={`flex-1 text-xs font-semibold leading-snug line-clamp-2 ${paid ? 'text-white/85' : 'text-white/25'}`}>
+                        {mod.titulo}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`flex-shrink-0 transition-transform ${openModuloIdx === mi ? 'rotate-180' : ''}`}
+                        style={{ color: 'rgba(255,255,255,0.35)' }}
+                      />
+                    </button>
+                    {openModuloIdx === mi && (
+                      <div className="pb-2 px-2 space-y-0.5">
+                        {mod.videos.map((v, vi) => {
+                          const sel = paid && activeModulo === mi && activeVideoIdx === vi
+                          return (
+                            <button
+                              key={vi}
+                              type="button"
+                              onClick={() => {
+                                if (!paid) return
+                                setActiveModulo(mi)
+                                setActiveVideoIdx(vi)
+                                setOpenModuloIdx(mi)
+                              }}
+                              className={`w-full text-left rounded-xl px-3 py-2.5 flex items-start gap-2.5 transition-colors ${
+                                paid ? 'hover:bg-white/[0.04]' : 'cursor-default'
+                              }`}
+                              style={sel ? { background: 'rgba(18,180,198,0.14)' } : {}}
+                            >
+                              <span
+                                className="text-[10px] font-bold tabular-nums mt-0.5 w-7 flex-shrink-0"
+                                style={{ color: sel ? 'var(--scai-teal)' : 'rgba(255,255,255,0.25)' }}
+                              >
+                                {mi + 1}.{vi + 1}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-[11px] leading-snug ${sel ? 'text-white font-medium' : paid ? 'text-white/65' : 'text-white/20'}`}>
+                                  {v.titulo}
+                                </p>
+                                <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: sel ? 'var(--scai-teal)' : 'rgba(255,255,255,0.22)' }}>
+                                  <Clock size={9} />{v.duracion}
+                                </p>
+                              </div>
+                              {sel && (
+                                <div className="h-1.5 w-1.5 rounded-full flex-shrink-0 mt-1.5 animate-pulse" style={{ background: 'var(--scai-teal)' }} />
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
                     )}
-                    {!paid && (
-                      <Lock size={11} className="flex-shrink-0 text-white/15" />
-                    )}
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -396,12 +505,11 @@ export default function VerPage() {
               <p className="text-xs mt-1" style={{ color: 'var(--scai-teal)' }}>www.scai.cl · @scai.cl</p>
             </div>
 
-            <button className="w-full flex items-center justify-center gap-2 border text-white/60 hover:text-white text-sm font-medium py-3 rounded-xl transition-all active:scale-95"
-              onClick={() => { setTestOpen(true); setTestResult(null) }}
+            <Link href="/ver/test" className="w-full flex items-center justify-center gap-2 border text-white/60 hover:text-white text-sm font-medium py-3 rounded-xl transition-all active:scale-95"
               style={{ background: 'rgba(18,180,198,0.08)', borderColor: 'rgba(18,180,198,0.2)' }}>
               <Award size={15} />
-              Realizar test
-            </button>
+              Realizar examen
+            </Link>
 
             <a
               href={certUnlocked ? '/certificado' : undefined}
@@ -427,78 +535,6 @@ export default function VerPage() {
         </div>
       </main>
 
-      {testOpen && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
-          <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.55)' }} onClick={() => setTestOpen(false)} />
-          <div className="relative w-full max-w-2xl rounded-2xl border overflow-hidden"
-            style={{ background: 'rgba(14,32,53,0.98)', borderColor: 'rgba(18,180,198,0.22)' }}>
-            <div className="flex items-center justify-between px-5 py-4 border-b"
-              style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-              <div>
-                <p className="text-xs text-white/40 uppercase tracking-wide">Evaluación</p>
-                <p className="text-white font-semibold">Test rápido (7 preguntas)</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setTestOpen(false)}
-                className="h-9 w-9 rounded-xl border flex items-center justify-center text-white/60 hover:text-white"
-                style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="max-h-[70vh] overflow-auto px-5 py-4 space-y-4">
-              {TEST.map((t, i) => (
-                <div key={i} className="rounded-2xl border p-4"
-                  style={{ borderColor: 'rgba(18,180,198,0.12)', background: 'rgba(18,180,198,0.05)' }}>
-                  <p className="text-white font-semibold text-sm leading-snug">{i + 1}. {t.q}</p>
-                  <div className="mt-3 grid sm:grid-cols-2 gap-2">
-                    {t.opts.map((opt, j) => {
-                      const active = answers[i] === j
-                      return (
-                        <button
-                          key={j}
-                          type="button"
-                          onClick={() => setAnswers(a => { const n = [...a]; n[i] = j; return n })}
-                          className="text-left rounded-xl border px-3.5 py-2.5 text-sm transition-colors"
-                          style={active
-                            ? { borderColor: 'rgba(18,180,198,0.6)', background: 'rgba(18,180,198,0.12)', color: '#fff' }
-                            : { borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.65)' }}
-                        >
-                          {opt}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="px-5 py-4 border-t flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between"
-              style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-              <div className="text-xs text-white/35">
-                {testResult
-                  ? <span>Resultado: <span style={{ color: testResult.passed ? '#4ade80' : '#fbbf24' }}>{testResult.score}/7</span></span>
-                  : <span>Selecciona tus respuestas y presiona validar.</span>}
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const score = answers.reduce((acc, v, i) => acc + (v === TEST[i].correct ? 1 : 0), 0)
-                  const passed = score >= 5
-                  setTestResult({ score, passed })
-                  if (passed) setCertUnlocked(true)
-                }}
-                className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white"
-                style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 24px rgba(18,180,198,0.25)' }}
-              >
-                Validar test
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
