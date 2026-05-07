@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, CreditCard, Shield, ShoppingCart, CalendarDays, Award, Users, Clock, CheckCircle2, Loader2, Video } from 'lucide-react'
-import ThemeToggle from '@/components/ThemeToggle'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { useAuth } from '@/lib/authContext'
@@ -76,7 +75,6 @@ export default function CarritoPage() {
           </Link>
           <Image src={ScaiLogo} alt="SCAI" priority className="h-7 w-auto" />
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <div className="inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-sm font-semibold"
               style={{ borderColor: 'rgba(18,180,198,0.4)', background: 'rgba(18,180,198,0.1)', color: 'var(--scai-teal)' }}>
               <ShoppingCart size={13} />
