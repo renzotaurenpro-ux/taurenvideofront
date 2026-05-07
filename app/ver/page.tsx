@@ -160,11 +160,10 @@ export default function VerPage() {
 
   if (loading || (!firebaseUser && !authLoading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center"
-        style={{ background: 'linear-gradient(160deg, #0B1928 0%, #0E2035 100%)' }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--scai-teal)', borderTopColor: 'transparent' }} />
-          <p className="text-white/30 text-sm">Cargando tu acceso...</p>
+          <p className="text-muted-foreground text-sm">Cargando tu acceso...</p>
         </div>
       </div>
     )
@@ -327,21 +326,20 @@ export default function VerPage() {
               {activeTab === 'ponentes' && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
                   {PONENTES.map(p => (
-                    <div key={p.nombre} className="rounded-2xl border p-3 flex flex-col items-center text-center gap-2"
-                      style={{ background: 'rgba(14,32,53,0.8)', borderColor: 'rgba(18,180,198,0.12)' }}>
+                    <div key={p.nombre} className="rounded-2xl border border-border bg-card p-3 flex flex-col items-center text-center gap-2">
                       {/daniela/i.test(p.nombre) && /budinich|buchini/i.test(p.nombre) ? (
-                        <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border flex-shrink-0" style={{ borderColor: 'rgba(18,180,198,0.3)' }}>
+                        <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-border flex-shrink-0">
                           <Image src="/doctora-perfil.jpg.jpeg" alt={p.nombre} fill sizes="48px" className="object-cover" />
                         </div>
                       ) : (
-                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0"
-                          style={{ background: 'rgba(18,180,198,0.12)', borderColor: 'rgba(18,180,198,0.3)', color: 'var(--scai-teal)' }}>
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border border-border bg-secondary flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0"
+                          style={{ color: 'var(--scai-teal)' }}>
                           {p.avatar}
                         </div>
                       )}
                       <div>
-                        <p className="font-semibold text-[11px] sm:text-xs text-white leading-tight">{p.nombre}</p>
-                        <p className="text-white/35 text-[10px] sm:text-[11px] mt-0.5 leading-relaxed hidden sm:block">{p.especialidad}</p>
+                        <p className="font-semibold text-[11px] sm:text-xs text-foreground leading-tight">{p.nombre}</p>
+                        <p className="text-muted-foreground text-[10px] sm:text-[11px] mt-0.5 leading-relaxed hidden sm:block">{p.especialidad}</p>
                       </div>
                     </div>
                   ))}
@@ -351,33 +349,36 @@ export default function VerPage() {
               {activeTab === 'programa' && (
                 <div className="space-y-4">
                   {MODULOS_DATA.map((mod, mi) => (
-                    <div key={mi} className="rounded-xl border overflow-hidden"
-                      style={{ borderColor: 'rgba(18,180,198,0.12)', background: 'rgba(14,32,53,0.5)' }}>
-                      <p className="text-[11px] font-bold uppercase tracking-wider px-3.5 py-2.5"
-                        style={{ color: 'var(--scai-teal)', background: 'rgba(18,180,198,0.08)' }}>
+                    <div key={mi} className="rounded-xl border border-border bg-card overflow-hidden">
+                      <p className="text-[11px] font-bold uppercase tracking-wider px-3.5 py-2.5 bg-secondary/60"
+                        style={{ color: 'var(--scai-teal)' }}>
                         {mod.titulo}
                       </p>
-                      <div className="divide-y" style={{ borderColor: 'rgba(18,180,198,0.08)' }}>
+                      <div className="divide-y divide-border">
                         {mod.videos.map((v, vi) => {
                           const sel = activeModulo === mi && activeVideoIdx === vi && paid
                           return (
                             <div
                               key={vi}
-                              className="flex items-center gap-3 p-3 sm:p-3.5 transition-colors"
-                              style={sel
-                                ? { background: 'rgba(18,180,198,0.1)', borderLeft: '3px solid var(--scai-teal)' }
-                                : {}}
+                              className={`flex items-center gap-3 p-3 sm:p-3.5 transition-colors ${sel ? 'bg-[rgba(18,180,198,0.08)]' : ''}`}
+                              style={sel ? { borderLeft: '3px solid var(--scai-teal)' } : {}}
                             >
-                              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 text-white tabular-nums"
-                                style={sel ? { background: 'var(--scai-teal)' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
-                                {mi + 1}.{vi + 1}
+                              <div
+                                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 tabular-nums"
+                                style={sel
+                                  ? { background: 'var(--scai-teal)', color: '#fff' }
+                                  : undefined}
+                              >
+                                <span className={sel ? '' : 'text-muted-foreground/50 bg-secondary rounded-full w-full h-full flex items-center justify-center'}>
+                                  {mi + 1}.{vi + 1}
+                                </span>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-xs sm:text-sm font-medium leading-snug ${sel ? 'text-white' : 'text-white/55'}`}>
+                                <p className={`text-xs sm:text-sm font-medium leading-snug ${sel ? 'text-foreground' : 'text-muted-foreground'}`}>
                                   {v.titulo}
                                 </p>
                               </div>
-                              <span className="text-white/25 text-xs flex-shrink-0 flex items-center gap-1">
+                              <span className="text-muted-foreground/50 text-xs flex-shrink-0 flex items-center gap-1">
                                 <Clock size={10} />{v.duracion}
                               </span>
                             </div>
@@ -392,27 +393,24 @@ export default function VerPage() {
           </div>
 
           <aside className="space-y-3 lg:space-y-4 lg:sticky lg:top-[76px] h-fit">
-            <div className="rounded-2xl p-4 sm:p-5 border"
-              style={{ background: 'linear-gradient(135deg, rgba(18,180,198,0.15) 0%, rgba(14,32,53,0.9) 100%)', borderColor: 'rgba(18,180,198,0.25)' }}>
+            <div className="rounded-2xl p-4 sm:p-5 border border-border bg-card">
               <div className="flex items-center gap-2 mb-3">
-                <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'rgba(18,180,198,0.2)' }}>
+                <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(18,180,198,0.15)]">
                   <User size={15} style={{ color: 'var(--scai-teal)' }} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-white/40 uppercase tracking-wide">Sesión activa</p>
-                  <p className="text-sm text-white font-medium truncate max-w-full">{displayEmail}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Sesión activa</p>
+                  <p className="text-sm text-foreground font-medium truncate max-w-full">{displayEmail}</p>
                 </div>
               </div>
               {paid ? (
-                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
+                <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-green-500 dark:bg-green-400 animate-pulse flex-shrink-0" />
                   Acceso completo activo
                 </div>
               ) : (
-                <div className="flex items-center justify-between gap-2 text-xs rounded-xl px-3 py-2 border"
-                  style={{ background: 'rgba(18,180,198,0.08)', borderColor: 'rgba(18,180,198,0.2)' }}>
-                  <span className="text-white/55">Acceso pendiente</span>
+                <div className="flex items-center justify-between gap-2 text-xs rounded-xl px-3 py-2 border border-border bg-secondary/50">
+                  <span className="text-muted-foreground">Acceso pendiente</span>
                   <button onClick={handleAddToCart} className="text-xs font-semibold" style={{ color: 'var(--scai-teal)' }}>
                     {inCart ? 'Ver carrito' : 'Agregar'}
                   </button>
@@ -420,36 +418,32 @@ export default function VerPage() {
               )}
             </div>
 
-            <div className="rounded-2xl border overflow-hidden"
-              style={{ background: 'rgba(14,32,53,0.9)', borderColor: 'rgba(18,180,198,0.12)' }}>
+            <div className="rounded-2xl border border-border bg-card overflow-hidden">
               <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
-                <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wide">Contenido</h3>
-                <span className="text-xs text-white/25 text-right">4 módulos · 16 videos</span>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Contenido</h3>
+                <span className="text-xs text-muted-foreground/60 text-right">4 módulos · 16 videos</span>
               </div>
-              <div className="divide-y" style={{ borderColor: 'rgba(18,180,198,0.08)' }}>
+              <div className="divide-y divide-border">
                 {MODULOS_DATA.map((mod, mi) => (
                   <div key={mi}>
                     <button
                       type="button"
                       onClick={() => setOpenModuloIdx(o => o === mi ? -1 : mi)}
-                      className={`w-full flex items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-white/5`}
-                      style={openModuloIdx === mi ? { background: 'rgba(18,180,198,0.08)' } : {}}
+                      className={`w-full flex items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-accent/50 ${openModuloIdx === mi ? 'bg-accent/60' : ''}`}
                     >
-                      <div
-                        className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                        style={paid
-                          ? { background: 'rgba(255,255,255,0.1)', color: 'var(--scai-teal)' }
-                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)' }}
+                      <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                        paid ? 'bg-secondary' : 'bg-secondary/50'
+                      }`}
+                        style={{ color: paid ? 'var(--scai-teal)' : undefined }}
                       >
-                        {mi + 1}
+                        <span className={paid ? '' : 'text-muted-foreground/40'}>{mi + 1}</span>
                       </div>
-                      <span className={`flex-1 text-xs font-semibold leading-snug line-clamp-2 ${paid ? 'text-white/85' : 'text-white/25'}`}>
+                      <span className={`flex-1 text-xs font-semibold leading-snug line-clamp-2 ${paid ? 'text-foreground' : 'text-muted-foreground/40'}`}>
                         {mod.titulo}
                       </span>
                       <ChevronDown
                         size={16}
-                        className={`flex-shrink-0 transition-transform ${openModuloIdx === mi ? 'rotate-180' : ''}`}
-                        style={{ color: 'rgba(255,255,255,0.35)' }}
+                        className={`flex-shrink-0 text-muted-foreground transition-transform ${openModuloIdx === mi ? 'rotate-180' : ''}`}
                       />
                     </button>
                     {openModuloIdx === mi && (
@@ -467,21 +461,21 @@ export default function VerPage() {
                                 setOpenModuloIdx(mi)
                               }}
                               className={`w-full text-left rounded-xl px-3 py-2.5 flex items-start gap-2.5 transition-colors ${
-                                paid ? 'hover:bg-white/[0.04]' : 'cursor-default'
+                                sel ? 'bg-[rgba(18,180,198,0.12)]' : paid ? 'hover:bg-accent/50' : 'cursor-default'
                               }`}
-                              style={sel ? { background: 'rgba(18,180,198,0.14)' } : {}}
                             >
                               <span
                                 className="text-[10px] font-bold tabular-nums mt-0.5 w-7 flex-shrink-0"
-                                style={{ color: sel ? 'var(--scai-teal)' : 'rgba(255,255,255,0.25)' }}
+                                style={{ color: sel ? 'var(--scai-teal)' : undefined }}
                               >
-                                {mi + 1}.{vi + 1}
+                                <span className={sel ? '' : 'text-muted-foreground/40'}>{mi + 1}.{vi + 1}</span>
                               </span>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-[11px] leading-snug ${sel ? 'text-white font-medium' : paid ? 'text-white/65' : 'text-white/20'}`}>
+                                <p className={`text-[11px] leading-snug ${sel ? 'text-foreground font-semibold' : paid ? 'text-muted-foreground' : 'text-muted-foreground/35'}`}>
                                   {v.titulo}
                                 </p>
-                                <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: sel ? 'var(--scai-teal)' : 'rgba(255,255,255,0.22)' }}>
+                                <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${sel ? '' : 'text-muted-foreground/50'}`}
+                                  style={{ color: sel ? 'var(--scai-teal)' : undefined }}>
                                   <Clock size={9} />{v.duracion}
                                 </p>
                               </div>
@@ -498,16 +492,15 @@ export default function VerPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl p-4 sm:p-5 border"
-              style={{ background: 'rgba(14,32,53,0.9)', borderColor: 'rgba(18,180,198,0.12)' }}>
-              <p className="text-xs text-white/40 mb-1 font-semibold uppercase tracking-wide">Organiza</p>
-              <p className="text-sm text-white/70">Sociedad Chilena de Alergia e Inmunología</p>
+            <div className="rounded-2xl p-4 sm:p-5 border border-border bg-card">
+              <p className="text-xs text-muted-foreground mb-1 font-semibold uppercase tracking-wide">Organiza</p>
+              <p className="text-sm text-foreground/80">Sociedad Chilena de Alergia e Inmunología</p>
               <p className="text-xs mt-1" style={{ color: 'var(--scai-teal)' }}>www.scai.cl · @scai.cl</p>
             </div>
 
-            <Link href="/ver/test" className="w-full flex items-center justify-center gap-2 border text-white/60 hover:text-white text-sm font-medium py-3 rounded-xl transition-all active:scale-95"
-              style={{ background: 'rgba(18,180,198,0.08)', borderColor: 'rgba(18,180,198,0.2)' }}>
-              <Award size={15} />
+            <Link href="/ver/test"
+              className="w-full flex items-center justify-center gap-2 border border-border bg-secondary/60 text-foreground hover:bg-secondary text-sm font-medium py-3 rounded-xl transition-all active:scale-95">
+              <Award size={15} style={{ color: 'var(--scai-teal)' }} />
               Realizar examen
             </Link>
 
@@ -515,19 +508,17 @@ export default function VerPage() {
               href={certUnlocked ? '/certificado' : undefined}
               onClick={(e) => { if (!certUnlocked) e.preventDefault() }}
               className={`w-full flex items-center justify-center gap-2 border text-sm font-medium py-3 rounded-xl transition-all active:scale-95 ${
-                certUnlocked ? 'text-white hover:text-white' : 'text-white/25 cursor-not-allowed'
+                certUnlocked
+                  ? 'border-[rgba(18,180,198,0.4)] bg-[rgba(18,180,198,0.1)] text-foreground hover:bg-[rgba(18,180,198,0.18)]'
+                  : 'border-border bg-secondary/30 text-muted-foreground/40 cursor-not-allowed'
               }`}
-              style={{
-                background: certUnlocked ? 'rgba(18,180,198,0.16)' : 'rgba(255,255,255,0.03)',
-                borderColor: certUnlocked ? 'rgba(18,180,198,0.35)' : 'rgba(255,255,255,0.08)',
-              }}
             >
-              <Award size={15} style={{ color: certUnlocked ? 'var(--scai-teal)' : 'rgba(255,255,255,0.25)' }} />
+              <Award size={15} style={{ color: certUnlocked ? 'var(--scai-teal)' : undefined }} />
               Descargar certificado
             </a>
 
-            <div className="rounded-2xl p-4 border" style={{ background: 'rgba(14,32,53,0.6)', borderColor: 'rgba(18,180,198,0.08)' }}>
-              <p className="text-xs text-white/20 leading-relaxed text-center">
+            <div className="rounded-2xl p-4 border border-border bg-secondary/30">
+              <p className="text-xs text-muted-foreground/50 leading-relaxed text-center">
                 Contenido protegido. Prohibida la grabación y distribución no autorizada.
               </p>
             </div>

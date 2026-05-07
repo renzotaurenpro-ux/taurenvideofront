@@ -8,6 +8,27 @@ async function getToken(forceRefresh = false): Promise<string> {
   return user.getIdToken(forceRefresh)
 }
 
+const PURCHASE_CACHE_TTL = 2 * 60 * 1000
+const purchaseCache = new Map<string, { ts: number; purchased: boolean }>()
+
+export function getCachedPurchase(videoId: string): boolean | null {
+  const entry = purchaseCache.get(videoId)
+  if (!entry) return null
+  if (Date.now() - entry.ts > PURCHASE_CACHE_TTL) { purchaseCache.delete(videoId); return null }
+  return entry.purchased
+}
+
+export function setCachedPurchase(videoId: string, purchased: boolean) {
+  purchaseCache.set(videoId, { ts: Date.now(), purchased })
+}
+
+let warmupDone = false
+export function warmupBackend() {
+  if (warmupDone) return
+  warmupDone = true
+  fetch(`${API_BASE}/videos`).catch(() => {})
+}
+
 export async function fetchAuth(path: string, options: RequestInit = {}): Promise<Response> {
   let token = await getToken()
 

@@ -1,5 +1,25 @@
 import { fetchAuth } from './api'
 
+const TTL_EXAMS = 10 * 60 * 1000
+const KEY_EXAMS = '__scai_exams_v1'
+const KEY_EXAM = (id: string) => `__scai_exam_${id}_v1`
+
+function cacheGet<T>(key: string, ttl: number): T | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return null
+    const { ts, data } = JSON.parse(raw)
+    if (Date.now() - ts > ttl) return null
+    return data as T
+  } catch { return null }
+}
+
+function cacheSet(key: string, data: unknown) {
+  if (typeof window === 'undefined') return
+  try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })) } catch {}
+}
+
 export type ExamListItem = {
   id: string
   title?: string
@@ -47,17 +67,31 @@ export type Certificate = {
 }
 
 export async function fetchExams(): Promise<ExamListItem[]> {
+  const cached = cacheGet<ExamListItem[]>(KEY_EXAMS, TTL_EXAMS)
+  if (cached) {
+    fetchAuth('/exams').then(r => r.ok && r.json().then((d: unknown) => Array.isArray(d) && cacheSet(KEY_EXAMS, d))).catch(() => {})
+    return cached
+  }
   const res = await fetchAuth('/exams')
   if (!res.ok) return []
   const data = await res.json().catch(() => null)
-  return Array.isArray(data) ? data : []
+  const list: ExamListItem[] = Array.isArray(data) ? data : []
+  cacheSet(KEY_EXAMS, list)
+  return list
 }
 
 export async function fetchExamById(id: string): Promise<Exam | null> {
+  const key = KEY_EXAM(id)
+  const cached = cacheGet<Exam>(key, TTL_EXAMS)
+  if (cached) {
+    fetchAuth(`/exams/${id}`).then(r => r.ok && r.json().then((d: unknown) => d && typeof d === 'object' && cacheSet(key, d))).catch(() => {})
+    return cached
+  }
   const res = await fetchAuth(`/exams/${id}`)
   if (!res.ok) return null
   const data = await res.json().catch(() => null)
   if (!data || typeof data !== 'object') return null
+  cacheSet(key, data)
   return data as Exam
 }
 

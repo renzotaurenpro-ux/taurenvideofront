@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/authContext'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchExams, fetchExamById, issueCertificate, submitExam, type Exam, type ExamSubmitResult } from '@/lib/exams'
 import { fetchPublishedVideos } from '@/lib/videos'
-import { fetchAuth } from '@/lib/api'
+import { fetchAuth, getCachedPurchase, setCachedPurchase } from '@/lib/api'
 
 export default function VerTestPage() {
   const router = useRouter()
@@ -37,20 +37,41 @@ export default function VerTestPage() {
 
     ;(async () => {
       try {
-        const videos = await fetchPublishedVideos()
+        const [videos, examsEarly] = await Promise.all([
+          fetchPublishedVideos(),
+          fetchExams(),
+        ])
+
         const video = videos[0] ?? null
+
         if (video?.id) {
-          const check = await fetchAuth(`/purchases/check/${video.id}`).catch(() => null)
-          const hasPurchase = check?.ok
-            ? await check.json().then((d: any) => d?.purchased === true || d?.hasPurchase === true).catch(() => false)
-            : false
+          const cached = getCachedPurchase(video.id)
+          let hasPurchase: boolean
+
+          if (cached !== null) {
+            hasPurchase = cached
+            fetchAuth(`/purchases/check/${video.id}`)
+              .then(r => r.ok && r.json().then((d: any) => setCachedPurchase(video.id, d?.purchased === true || d?.hasPurchase === true)))
+              .catch(() => {})
+          } else {
+            const check = await fetchAuth(`/purchases/check/${video.id}`).catch(() => null)
+            hasPurchase = check?.ok
+              ? await check.json().then((d: any) => {
+                  const v = d?.purchased === true || d?.hasPurchase === true
+                  setCachedPurchase(video.id, v)
+                  return v
+                }).catch(() => false)
+              : false
+          }
+
           if (!cancelled) setPurchased(hasPurchase)
           if (!hasPurchase) {
             if (!cancelled) setLoading(false)
             return
           }
         }
-        const exams = await fetchExams()
+
+        const exams = examsEarly.length > 0 ? examsEarly : await fetchExams()
         const picked = exams.find(e => e.published !== false) ?? exams[0]
         if (!picked?.id) throw new Error('No hay examen disponible')
         const full = await fetchExamById(picked.id)
