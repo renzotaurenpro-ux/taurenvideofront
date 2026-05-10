@@ -51,7 +51,11 @@ export default function VerTestPage() {
           if (cached !== null) {
             hasPurchase = cached
             fetchAuth(`/purchases/check/${video.id}`)
-              .then(r => r.ok && r.json().then((d: any) => setCachedPurchase(video.id, d?.purchased === true || d?.hasPurchase === true)))
+              .then(async (r) => {
+                if (!r.ok) return
+                const d: any = await r.json().catch(() => null)
+                setCachedPurchase(video.id, d?.purchased === true || d?.hasPurchase === true)
+              })
               .catch(() => {})
           } else {
             const check = await fetchAuth(`/purchases/check/${video.id}`).catch(() => null)
