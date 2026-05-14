@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/authContext'
 import { useRouter, usePathname } from 'next/navigation'
-import { LogOut, Settings, Award } from 'lucide-react'
+import { LogOut, Settings, Award, Play } from 'lucide-react'
 import Link from 'next/link'
 import ThemeToggle from '@/components/ThemeToggle'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
@@ -68,6 +68,19 @@ export default function AuthBar() {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          <Link
+            href="/ver"
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
+              pathname === '/ver' || pathname?.startsWith('/ver/')
+                ? 'border-[rgba(18,180,198,0.45)] bg-[rgba(18,180,198,0.12)] text-foreground'
+                : 'border-border bg-secondary/60 text-foreground hover:bg-secondary'
+            }`}
+          >
+            <Play size={12} className="fill-current" style={{ color: 'var(--scai-teal)' }} />
+            <span className="hidden sm:inline">Ir al video</span>
+            <span className="sm:hidden">Video</span>
+          </Link>
+
           {showVerActions && (
             <div className="hidden md:flex items-center gap-1.5">
               <Link
