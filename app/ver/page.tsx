@@ -201,22 +201,16 @@ export default function VerPage() {
                       <p className="text-white/45 text-xs sm:text-sm mt-2 leading-relaxed">
                         Pago único de $25.000 + IVA. Acceso inmediato tras el pago.
                       </p>
-                      <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                      <div className="mt-4">
                         <button
+                          type="button"
                           onClick={handleAddToCart}
-                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-transform"
+                          className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-transform"
                           style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 24px rgba(18,180,198,0.25)' }}
                         >
                           <ShoppingCart size={16} />
                           {inCart ? 'Ir al carrito' : 'Agregar al carrito'}
                         </button>
-                        <Link
-                          href="/carrito"
-                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white/70 border active:scale-[0.98] transition-transform"
-                          style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.03)' }}
-                        >
-                          Ver carrito
-                        </Link>
                       </div>
                     </div>
                   </div>
