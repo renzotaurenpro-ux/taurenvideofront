@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Award } from 'lucide-react'
 import { useAuth } from '@/lib/authContext'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
-import { fetchExams, fetchExamById, issueCertificate, submitExam, type Exam, type ExamSubmitResult } from '@/lib/exams'
+import { fetchPublishedExam, issueCertificate, submitExam, type Exam, type ExamSubmitResult } from '@/lib/exams'
 import { fetchPublishedCourse, checkCoursePurchase } from '@/lib/courses'
 import { getCachedPurchase, setCachedPurchase } from '@/lib/api'
 
@@ -37,10 +37,7 @@ export default function VerTestPage() {
 
     ;(async () => {
       try {
-        const [course, examsEarly] = await Promise.all([
-          fetchPublishedCourse(),
-          fetchExams(),
-        ])
+        const course = await fetchPublishedCourse()
 
         if (course?.id) {
           const cached = getCachedPurchase(course.id)
@@ -63,11 +60,8 @@ export default function VerTestPage() {
           }
         }
 
-        const exams = examsEarly.length > 0 ? examsEarly : await fetchExams()
-        const picked = exams.find(e => e.published !== false) ?? exams[0]
-        if (!picked?.id) throw new Error('No hay examen disponible')
-        const full = await fetchExamById(picked.id)
-        if (!full?.id || !Array.isArray(full.questions) || full.questions.length === 0) throw new Error('Examen inválido')
+        const full = await fetchPublishedExam()
+        if (!full) throw new Error('No se pudo cargar el examen. Revisa que esté publicado en el servidor.')
         if (!cancelled) {
           setExam(full)
           setSelected({})
@@ -232,11 +226,6 @@ export default function VerTestPage() {
           >
             {submitting ? 'Validando...' : 'Validar examen'}
           </button>
-          {error && (
-            <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
           {result?.passed && (
             <div className="flex flex-col sm:flex-row gap-2 pt-1">
               <Link href="/ver" className="flex-1 text-center rounded-xl py-3 text-sm font-bold border border-border bg-secondary/60 text-foreground hover:bg-secondary">

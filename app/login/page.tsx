@@ -69,7 +69,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-4 sm:px-6 md:px-8 pt-[max(4.5rem,calc(env(safe-area-inset-top,0px)+3.5rem))] sm:pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4rem))] pb-12 sm:pb-16">
+    <div className="relative min-h-[100dvh] min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-4 sm:px-6 pt-[max(3.25rem,calc(env(safe-area-inset-top,0px)+2.75rem))] pb-8">
       <PageBackground scene="login" />
       <Link
         href="/"
@@ -78,21 +78,21 @@ export default function LoginPage() {
         <Home size={12} style={{ color: 'var(--scai-teal)' }} />
         Inicio
       </Link>
-      <div className="w-full max-w-[min(100%,26rem)] mx-auto relative z-10 shrink-0">
-        <div className="flex flex-col items-center mb-5 sm:mb-7">
-          <Link href="/" className="flex items-center mb-4 sm:mb-5">
-            <Image src={ScaiLogo} alt="SCAI" priority className="h-9 sm:h-10 w-auto" />
+      <div className="w-full max-w-[min(100%,20rem)] mx-auto relative z-10 shrink-0">
+        <div className="flex flex-col items-center mb-3">
+          <Link href="/" className="flex items-center mb-3">
+            <Image src={ScaiLogo} alt="SCAI" priority className="h-8 w-auto" />
           </Link>
-          <h1 className="text-xl sm:text-2xl font-bold text-white text-center">Inicio de sesión</h1>
-          <p className="text-white/40 text-xs sm:text-sm mt-1.5 text-center max-w-[18rem] sm:max-w-xs px-1">
+          <h1 className="text-lg font-bold text-white text-center">Inicio de sesión</h1>
+          <p className="text-white/45 text-[11px] sm:text-xs mt-1 text-center max-w-[16rem] leading-snug">
             Accede a las III Jornadas de Inmunología Clínica
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl p-5 sm:p-7 md:p-8 space-y-4 sm:space-y-5 border w-full"
-          style={{ background: 'rgba(14,32,53,0.78)', borderColor: 'rgba(18,180,198,0.18)', backdropFilter: 'blur(14px)' }}
+          className="rounded-xl p-4 space-y-3 border w-full"
+          style={{ background: 'rgba(14,32,53,0.62)', borderColor: 'rgba(18,180,198,0.16)', backdropFilter: 'blur(12px)' }}
         >
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
@@ -101,14 +101,14 @@ export default function LoginPage() {
           )}
 
           <div>
-            <label className="block text-white/50 text-sm mb-2">Correo electrónico</label>
+            <label className="block text-white/50 text-xs mb-1.5">Correo electrónico</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
               placeholder="doctor@hospital.com"
-              className="w-full rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none transition-colors text-base"
+              className="w-full rounded-lg px-3 py-2.5 text-white placeholder:text-white/20 focus:outline-none transition-colors text-sm"
               style={{ background: 'rgba(11,25,40,0.8)', border: '1px solid rgba(18,180,198,0.2)' }}
               onFocus={e => e.target.style.borderColor = 'var(--scai-teal)'}
               onBlur={e => e.target.style.borderColor = 'rgba(18,180,198,0.2)'}
@@ -116,7 +116,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-white/50 text-sm mb-2">Contraseña</label>
+            <label className="block text-white/50 text-xs mb-1.5">Contraseña</label>
             <div className="relative">
               <input
                 type={showPass ? 'text' : 'password'}
@@ -124,7 +124,7 @@ export default function LoginPage() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full rounded-xl px-4 py-3 pr-12 text-white placeholder:text-white/20 focus:outline-none transition-colors text-base"
+                className="w-full rounded-lg px-3 py-2.5 pr-10 text-white placeholder:text-white/20 focus:outline-none transition-colors text-sm"
                 style={{ background: 'rgba(11,25,40,0.8)', border: '1px solid rgba(18,180,198,0.2)' }}
                 onFocus={e => e.target.style.borderColor = 'var(--scai-teal)'}
                 onBlur={e => e.target.style.borderColor = 'rgba(18,180,198,0.2)'}
@@ -132,9 +132,9 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPass(!showPass)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors p-1"
               >
-                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
@@ -142,14 +142,14 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full text-white font-semibold py-3.5 rounded-xl transition-all duration-200 active:scale-[0.98] text-base disabled:opacity-50"
+            className="w-full text-white font-semibold py-2.5 rounded-lg transition-all duration-200 active:scale-[0.98] text-sm disabled:opacity-50"
             style={{ background: 'var(--scai-teal)', boxShadow: '0 4px 16px rgba(18,180,198,0.3)' }}
           >
             {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </form>
 
-        <p className="text-center text-white/25 text-xs sm:text-sm mt-4 sm:mt-5 px-1">
+        <p className="text-center text-white/30 text-[11px] mt-3 px-1">
           ¿No tienes cuenta?{' '}
           <Link href="/registro" style={{ color: 'var(--scai-teal)' }} className="hover:brightness-125">
             Regístrate aquí
