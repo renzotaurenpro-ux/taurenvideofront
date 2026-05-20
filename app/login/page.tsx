@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, Home } from 'lucide-react'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
@@ -69,26 +69,29 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-12 overflow-hidden">
-      <PageBackground variant="auth" />
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-6 sm:mb-8">
-          <Link href="/" className="self-start inline-flex items-center gap-1.5 text-sm mb-4 sm:mb-6 text-white/40 hover:text-white/70">
-            <ArrowLeft size={14} />
-            Volver al inicio
+    <div className="relative min-h-[100dvh] min-h-screen w-full flex items-center justify-center overflow-x-hidden overflow-y-auto px-4 sm:px-6 md:px-8 py-[max(4.5rem,env(safe-area-inset-top,0px)+3.5rem)] pb-[max(1.5rem,env(safe-area-inset-bottom,0px)+1rem)]">
+      <PageBackground scene="login" />
+      <Link
+        href="/"
+        className="fixed top-[max(1rem,env(safe-area-inset-top,0px)+0.75rem)] left-[max(1rem,env(safe-area-inset-left,0px)+0.75rem)] z-20 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-medium text-white/65 hover:text-white/90 border border-white/12 bg-black/20 hover:bg-black/35 backdrop-blur-sm transition-colors"
+      >
+        <Home size={12} style={{ color: 'var(--scai-teal)' }} />
+        Inicio
+      </Link>
+      <div className="w-full max-w-[min(100%,28rem)] mx-auto relative z-10 shrink-0">
+        <div className="flex flex-col items-center mb-5 sm:mb-7">
+          <Link href="/" className="flex items-center mb-4 sm:mb-5">
+            <Image src={ScaiLogo} alt="SCAI" priority className="h-9 sm:h-10 w-auto" />
           </Link>
-          <Link href="/" className="flex items-center mb-5">
-            <Image src={ScaiLogo} alt="SCAI" priority className="h-10 w-auto" />
-          </Link>
-          <h1 className="text-2xl font-bold text-white">Iniciar sesión</h1>
-          <p className="text-white/40 text-sm mt-1.5 text-center max-w-xs">
+          <h1 className="text-xl sm:text-2xl font-bold text-white text-center">Iniciar sesión</h1>
+          <p className="text-white/40 text-xs sm:text-sm mt-1.5 text-center max-w-[18rem] sm:max-w-xs px-1">
             Accede a las III Jornadas de Inmunología Clínica
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl p-6 sm:p-8 space-y-5 border"
+          className="rounded-2xl p-5 sm:p-7 md:p-8 space-y-4 sm:space-y-5 border w-full"
           style={{ background: 'rgba(14,32,53,0.88)', borderColor: 'rgba(18,180,198,0.2)', backdropFilter: 'blur(10px)' }}
         >
           {error && (
@@ -146,7 +149,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-white/25 text-sm mt-5">
+        <p className="text-center text-white/25 text-xs sm:text-sm mt-4 sm:mt-5 px-1">
           ¿No tienes cuenta?{' '}
           <Link href="/registro" style={{ color: 'var(--scai-teal)' }} className="hover:brightness-125">
             Regístrate aquí

@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react'
+import { Home, CheckCircle2, Loader2 } from 'lucide-react'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
@@ -118,15 +118,17 @@ export default function RegistroPage() {
   const fieldStyle = { background: 'rgba(11,25,40,0.8)', border: '1px solid rgba(18,180,198,0.2)' } as const
 
   return (
-    <div className="relative min-h-screen px-4 py-10 sm:py-12 overflow-hidden">
-      <PageBackground variant="auth" />
-      <div className="relative mx-auto w-full max-w-4xl">
-
-        <div className="flex items-center justify-between mb-6">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors">
-            <ArrowLeft size={15} />
-            Volver
-          </Link>
+    <div className="relative min-h-screen px-4 py-10 sm:py-12 pt-14 overflow-hidden">
+      <PageBackground scene="registro" />
+      <Link
+        href="/"
+        className="fixed top-4 left-4 z-20 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-medium text-white/65 hover:text-white/90 border border-white/12 bg-black/20 hover:bg-black/35 backdrop-blur-sm transition-colors"
+      >
+        <Home size={12} style={{ color: 'var(--scai-teal)' }} />
+        Inicio
+      </Link>
+      <div className="relative mx-auto w-full max-w-4xl z-10">
+        <div className="flex justify-center mb-6">
           <Image src={ScaiLogo} alt="SCAI" priority className="h-8 w-auto" />
         </div>
 

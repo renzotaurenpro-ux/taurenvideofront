@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ShoppingCart, Check, X } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
+import { HeroDecor, QuoteDecor, CtaDecor } from '@/components/HomeDecor'
 import ScaiLogo from '../Logotipo-SCAI.png'
 
 const PONENTES = [
@@ -212,6 +213,7 @@ export default function Home() {
       <section
         className="relative flex min-h-screen flex-col justify-between overflow-hidden px-5 sm:px-8 pt-24 pb-8 bg-gradient-to-br from-background via-secondary to-background dark:from-[#0B1928] dark:via-[#0E2035] dark:to-[#0B2240]"
       >
+        <HeroDecor />
         <div className="pointer-events-none absolute inset-0"
           style={{ background: 'radial-gradient(ellipse at 65% 25%, rgba(18,180,198,0.11) 0%, transparent 58%)' }} />
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48 dark:block hidden"
@@ -470,9 +472,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-b border-border"
+      <section className="relative border-b border-border overflow-hidden"
         style={{ background: 'linear-gradient(135deg, rgba(18,180,198,0.04) 0%, transparent 60%)' }}>
-        <div className="mx-auto max-w-4xl px-5 sm:px-8 py-20 sm:py-28 text-center">
+        <QuoteDecor />
+        <div className="relative z-10 mx-auto max-w-4xl px-5 sm:px-8 py-20 sm:py-28 text-center">
           <p className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight mb-8">
             &ldquo;Actualización de primer nivel en inmunología clínica,{' '}
             <span style={{ color: 'var(--scai-teal)' }}>sin salir de tu consulta.</span>&rdquo;
@@ -528,8 +531,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="overflow-hidden bg-card dark:bg-gradient-to-br dark:from-[#0B1928] dark:to-[#0E2035]">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8 py-24 sm:py-32 flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
+      <section className="relative overflow-hidden bg-card dark:bg-gradient-to-br dark:from-[#0B1928] dark:to-[#0E2035]">
+        <CtaDecor />
+        <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 py-24 sm:py-32 flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] mb-5" style={{ color: 'var(--scai-teal)' }}>
               Sociedad Chilena de Alergia e Inmunología
