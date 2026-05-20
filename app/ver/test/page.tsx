@@ -171,20 +171,27 @@ export default function VerTestPage() {
               <div key={q.id} className="rounded-2xl border border-border bg-card p-4 sm:p-5">
                 <p className="text-sm font-semibold leading-snug text-foreground">{i + 1}. {q.text}</p>
                 <div className="mt-3 grid sm:grid-cols-2 gap-2">
-                  {q.options.map((opt) => {
+                  {q.options.map((opt, oi) => {
                     const active = selected[q.id] === opt.id
+                    const letter = String.fromCharCode(65 + oi)
                     return (
                       <button
                         key={opt.id}
                         type="button"
                         onClick={() => setSelected(s => ({ ...s, [q.id]: opt.id }))}
-                        className={`text-left rounded-xl border px-3 py-2.5 text-sm transition-colors ${
+                        className={`flex items-start gap-2.5 text-left rounded-xl border px-3 py-2.5 text-sm transition-colors ${
                           active
                             ? 'border-[color:var(--scai-teal)] bg-[rgba(18,180,198,0.12)] text-foreground'
                             : 'border-border bg-secondary/50 text-foreground/85 hover:bg-secondary'
                         }`}
                       >
-                        {opt.text}
+                        <span
+                          className="flex-shrink-0 mt-0.5 h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold"
+                          style={active ? { background: 'var(--scai-teal)', color: '#fff' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}
+                        >
+                          {letter}
+                        </span>
+                        <span className="flex-1 leading-snug">{opt.text}</span>
                       </button>
                     )
                   })}

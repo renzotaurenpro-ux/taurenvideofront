@@ -9,6 +9,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
+import PageBackground from '@/components/PageBackground'
 
 type FormState = {
   email: string
@@ -111,39 +112,41 @@ export default function RegistroPage() {
   }
 
   const inputClass =
-    'w-full rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground/70 focus:outline-none text-base border border-input bg-background transition-shadow focus:ring-2 focus:ring-ring/30'
+    'w-full rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none text-base transition-colors'
   const selectClass =
-    'w-full rounded-xl px-4 py-3 text-foreground focus:outline-none text-base border border-input bg-background transition-shadow focus:ring-2 focus:ring-ring/30 cursor-pointer'
+    'w-full rounded-xl px-4 py-3 text-white focus:outline-none text-base transition-colors cursor-pointer'
+  const fieldStyle = { background: 'rgba(11,25,40,0.8)', border: '1px solid rgba(18,180,198,0.2)' } as const
 
   return (
-    <div className="min-h-screen px-4 py-10 sm:py-12 bg-gradient-to-br from-background via-secondary to-background">
-      <div className="mx-auto w-full max-w-4xl">
+    <div className="relative min-h-screen px-4 py-10 sm:py-12 overflow-hidden">
+      <PageBackground />
+      <div className="relative mx-auto w-full max-w-4xl">
 
         <div className="flex items-center justify-between mb-6">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors">
             <ArrowLeft size={15} />
             Volver
           </Link>
           <Image src={ScaiLogo} alt="SCAI" priority className="h-8 w-auto" />
         </div>
 
-        <div className="rounded-3xl border border-border bg-card overflow-hidden">
-          <div className="px-6 sm:px-10 py-6 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="rounded-3xl border overflow-hidden" style={{ background: 'rgba(14,32,53,0.88)', borderColor: 'rgba(18,180,198,0.2)', backdropFilter: 'blur(10px)' }}>
+          <div className="px-6 sm:px-10 py-6 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style={{ borderColor: 'rgba(18,180,198,0.15)' }}>
             <div>
               <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: 'var(--scai-teal)' }}>
                 Registro de doctores
               </p>
-              <h1 className="mt-1.5 text-2xl sm:text-3xl font-black leading-tight">
+              <h1 className="mt-1.5 text-2xl sm:text-3xl font-black leading-tight text-white">
                 Crea tu cuenta
               </h1>
-              <p className="mt-1 text-muted-foreground text-sm leading-relaxed">
+              <p className="mt-1 text-white/50 text-sm leading-relaxed">
                 Completa tus datos y continúa al carrito para comprar el acceso.
               </p>
             </div>
-            <div className="flex-shrink-0 rounded-2xl border border-border bg-secondary/40 px-5 py-4 text-right">
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Inversión</p>
-              <p className="mt-0.5 text-2xl font-black">$25.000</p>
-              <p className="text-xs text-muted-foreground">+ IVA · pago único</p>
+            <div className="flex-shrink-0 rounded-2xl border px-5 py-4 text-right" style={{ background: 'rgba(18,180,198,0.1)', borderColor: 'rgba(18,180,198,0.25)' }}>
+              <p className="text-[10px] uppercase tracking-widest text-white/40">Inversión</p>
+              <p className="mt-0.5 text-2xl font-black text-white">$25.000</p>
+              <p className="text-xs text-white/40">+ IVA · pago único</p>
             </div>
           </div>
 
@@ -161,61 +164,61 @@ export default function RegistroPage() {
             )}
 
             <div className="mb-5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Datos personales</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-3">Datos personales</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1.5">Nombre</label>
-                  <input className={inputClass} value={form.firstName} onChange={e => setForm(s => ({ ...s, firstName: e.target.value }))} placeholder="Juan" required />
+                  <label className="block text-xs text-white/50 mb-1.5">Nombre</label>
+                  <input className={inputClass} style={fieldStyle} value={form.firstName} onChange={e => setForm(s => ({ ...s, firstName: e.target.value }))} placeholder="Juan" required />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1.5">Apellido</label>
-                  <input className={inputClass} value={form.lastName} onChange={e => setForm(s => ({ ...s, lastName: e.target.value }))} placeholder="Pérez" required />
+                  <label className="block text-xs text-white/50 mb-1.5">Apellido</label>
+                  <input className={inputClass} style={fieldStyle} value={form.lastName} onChange={e => setForm(s => ({ ...s, lastName: e.target.value }))} placeholder="Pérez" required />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1.5">RUT (opcional)</label>
-                  <input className={inputClass} value={form.rut} onChange={e => setForm(s => ({ ...s, rut: e.target.value }))} placeholder="12.345.678-9" />
+                  <label className="block text-xs text-white/50 mb-1.5">RUT (opcional)</label>
+                  <input className={inputClass} style={fieldStyle} value={form.rut} onChange={e => setForm(s => ({ ...s, rut: e.target.value }))} placeholder="12.345.678-9" />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1.5">Teléfono</label>
-                  <input className={inputClass} value={form.phoneNumber} onChange={e => setForm(s => ({ ...s, phoneNumber: e.target.value }))} placeholder="+56912345678" required />
+                  <label className="block text-xs text-white/50 mb-1.5">Teléfono</label>
+                  <input className={inputClass} style={fieldStyle} value={form.phoneNumber} onChange={e => setForm(s => ({ ...s, phoneNumber: e.target.value }))} placeholder="+56912345678" required />
                 </div>
               </div>
             </div>
 
             <div className="mb-5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Acceso a la plataforma</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-3">Acceso a la plataforma</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1.5">Correo electrónico</label>
-                  <input type="email" className={inputClass} value={form.email} onChange={e => setForm(s => ({ ...s, email: e.target.value }))} placeholder="usuario@correo.com" required />
+                  <label className="block text-xs text-white/50 mb-1.5">Correo electrónico</label>
+                  <input type="email" className={inputClass} style={fieldStyle} value={form.email} onChange={e => setForm(s => ({ ...s, email: e.target.value }))} placeholder="usuario@correo.com" required />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1.5">Contraseña</label>
-                  <input type="password" className={inputClass} value={form.password} onChange={e => setForm(s => ({ ...s, password: e.target.value }))} placeholder="Mínimo 6 caracteres" minLength={6} required />
+                  <label className="block text-xs text-white/50 mb-1.5">Contraseña</label>
+                  <input type="password" className={inputClass} style={fieldStyle} value={form.password} onChange={e => setForm(s => ({ ...s, password: e.target.value }))} placeholder="Mínimo 6 caracteres" minLength={6} required />
                 </div>
               </div>
             </div>
 
             <div className="mb-7">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Datos profesionales</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-3">Datos profesionales</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1.5">Ciudad</label>
-                  <select className={selectClass} value={form.city} onChange={e => setForm(s => ({ ...s, city: e.target.value }))} required>
+                  <label className="block text-xs text-white/50 mb-1.5">Ciudad</label>
+                  <select className={selectClass} style={fieldStyle} value={form.city} onChange={e => setForm(s => ({ ...s, city: e.target.value }))} required>
                     <option value="">Selecciona ciudad</option>
                     {CIUDADES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1.5">Área médica</label>
-                  <select className={selectClass} value={form.medicalArea} onChange={e => setForm(s => ({ ...s, medicalArea: e.target.value }))} required>
+                  <label className="block text-xs text-white/50 mb-1.5">Área médica</label>
+                  <select className={selectClass} style={fieldStyle} value={form.medicalArea} onChange={e => setForm(s => ({ ...s, medicalArea: e.target.value }))} required>
                     <option value="">Selecciona área</option>
                     {AREAS_MEDICAS.map(a => <option key={a} value={a}>{a}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1.5">Lugar de trabajo</label>
-                  <input className={inputClass} value={form.workplace} onChange={e => setForm(s => ({ ...s, workplace: e.target.value }))} placeholder="Clínica / Hospital" required />
+                  <label className="block text-xs text-white/50 mb-1.5">Lugar de trabajo</label>
+                  <input className={inputClass} style={fieldStyle} value={form.workplace} onChange={e => setForm(s => ({ ...s, workplace: e.target.value }))} placeholder="Clínica / Hospital" required />
                 </div>
               </div>
             </div>
@@ -230,7 +233,7 @@ export default function RegistroPage() {
                 {loading && <Loader2 size={16} className="animate-spin" />}
                 Crear cuenta y continuar
               </button>
-              <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-1">
+              <Link href="/login" className="text-sm text-white/40 hover:text-white/70 transition-colors px-1">
                 Ya tengo cuenta →
               </Link>
             </div>

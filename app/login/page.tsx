@@ -9,6 +9,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
+import PageBackground from '@/components/PageBackground'
 
 const API_BASE = '/api/proxy'
 
@@ -68,8 +69,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ background: 'linear-gradient(160deg, #0B1928 0%, #0E2035 60%, #0B2240 100%)' }}>
+    <div className="relative min-h-screen flex items-center justify-center px-4 py-12 overflow-hidden">
+      <PageBackground />
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-6 sm:mb-8">
           <Link href="/" className="self-start inline-flex items-center gap-1.5 text-sm mb-4 sm:mb-6 text-white/40 hover:text-white/70">
@@ -88,7 +89,7 @@ export default function LoginPage() {
         <form
           onSubmit={handleSubmit}
           className="rounded-2xl p-6 sm:p-8 space-y-5 border"
-          style={{ background: 'rgba(14,32,53,0.9)', borderColor: 'rgba(18,180,198,0.2)' }}
+          style={{ background: 'rgba(14,32,53,0.88)', borderColor: 'rgba(18,180,198,0.2)', backdropFilter: 'blur(10px)' }}
         >
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">

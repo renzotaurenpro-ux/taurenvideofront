@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User, ChevronDown } from 'lucide-react'
 import SecureVideoPlayer from '@/components/SecureVideoPlayer'
+import PageBackground from '@/components/PageBackground'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
-import { fetchPublishedVideos, fetchVideoById } from '@/lib/videos'
+import { fetchPublishedVideos } from '@/lib/videos'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchMyCertificates } from '@/lib/exams'
 
@@ -40,13 +41,18 @@ const PONENTES = [
   { nombre: 'Dr. Alonso Hernández', especialidad: 'Medicina Interna', avatar: 'AH' },
 ]
 
+function staticVideoSrc(file?: string) {
+  if (!file) return ''
+  return `/videos/${encodeURI(file)}`
+}
+
 const MODULOS_DATA = [
   {
     titulo: 'Módulo 1 · Errores Innatos de la Inmunidad',
     videos: [
-      { titulo: 'Apertura y marco conceptual', duracion: '18 min' },
-      { titulo: 'Bases moleculares y fenotípicas', duracion: '22 min' },
-      { titulo: 'Enfoque clínico inicial', duracion: '24 min' },
+      { titulo: 'Apertura y marco conceptual', duracion: '18 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
+      { titulo: 'Bases moleculares y fenotípicas', duracion: '22 min', file: 'Video Modulo 1  - Segunda Presentación.mov' },
+      { titulo: 'Enfoque clínico inicial', duracion: '24 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
       { titulo: 'Mesa de preguntas — bloque 1', duracion: '16 min' },
     ],
   },
@@ -135,10 +141,6 @@ export default function VerPage() {
         const data = await res.json()
         const hasPurchased = data.purchased === true || data.hasPurchase === true
         setPaid(hasPurchased)
-        if (!hasPurchased) return
-
-        const full = await fetchVideoById(video.id)
-        if (full?.url) setVideoUrl(full.url)
       } catch {
       }
     })()
@@ -148,6 +150,13 @@ export default function VerPage() {
       ac.abort()
     }
   }, [authLoading, firebaseUser, router])
+
+  useEffect(() => {
+    if (!paid) return
+    const file = MODULOS_DATA[activeModulo]?.videos[activeVideoIdx]?.file
+    const src = staticVideoSrc(file)
+    if (src) setVideoUrl(src)
+  }, [paid, activeModulo, activeVideoIdx])
 
   function handleAddToCart() {
     addToCart({ ...PRODUCT, videoId: backendVideoId ?? undefined }, 1)
@@ -160,58 +169,86 @@ export default function VerPage() {
 
   if (loading || (!firebaseUser && !authLoading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#080f1a' }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--scai-teal)', borderTopColor: 'transparent' }} />
-          <p className="text-muted-foreground text-sm">Cargando tu acceso...</p>
+          <div className="h-10 w-10 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--scai-teal)', borderTopColor: 'transparent' }} />
+          <p className="text-white/40 text-sm">Cargando tu acceso...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="relative min-h-screen flex flex-col text-foreground overflow-hidden">
+      <PageBackground />
       <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-8 pt-10">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5 lg:gap-6">
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 mb-3 text-xs text-muted-foreground uppercase tracking-wider overflow-hidden">
+            <div className="flex items-center gap-1.5 mb-3 text-xs text-white/40 uppercase tracking-wider overflow-hidden">
               <FlaskConical size={11} className="flex-shrink-0" />
               <span className="truncate hidden sm:block">III Jornadas Regionales de Inmunología Clínica</span>
               <span className="truncate sm:hidden">III Jornadas · SCAI</span>
               <ChevronRight size={11} className="flex-shrink-0" />
-              <span className="text-muted-foreground flex-shrink-0">Grabación</span>
+              <span className="text-white/60 flex-shrink-0">Grabación</span>
             </div>
 
-            <div className="relative">
-              <SecureVideoPlayer videoUrl={videoUrl} />
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/50" style={{ background: 'rgba(8,15,26,0.55)', border: '1px solid rgba(18,180,198,0.12)' }}>
+
               {!paid && (
-                <div className="absolute inset-0 rounded-2xl overflow-hidden">
-                  <div className="absolute inset-0" style={{ background: 'rgba(11,25,40,0.62)' }} />
-                  <div className="absolute inset-0" style={{ backdropFilter: 'blur(6px)' }} />
-                  <div className="absolute inset-0 flex items-center justify-center p-5 sm:p-10">
-                    <div className="w-full max-w-md rounded-2xl border p-5 sm:p-6 text-center"
-                      style={{ background: 'rgba(14,32,53,0.92)', borderColor: 'rgba(18,180,198,0.22)' }}>
-                      <div className="mx-auto mb-3 h-10 w-10 rounded-full flex items-center justify-center"
-                        style={{ background: 'rgba(18,180,198,0.18)' }}>
-                        <Lock size={18} style={{ color: 'var(--scai-teal)' }} />
-                      </div>
-                      <p className="text-white font-bold text-base sm:text-lg leading-snug">
-                        Agrega el acceso al carrito para ver la grabación completa
-                      </p>
-                      <p className="text-white/45 text-xs sm:text-sm mt-2 leading-relaxed">
-                        Pago único de $25.000 + IVA. Acceso inmediato tras el pago.
-                      </p>
-                      <div className="mt-4">
-                        <button
-                          type="button"
-                          onClick={handleAddToCart}
-                          className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-transform"
-                          style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 24px rgba(18,180,198,0.25)' }}
-                        >
-                          <ShoppingCart size={16} />
-                          {inCart ? 'Ir al carrito' : 'Agregar al carrito'}
-                        </button>
-                      </div>
+                <>
+                  <Image
+                    src="/sin%20fondo/Inmunoglobulina.png"
+                    alt=""
+                    width={220}
+                    height={220}
+                    className="absolute -right-6 top-1/2 -translate-y-1/2 w-40 sm:w-52 opacity-[0.09] pointer-events-none select-none hidden sm:block"
+                    aria-hidden
+                    unoptimized
+                  />
+                  <Image
+                    src="/sin%20fondo/Inmunoglobulina-IgG.png"
+                    alt=""
+                    width={180}
+                    height={180}
+                    className="absolute -left-8 bottom-2 w-28 sm:w-40 opacity-[0.08] pointer-events-none select-none hidden sm:block"
+                    aria-hidden
+                    unoptimized
+                  />
+                </>
+              )}
+
+              <div className="relative z-10 p-2 sm:p-3">
+                <SecureVideoPlayer videoUrl={videoUrl} />
+              </div>
+
+              {!paid && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center p-5 sm:p-10">
+                  <div
+                    className="w-full max-w-md rounded-2xl border p-5 sm:p-6 text-center"
+                    style={{ background: 'rgba(8,15,26,0.88)', borderColor: 'rgba(18,180,198,0.28)', backdropFilter: 'blur(4px)' }}
+                  >
+                    <div
+                      className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center"
+                      style={{ background: 'rgba(18,180,198,0.18)', border: '1px solid rgba(18,180,198,0.3)' }}
+                    >
+                      <Lock size={20} style={{ color: 'var(--scai-teal)' }} />
+                    </div>
+                    <p className="text-white font-bold text-base sm:text-lg leading-snug">
+                      Agrega el acceso al carrito para ver la grabación completa
+                    </p>
+                    <p className="mt-2 text-xs sm:text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                      Pago único de $25.000 + IVA · Acceso inmediato tras el pago
+                    </p>
+                    <div className="mt-5">
+                      <button
+                        type="button"
+                        onClick={handleAddToCart}
+                        className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-transform"
+                        style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 28px rgba(18,180,198,0.35)' }}
+                      >
+                        <ShoppingCart size={16} />
+                        {inCart ? 'Ir al carrito' : 'Agregar al carrito'}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -219,7 +256,7 @@ export default function VerPage() {
             </div>
 
             <div className="mt-4">
-              <h1 className="text-base sm:text-xl md:text-2xl font-bold leading-snug">
+              <h1 className="text-base sm:text-xl md:text-2xl font-bold leading-snug text-white">
                 Cuando el Sistema Inmune Falla: Desafíos en Errores Innatos de la Inmunidad
               </h1>
               {clipActual && paid && (
@@ -229,14 +266,14 @@ export default function VerPage() {
                 </p>
               )}
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-white/40">
-                <span className="hidden sm:inline text-muted-foreground">Sociedad Chilena de Alergia e Inmunología · SCAI</span>
+                <span className="hidden sm:inline">Sociedad Chilena de Alergia e Inmunología · SCAI</span>
                 <span className="sm:hidden">SCAI</span>
                 <span>·</span>
-                <span className="flex items-center gap-1 text-muted-foreground"><Clock size={11} /> 19 Jun 2026</span>
+                <span className="flex items-center gap-1"><Clock size={11} /> 19 Jun 2026</span>
                 <span>·</span>
-                <span className="text-muted-foreground">4 módulos · 16 ponentes</span>
+                <span>4 módulos · 16 ponentes</span>
                 <span>·</span>
-                <span className="text-muted-foreground">Acreditado CONACEM</span>
+                <span>Acreditado CONACEM</span>
               </div>
               <div className="mt-3 flex flex-col sm:flex-row gap-2">
                 <Link
@@ -264,7 +301,7 @@ export default function VerPage() {
               </div>
             </div>
 
-            <div className="mt-4 flex gap-0.5 border-b border-border overflow-x-auto scrollbar-none">
+            <div className="mt-4 flex gap-0.5 border-b border-white/10 overflow-x-auto scrollbar-none">
               {([
                 { key: 'descripcion', label: 'Descripción' },
                 { key: 'ponentes', label: 'Expositores' },
@@ -274,7 +311,7 @@ export default function VerPage() {
                   key={key}
                   onClick={() => setActiveTab(key)}
                   className={`px-3 sm:px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap flex-shrink-0 ${
-                    activeTab === key ? 'text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
+                    activeTab === key ? 'text-white' : 'border-transparent text-white/40 hover:text-white/70'
                   }`}
                   style={activeTab === key ? { borderBottomColor: 'var(--scai-teal)' } : {}}
                 >
@@ -285,7 +322,7 @@ export default function VerPage() {
 
             <div className="mt-4">
               {activeTab === 'descripcion' && (
-                <div className="space-y-3 text-muted-foreground text-sm leading-relaxed max-w-2xl">
+                <div className="space-y-3 text-white/60 text-sm leading-relaxed max-w-2xl">
                   <p>
                     Las III Jornadas Regionales de Inmunología Clínica de la Sociedad Chilena de Alergia
                     e Inmunología (SCAI) abordan los Errores Innatos de la Inmunidad (EII), también
@@ -307,10 +344,11 @@ export default function VerPage() {
                     ].map(({ label, value }) => (
                       <div
                         key={label}
-                        className="rounded-xl p-3 border border-border bg-card"
+                        className="rounded-xl p-3 border"
+                        style={{ background: 'rgba(18,180,198,0.07)', borderColor: 'rgba(18,180,198,0.15)' }}
                       >
-                        <p className="text-muted-foreground text-xs uppercase tracking-wide">{label}</p>
-                        <p className="text-foreground font-semibold text-sm mt-0.5">{value}</p>
+                        <p className="text-white/35 text-xs uppercase tracking-wide">{label}</p>
+                        <p className="text-white font-semibold text-sm mt-0.5">{value}</p>
                       </div>
                     ))}
                   </div>
@@ -320,20 +358,20 @@ export default function VerPage() {
               {activeTab === 'ponentes' && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
                   {PONENTES.map(p => (
-                    <div key={p.nombre} className="rounded-2xl border border-border bg-card p-3 flex flex-col items-center text-center gap-2">
+                    <div key={p.nombre} className="rounded-2xl border p-3 flex flex-col items-center text-center gap-2" style={{ background: 'rgba(14,32,53,0.7)', borderColor: 'rgba(18,180,198,0.15)', backdropFilter: 'blur(6px)' }}>
                       {/daniela/i.test(p.nombre) && /budinich|buchini/i.test(p.nombre) ? (
-                        <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-border flex-shrink-0">
+                        <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border flex-shrink-0" style={{ borderColor: 'rgba(18,180,198,0.3)' }}>
                           <Image src="/doctora-perfil.jpg.jpeg" alt={p.nombre} fill sizes="48px" className="object-cover" />
                         </div>
                       ) : (
-                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border border-border bg-secondary flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0"
-                          style={{ color: 'var(--scai-teal)' }}>
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0"
+                          style={{ background: 'rgba(18,180,198,0.15)', borderColor: 'rgba(18,180,198,0.25)', color: 'var(--scai-teal)' }}>
                           {p.avatar}
                         </div>
                       )}
                       <div>
-                        <p className="font-semibold text-[11px] sm:text-xs text-foreground leading-tight">{p.nombre}</p>
-                        <p className="text-muted-foreground text-[10px] sm:text-[11px] mt-0.5 leading-relaxed hidden sm:block">{p.especialidad}</p>
+                        <p className="font-semibold text-[11px] sm:text-xs text-white leading-tight">{p.nombre}</p>
+                        <p className="text-white/40 text-[10px] sm:text-[11px] mt-0.5 leading-relaxed hidden sm:block">{p.especialidad}</p>
                       </div>
                     </div>
                   ))}
@@ -343,36 +381,32 @@ export default function VerPage() {
               {activeTab === 'programa' && (
                 <div className="space-y-4">
                   {MODULOS_DATA.map((mod, mi) => (
-                    <div key={mi} className="rounded-xl border border-border bg-card overflow-hidden">
-                      <p className="text-[11px] font-bold uppercase tracking-wider px-3.5 py-2.5 bg-secondary/60"
-                        style={{ color: 'var(--scai-teal)' }}>
+                    <div key={mi} className="rounded-xl border overflow-hidden" style={{ background: 'rgba(14,32,53,0.7)', borderColor: 'rgba(18,180,198,0.15)', backdropFilter: 'blur(6px)' }}>
+                      <p className="text-[11px] font-bold uppercase tracking-wider px-3.5 py-2.5"
+                        style={{ background: 'rgba(18,180,198,0.1)', color: 'var(--scai-teal)' }}>
                         {mod.titulo}
                       </p>
-                      <div className="divide-y divide-border">
+                      <div className="divide-y" style={{ borderColor: 'rgba(18,180,198,0.08)' }}>
                         {mod.videos.map((v, vi) => {
                           const sel = activeModulo === mi && activeVideoIdx === vi && paid
                           return (
                             <div
                               key={vi}
-                              className={`flex items-center gap-3 p-3 sm:p-3.5 transition-colors ${sel ? 'bg-[rgba(18,180,198,0.08)]' : ''}`}
-                              style={sel ? { borderLeft: '3px solid var(--scai-teal)' } : {}}
+                              className="flex items-center gap-3 p-3 sm:p-3.5 transition-colors"
+                              style={sel ? { background: 'rgba(18,180,198,0.08)', borderLeft: '3px solid var(--scai-teal)' } : {}}
                             >
                               <div
                                 className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 tabular-nums"
-                                style={sel
-                                  ? { background: 'var(--scai-teal)', color: '#fff' }
-                                  : undefined}
+                                style={sel ? { background: 'var(--scai-teal)', color: '#fff' } : { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.3)' }}
                               >
-                                <span className={sel ? '' : 'text-muted-foreground/50 bg-secondary rounded-full w-full h-full flex items-center justify-center'}>
-                                  {mi + 1}.{vi + 1}
-                                </span>
+                                {mi + 1}.{vi + 1}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-xs sm:text-sm font-medium leading-snug ${sel ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                <p className={`text-xs sm:text-sm font-medium leading-snug ${sel ? 'text-white' : 'text-white/60'}`}>
                                   {v.titulo}
                                 </p>
                               </div>
-                              <span className="text-muted-foreground/50 text-xs flex-shrink-0 flex items-center gap-1">
+                              <span className="text-xs flex-shrink-0 flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
                                 <Clock size={10} />{v.duracion}
                               </span>
                             </div>
@@ -387,24 +421,24 @@ export default function VerPage() {
           </div>
 
           <aside className="space-y-3 lg:space-y-4 lg:sticky lg:top-[76px] h-fit">
-            <div className="rounded-2xl p-4 sm:p-5 border border-border bg-card">
+            <div className="rounded-2xl p-4 sm:p-5 border" style={{ background: 'rgba(14,32,53,0.75)', borderColor: 'rgba(18,180,198,0.2)', backdropFilter: 'blur(8px)' }}>
               <div className="flex items-center gap-2 mb-3">
-                <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(18,180,198,0.15)]">
+                <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(18,180,198,0.2)' }}>
                   <User size={15} style={{ color: 'var(--scai-teal)' }} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Sesión activa</p>
-                  <p className="text-sm text-foreground font-medium truncate max-w-full">{displayEmail}</p>
+                  <p className="text-xs text-white/40 uppercase tracking-wide">Sesión activa</p>
+                  <p className="text-sm text-white font-medium truncate max-w-full">{displayEmail}</p>
                 </div>
               </div>
               {paid ? (
-                <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500 dark:bg-green-400 animate-pulse flex-shrink-0" />
+                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
                   Acceso completo activo
                 </div>
               ) : (
-                <div className="flex items-center justify-between gap-2 text-xs rounded-xl px-3 py-2 border border-border bg-secondary/50">
-                  <span className="text-muted-foreground">Acceso pendiente</span>
+                <div className="flex items-center justify-between gap-2 text-xs rounded-xl px-3 py-2 border" style={{ background: 'rgba(18,180,198,0.08)', borderColor: 'rgba(18,180,198,0.2)' }}>
+                  <span className="text-white/55">Acceso pendiente</span>
                   <button onClick={handleAddToCart} className="text-xs font-semibold" style={{ color: 'var(--scai-teal)' }}>
                     {inCart ? 'Ver carrito' : 'Agregar'}
                   </button>
@@ -412,33 +446,28 @@ export default function VerPage() {
               )}
             </div>
 
-            <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="rounded-2xl border overflow-hidden" style={{ background: 'rgba(14,32,53,0.75)', borderColor: 'rgba(18,180,198,0.14)', backdropFilter: 'blur(8px)' }}>
               <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Contenido</h3>
-                <span className="text-xs text-muted-foreground/60 text-right">4 módulos · 16 videos</span>
+                <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wide">Contenido</h3>
+                <span className="text-xs text-white/25">4 módulos · 16 videos</span>
               </div>
-              <div className="divide-y divide-border">
+              <div className="divide-y" style={{ borderColor: 'rgba(18,180,198,0.08)' }}>
                 {MODULOS_DATA.map((mod, mi) => (
                   <div key={mi}>
                     <button
                       type="button"
                       onClick={() => setOpenModuloIdx(o => o === mi ? -1 : mi)}
-                      className={`w-full flex items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-accent/50 ${openModuloIdx === mi ? 'bg-accent/60' : ''}`}
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-white/5"
+                      style={openModuloIdx === mi ? { background: 'rgba(18,180,198,0.08)' } : {}}
                     >
-                      <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                        paid ? 'bg-secondary' : 'bg-secondary/50'
-                      }`}
-                        style={{ color: paid ? 'var(--scai-teal)' : undefined }}
-                      >
-                        <span className={paid ? '' : 'text-muted-foreground/40'}>{mi + 1}</span>
+                      <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                        style={paid ? { background: 'rgba(255,255,255,0.1)', color: 'var(--scai-teal)' } : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)' }}>
+                        {mi + 1}
                       </div>
-                      <span className={`flex-1 text-xs font-semibold leading-snug line-clamp-2 ${paid ? 'text-foreground' : 'text-muted-foreground/40'}`}>
+                      <span className={`flex-1 text-xs font-semibold leading-snug line-clamp-2 ${paid ? 'text-white/85' : 'text-white/25'}`}>
                         {mod.titulo}
                       </span>
-                      <ChevronDown
-                        size={16}
-                        className={`flex-shrink-0 text-muted-foreground transition-transform ${openModuloIdx === mi ? 'rotate-180' : ''}`}
-                      />
+                      <ChevronDown size={16} className={`flex-shrink-0 transition-transform ${openModuloIdx === mi ? 'rotate-180' : ''}`} style={{ color: 'rgba(255,255,255,0.35)' }} />
                     </button>
                     {openModuloIdx === mi && (
                       <div className="pb-2 px-2 space-y-0.5">
@@ -448,34 +477,20 @@ export default function VerPage() {
                             <button
                               key={vi}
                               type="button"
-                              onClick={() => {
-                                if (!paid) return
-                                setActiveModulo(mi)
-                                setActiveVideoIdx(vi)
-                                setOpenModuloIdx(mi)
-                              }}
-                              className={`w-full text-left rounded-xl px-3 py-2.5 flex items-start gap-2.5 transition-colors ${
-                                sel ? 'bg-[rgba(18,180,198,0.12)]' : paid ? 'hover:bg-accent/50' : 'cursor-default'
-                              }`}
+                              onClick={() => { if (!paid) return; setActiveModulo(mi); setActiveVideoIdx(vi); setOpenModuloIdx(mi) }}
+                              className={`w-full text-left rounded-xl px-3 py-2.5 flex items-start gap-2.5 transition-colors ${paid ? 'hover:bg-white/[0.04]' : 'cursor-default'}`}
+                              style={sel ? { background: 'rgba(18,180,198,0.14)' } : {}}
                             >
-                              <span
-                                className="text-[10px] font-bold tabular-nums mt-0.5 w-7 flex-shrink-0"
-                                style={{ color: sel ? 'var(--scai-teal)' : undefined }}
-                              >
-                                <span className={sel ? '' : 'text-muted-foreground/40'}>{mi + 1}.{vi + 1}</span>
+                              <span className="text-[10px] font-bold tabular-nums mt-0.5 w-7 flex-shrink-0" style={{ color: sel ? 'var(--scai-teal)' : 'rgba(255,255,255,0.25)' }}>
+                                {mi + 1}.{vi + 1}
                               </span>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-[11px] leading-snug ${sel ? 'text-foreground font-semibold' : paid ? 'text-muted-foreground' : 'text-muted-foreground/35'}`}>
-                                  {v.titulo}
-                                </p>
-                                <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${sel ? '' : 'text-muted-foreground/50'}`}
-                                  style={{ color: sel ? 'var(--scai-teal)' : undefined }}>
+                                <p className={`text-[11px] leading-snug ${sel ? 'text-white font-medium' : paid ? 'text-white/65' : 'text-white/20'}`}>{v.titulo}</p>
+                                <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: sel ? 'var(--scai-teal)' : 'rgba(255,255,255,0.22)' }}>
                                   <Clock size={9} />{v.duracion}
                                 </p>
                               </div>
-                              {sel && (
-                                <div className="h-1.5 w-1.5 rounded-full flex-shrink-0 mt-1.5 animate-pulse" style={{ background: 'var(--scai-teal)' }} />
-                              )}
+                              {sel && <div className="h-1.5 w-1.5 rounded-full flex-shrink-0 mt-1.5 animate-pulse" style={{ background: 'var(--scai-teal)' }} />}
                             </button>
                           )
                         })}
@@ -486,14 +501,14 @@ export default function VerPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl p-4 sm:p-5 border border-border bg-card">
-              <p className="text-xs text-muted-foreground mb-1 font-semibold uppercase tracking-wide">Organiza</p>
-              <p className="text-sm text-foreground/80">Sociedad Chilena de Alergia e Inmunología</p>
+            <div className="rounded-2xl p-4 sm:p-5 border" style={{ background: 'rgba(14,32,53,0.75)', borderColor: 'rgba(18,180,198,0.14)', backdropFilter: 'blur(8px)' }}>
+              <p className="text-xs text-white/40 mb-1 font-semibold uppercase tracking-wide">Organiza</p>
+              <p className="text-sm text-white/70">Sociedad Chilena de Alergia e Inmunología</p>
               <p className="text-xs mt-1" style={{ color: 'var(--scai-teal)' }}>www.scai.cl · @scai.cl</p>
             </div>
 
-            <Link href="/ver/test"
-              className="w-full flex items-center justify-center gap-2 border border-border bg-secondary/60 text-foreground hover:bg-secondary text-sm font-medium py-3 rounded-xl transition-all active:scale-95">
+            <Link href="/ver/test" className="w-full flex items-center justify-center gap-2 border text-white/70 hover:text-white text-sm font-medium py-3 rounded-xl transition-all active:scale-95"
+              style={{ background: 'rgba(18,180,198,0.1)', borderColor: 'rgba(18,180,198,0.25)', backdropFilter: 'blur(8px)' }}>
               <Award size={15} style={{ color: 'var(--scai-teal)' }} />
               Realizar examen
             </Link>
@@ -501,18 +516,15 @@ export default function VerPage() {
             <a
               href={certUnlocked ? '/certificado' : undefined}
               onClick={(e) => { if (!certUnlocked) e.preventDefault() }}
-              className={`w-full flex items-center justify-center gap-2 border text-sm font-medium py-3 rounded-xl transition-all active:scale-95 ${
-                certUnlocked
-                  ? 'border-[rgba(18,180,198,0.4)] bg-[rgba(18,180,198,0.1)] text-foreground hover:bg-[rgba(18,180,198,0.18)]'
-                  : 'border-border bg-secondary/30 text-muted-foreground/40 cursor-not-allowed'
-              }`}
+              className={`w-full flex items-center justify-center gap-2 border text-sm font-medium py-3 rounded-xl transition-all active:scale-95 ${certUnlocked ? 'text-white hover:text-white' : 'text-white/25 cursor-not-allowed'}`}
+              style={{ background: certUnlocked ? 'rgba(18,180,198,0.16)' : 'rgba(255,255,255,0.03)', borderColor: certUnlocked ? 'rgba(18,180,198,0.35)' : 'rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)' }}
             >
-              <Award size={15} style={{ color: certUnlocked ? 'var(--scai-teal)' : undefined }} />
+              <Award size={15} style={{ color: certUnlocked ? 'var(--scai-teal)' : 'rgba(255,255,255,0.25)' }} />
               Descargar certificado
             </a>
 
-            <div className="rounded-2xl p-4 border border-border bg-secondary/30">
-              <p className="text-xs text-muted-foreground/50 leading-relaxed text-center">
+            <div className="rounded-2xl p-4 border" style={{ background: 'rgba(14,32,53,0.5)', borderColor: 'rgba(18,180,198,0.08)', backdropFilter: 'blur(8px)' }}>
+              <p className="text-xs text-white/20 leading-relaxed text-center">
                 Contenido protegido. Prohibida la grabación y distribución no autorizada.
               </p>
             </div>
