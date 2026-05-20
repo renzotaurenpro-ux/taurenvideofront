@@ -11,8 +11,9 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
-import { fetchPublishedVideos, fetchVideoById, normalizeBunnyUrl } from '@/lib/videos'
-import { staticVideoPath, staticVideoMime, lessonFile } from '@/lib/staticVideos'
+import { fetchPublishedVideos } from '@/lib/videos'
+import { useLessonPlayer } from '@/lib/useLessonPlayer'
+import { staticVideoPath } from '@/lib/staticVideos'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchMyCertificates } from '@/lib/exams'
 
@@ -85,18 +86,28 @@ const MODULOS_DATA = [
 export default function VerPage() {
   const router = useRouter()
   const { firebaseUser, profile, loading: authLoading } = useAuth()
-  const [videoUrl, setVideoUrl] = useState('')
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'descripcion' | 'ponentes' | 'programa'>('descripcion')
   const [paid, setPaid] = useState(false)
   const [inCart, setInCart] = useState(false)
   const [backendVideoId, setBackendVideoId] = useState<string | null>(null)
-  const [activeModulo, setActiveModulo] = useState(0)
-  const [activeVideoIdx, setActiveVideoIdx] = useState(0)
-  const [openModuloIdx, setOpenModuloIdx] = useState(0)
   const [certUnlocked, setCertUnlocked] = useState(false)
-  const [videoMime, setVideoMime] = useState('video/mp4')
-  const [playerKey, setPlayerKey] = useState('0-0')
+
+  const getLessonFile = useCallback((mi: number, vi: number) => MODULOS_DATA[mi]?.videos[vi]?.file, [])
+
+  const {
+    activeModulo,
+    activeVideoIdx,
+    openModuloIdx,
+    setOpenModuloIdx,
+    videoUrl,
+    videoMime,
+    playerKey,
+    selectLesson,
+    onVideoError,
+    buffering,
+    onPlayerReady,
+  } = useLessonPlayer(paid, backendVideoId, getLessonFile)
 
   useEffect(() => {
     const sync = () => {
@@ -119,7 +130,6 @@ export default function VerPage() {
     if (authLoading) return
     if (!firebaseUser) { router.push('/login'); return }
 
-    setVideoUrl(DEMO_VIDEO)
     setLoading(false)
     setInCart(hasItem(PRODUCT.id))
 
@@ -149,33 +159,6 @@ export default function VerPage() {
       ac.abort()
     }
   }, [authLoading, firebaseUser, router])
-
-  const loadBunnyFallback = useCallback(async () => {
-    if (!backendVideoId) return
-    const full = await fetchVideoById(backendVideoId)
-    const url = normalizeBunnyUrl(full?.url) ?? full?.url
-    if (!url) return
-    setVideoMime('video/mp4')
-    setVideoUrl(url)
-    setPlayerKey(`${activeModulo}-${activeVideoIdx}-bunny-${Date.now()}`)
-  }, [backendVideoId, activeModulo, activeVideoIdx])
-
-  const selectLesson = useCallback((mi: number, vi: number) => {
-    if (!paid) return
-    setActiveModulo(mi)
-    setActiveVideoIdx(vi)
-    setOpenModuloIdx(mi)
-    const file = lessonFile(mi, vi, MODULOS_DATA[mi]?.videos[vi]?.file)
-    const src = staticVideoPath(file)
-    setVideoMime(staticVideoMime(file))
-    setVideoUrl(src)
-    setPlayerKey(`${mi}-${vi}-${file}`)
-  }, [paid])
-
-  useEffect(() => {
-    if (!paid) return
-    selectLesson(0, 0)
-  }, [paid, selectLesson])
 
   function handleAddToCart() {
     addToCart({ ...PRODUCT, videoId: backendVideoId ?? undefined }, 1)
@@ -237,11 +220,17 @@ export default function VerPage() {
               )}
 
               <div className="relative z-10 p-2 sm:p-3">
+                {buffering && paid && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/40 pointer-events-none">
+                    <div className="h-8 w-8 rounded-full border-2 border-white/20 border-t-[color:var(--scai-teal)] animate-spin" />
+                  </div>
+                )}
                 <SecureVideoPlayer
                   key={playerKey}
-                  videoUrl={videoUrl}
+                  videoUrl={paid ? videoUrl : DEMO_VIDEO}
                   mimeType={videoMime}
-                  onError={loadBunnyFallback}
+                  onError={onVideoError}
+                  onReady={onPlayerReady}
                 />
               </div>
 
@@ -504,6 +493,17 @@ export default function VerPage() {
                             <button
                               key={vi}
                               type="button"
+                              onMouseEnter={() => {
+                                const f = MODULOS_DATA[mi]?.videos[vi]?.file
+                                if (!f || !paid) return
+                                const href = staticVideoPath(f)
+                                if (!document.querySelector(`link[rel="prefetch"][href="${href}"]`)) {
+                                  const l = document.createElement('link')
+                                  l.rel = 'prefetch'
+                                  l.href = href
+                                  document.head.appendChild(l)
+                                }
+                              }}
                               onClick={() => selectLesson(mi, vi)}
                               className={`w-full text-left rounded-xl px-3 py-2.5 flex items-start gap-2.5 transition-colors ${paid ? 'hover:bg-white/[0.04]' : 'cursor-default'}`}
                               style={sel ? { background: 'rgba(18,180,198,0.14)' } : {}}
