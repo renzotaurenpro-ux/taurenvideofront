@@ -3,9 +3,10 @@
 interface Props {
   videoUrl: string
   mimeType?: string
+  onError?: () => void
 }
 
-export default function SecureVideoPlayer({ videoUrl, mimeType }: Props) {
+export default function SecureVideoPlayer({ videoUrl, mimeType, onError }: Props) {
   const isEmbed =
     videoUrl.startsWith('http') &&
     (videoUrl.includes('iframe.mediadelivery.net') ||
@@ -21,11 +22,11 @@ export default function SecureVideoPlayer({ videoUrl, mimeType }: Props) {
       <div className="relative bg-black rounded-2xl overflow-hidden w-full" style={{ aspectRatio: '16/9' }}>
         {videoUrl && isLocal ? (
           <video
-            key={videoUrl}
             controls
             playsInline
             preload="metadata"
             className="absolute inset-0 h-full w-full object-contain bg-black"
+            onError={() => onError?.()}
           >
             <source src={videoUrl} type={mime} />
           </video>
@@ -38,12 +39,12 @@ export default function SecureVideoPlayer({ videoUrl, mimeType }: Props) {
           />
         ) : videoUrl ? (
           <video
-            key={videoUrl}
             src={videoUrl}
             controls
             playsInline
             preload="metadata"
             className="absolute inset-0 h-full w-full object-contain bg-black"
+            onError={() => onError?.()}
           />
         ) : null}
       </div>

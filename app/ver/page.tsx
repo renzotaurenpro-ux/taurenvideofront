@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User, ChevronDown } from 'lucide-react'
@@ -12,7 +12,7 @@ import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
 import { fetchPublishedVideos, fetchVideoById, normalizeBunnyUrl } from '@/lib/videos'
-import { staticVideoPath, staticVideoMime, isBrowserNativeVideo } from '@/lib/staticVideos'
+import { staticVideoPath, staticVideoMime, lessonFile } from '@/lib/staticVideos'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchMyCertificates } from '@/lib/exams'
 
@@ -50,34 +50,34 @@ const MODULOS_DATA = [
       { titulo: 'Apertura y marco conceptual', duracion: '18 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
       { titulo: 'Bases moleculares y fenotípicas', duracion: '22 min', file: 'Video Modulo 1  - Segunda Presentación.mov' },
       { titulo: 'Enfoque clínico inicial', duracion: '24 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
-      { titulo: 'Mesa de preguntas — bloque 1', duracion: '16 min' },
+      { titulo: 'Mesa de preguntas — bloque 1', duracion: '16 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
     ],
   },
   {
     titulo: 'Módulo 2 · Diagnóstico y laboratorio',
     videos: [
-      { titulo: 'Inmunodeficiencias primarias: enfoque temprano', duracion: '25 min' },
-      { titulo: 'Citometría de flujo en práctica clínica', duracion: '28 min' },
-      { titulo: 'Genética molecular y utilidad práctica', duracion: '26 min' },
-      { titulo: 'Correlación clínico-laboratorio', duracion: '21 min' },
+      { titulo: 'Inmunodeficiencias primarias: enfoque temprano', duracion: '25 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
+      { titulo: 'Citometría de flujo en práctica clínica', duracion: '28 min', file: 'Video Modulo 1  - Segunda Presentación.mov' },
+      { titulo: 'Genética molecular y utilidad práctica', duracion: '26 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
+      { titulo: 'Correlación clínico-laboratorio', duracion: '21 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
     ],
   },
   {
     titulo: 'Módulo 3 · Manifestaciones y abordaje',
     videos: [
-      { titulo: 'Manifestaciones sistémicas complejas', duracion: '30 min' },
-      { titulo: 'Solapamiento autoinmune y autoinflamación', duracion: '27 min' },
-      { titulo: 'Casos clínicos transversales', duracion: '29 min' },
-      { titulo: 'Estrategias de derivación y seguimiento', duracion: '19 min' },
+      { titulo: 'Manifestaciones sistémicas complejas', duracion: '30 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
+      { titulo: 'Solapamiento autoinmune y autoinflamación', duracion: '27 min', file: 'Video Modulo 1  - Segunda Presentación.mov' },
+      { titulo: 'Casos clínicos transversales', duracion: '29 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
+      { titulo: 'Estrategias de derivación y seguimiento', duracion: '19 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
     ],
   },
   {
     titulo: 'Módulo 4 · Tratamiento y perspectivas',
     videos: [
-      { titulo: 'Terapias de reemplazo e inmunomodulación', duracion: '22 min' },
-      { titulo: 'Trasplante y cuidados perioperatorios', duracion: '24 min' },
-      { titulo: 'Terapia génica e innovación', duracion: '23 min' },
-      { titulo: 'Panel de cierre y Q&A final', duracion: '15 min' },
+      { titulo: 'Terapias de reemplazo e inmunomodulación', duracion: '22 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
+      { titulo: 'Trasplante y cuidados perioperatorios', duracion: '24 min', file: 'Video Modulo 1  - Segunda Presentación.mov' },
+      { titulo: 'Terapia génica e innovación', duracion: '23 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
+      { titulo: 'Panel de cierre y Q&A final', duracion: '15 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
     ],
   },
 ]
@@ -96,6 +96,7 @@ export default function VerPage() {
   const [openModuloIdx, setOpenModuloIdx] = useState(0)
   const [certUnlocked, setCertUnlocked] = useState(false)
   const [videoMime, setVideoMime] = useState('video/mp4')
+  const [playerKey, setPlayerKey] = useState('0-0')
 
   useEffect(() => {
     const sync = () => {
@@ -149,50 +150,32 @@ export default function VerPage() {
     }
   }, [authLoading, firebaseUser, router])
 
+  const loadBunnyFallback = useCallback(async () => {
+    if (!backendVideoId) return
+    const full = await fetchVideoById(backendVideoId)
+    const url = normalizeBunnyUrl(full?.url) ?? full?.url
+    if (!url) return
+    setVideoMime('video/mp4')
+    setVideoUrl(url)
+    setPlayerKey(`${activeModulo}-${activeVideoIdx}-bunny-${Date.now()}`)
+  }, [backendVideoId, activeModulo, activeVideoIdx])
+
+  const selectLesson = useCallback((mi: number, vi: number) => {
+    if (!paid) return
+    setActiveModulo(mi)
+    setActiveVideoIdx(vi)
+    setOpenModuloIdx(mi)
+    const file = lessonFile(mi, vi, MODULOS_DATA[mi]?.videos[vi]?.file)
+    const src = staticVideoPath(file)
+    setVideoMime(staticVideoMime(file))
+    setVideoUrl(src)
+    setPlayerKey(`${mi}-${vi}-${file}`)
+  }, [paid])
+
   useEffect(() => {
     if (!paid) return
-    let cancelled = false
-
-    async function applyBunny() {
-      if (!backendVideoId) return
-      const full = await fetchVideoById(backendVideoId)
-      const url = normalizeBunnyUrl(full?.url) ?? full?.url
-      if (url && !cancelled) {
-        setVideoMime('video/mp4')
-        setVideoUrl(url)
-      }
-    }
-
-    async function resolve() {
-      const file = MODULOS_DATA[activeModulo]?.videos[activeVideoIdx]?.file
-      if (!file) {
-        if (!cancelled) setVideoUrl('')
-        return
-      }
-
-      if (!isBrowserNativeVideo(file)) {
-        await applyBunny()
-        return
-      }
-
-      const src = staticVideoPath(file)
-      setVideoMime(staticVideoMime(file))
-
-      try {
-        const head = await fetch(src, { method: 'HEAD' })
-        const len = parseInt(head.headers.get('content-length') || '0', 10)
-        if (head.ok && len > 500000) {
-          if (!cancelled) setVideoUrl(src)
-          return
-        }
-      } catch {}
-
-      await applyBunny()
-    }
-
-    resolve()
-    return () => { cancelled = true }
-  }, [paid, activeModulo, activeVideoIdx, backendVideoId])
+    selectLesson(0, 0)
+  }, [paid, selectLesson])
 
   function handleAddToCart() {
     addToCart({ ...PRODUCT, videoId: backendVideoId ?? undefined }, 1)
@@ -254,7 +237,12 @@ export default function VerPage() {
               )}
 
               <div className="relative z-10 p-2 sm:p-3">
-                <SecureVideoPlayer videoUrl={videoUrl} mimeType={videoMime} />
+                <SecureVideoPlayer
+                  key={playerKey}
+                  videoUrl={videoUrl}
+                  mimeType={videoMime}
+                  onError={loadBunnyFallback}
+                />
               </div>
 
               {!paid && (
@@ -426,9 +414,12 @@ export default function VerPage() {
                         {mod.videos.map((v, vi) => {
                           const sel = activeModulo === mi && activeVideoIdx === vi && paid
                           return (
-                            <div
+                            <button
                               key={vi}
-                              className="flex items-center gap-3 p-3 sm:p-3.5 transition-colors"
+                              type="button"
+                              disabled={!paid}
+                              onClick={() => selectLesson(mi, vi)}
+                              className={`w-full flex items-center gap-3 p-3 sm:p-3.5 transition-colors text-left ${paid ? 'hover:bg-white/[0.04] cursor-pointer' : 'cursor-default'}`}
                               style={sel ? { background: 'rgba(18,180,198,0.08)', borderLeft: '3px solid var(--scai-teal)' } : {}}
                             >
                               <div
@@ -445,7 +436,7 @@ export default function VerPage() {
                               <span className="text-xs flex-shrink-0 flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
                                 <Clock size={10} />{v.duracion}
                               </span>
-                            </div>
+                            </button>
                           )
                         })}
                       </div>
@@ -513,7 +504,7 @@ export default function VerPage() {
                             <button
                               key={vi}
                               type="button"
-                              onClick={() => { if (!paid) return; setActiveModulo(mi); setActiveVideoIdx(vi); setOpenModuloIdx(mi) }}
+                              onClick={() => selectLesson(mi, vi)}
                               className={`w-full text-left rounded-xl px-3 py-2.5 flex items-start gap-2.5 transition-colors ${paid ? 'hover:bg-white/[0.04]' : 'cursor-default'}`}
                               style={sel ? { background: 'rgba(18,180,198,0.14)' } : {}}
                             >
