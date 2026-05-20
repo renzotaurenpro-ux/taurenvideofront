@@ -172,12 +172,12 @@ export default function Home() {
     return () => observer.disconnect()
   }, [mounted])
 
-  if (!mounted) return <main className="min-h-screen bg-background" />
+  if (!mounted) return <main className="home-soft min-h-screen bg-background" />
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="home-soft min-h-screen bg-background text-foreground">
 
-      <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b border-border bg-background/85 dark:border-white/5 dark:bg-[rgba(11,25,40,0.85)]">
+      <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b border-border bg-background/92 dark:border-white/5 dark:bg-[rgba(11,25,40,0.85)]">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-3.5 flex items-center justify-between">
           <div className="h-11 sm:h-12 w-auto">
             <Image
@@ -220,11 +220,15 @@ export default function Home() {
       </nav>
 
       <section
-        className="relative flex min-h-screen flex-col justify-between overflow-hidden px-5 sm:px-8 pt-24 pb-8 bg-gradient-to-br from-background via-secondary to-background dark:from-[#0B1928] dark:via-[#0E2035] dark:to-[#0B2240]"
+        className="relative flex min-h-screen flex-col justify-between overflow-hidden px-5 sm:px-8 pt-24 pb-8 bg-gradient-to-br from-background via-secondary/80 to-background dark:from-[#0B1928] dark:via-[#0E2035] dark:to-[#0B2240]"
       >
         <HeroDecor />
         <div
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 dark:hidden"
+          style={{ background: 'radial-gradient(ellipse 80% 60% at 72% 30%, rgba(18,180,198,0.035) 0%, transparent 65%)' }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 hidden dark:block"
           style={{ background: 'radial-gradient(ellipse 80% 60% at 72% 30%, rgba(18,180,198,0.07) 0%, transparent 65%)' }}
         />
         <div
@@ -238,7 +242,7 @@ export default function Home() {
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48 dark:block hidden"
           style={{ background: 'linear-gradient(to top, rgba(11,25,40,0.6) 0%, transparent 100%)' }} />
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48 dark:hidden block"
-          style={{ background: 'linear-gradient(to top, rgba(255,255,255,0.7) 0%, transparent 100%)' }} />
+          style={{ background: 'linear-gradient(to top, color-mix(in srgb, var(--background) 92%, transparent) 0%, transparent 100%)' }} />
 
         <div className="relative z-10 mx-auto w-full max-w-7xl flex items-start justify-between pt-2">
           <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground dark:text-white/35">Jornadas Regionales</p>
@@ -256,7 +260,7 @@ export default function Home() {
               </span>
             </div>
 
-            <h1 className="mb-8 font-black leading-[0.88] tracking-tight text-foreground dark:text-white"
+            <h1 className="mb-8 font-black leading-[0.88] tracking-tight text-foreground/90 dark:text-white"
               style={{ fontSize: 'clamp(2.6rem, 7vw, 6rem)' }}>
               Cuando el<br />
               <span style={{ color: 'var(--scai-teal)' }}>Sistema</span><br />
@@ -270,7 +274,8 @@ export default function Home() {
               <Link
                 href="/registro"
                 className="self-start inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-80"
-                style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 32px rgba(18,180,198,0.32)' }}
+                className="shadow-[0_6px_24px_rgba(18,180,198,0.16)] dark:shadow-[0_8px_32px_rgba(18,180,198,0.32)]"
+                style={{ background: 'var(--scai-teal)' }}
               >
                 <ShoppingCart size={15} />
                 $25.000 + IVA — Obtener acceso
@@ -333,7 +338,7 @@ export default function Home() {
 
       <section className="relative mx-auto max-w-7xl px-5 sm:px-8 py-20 sm:py-28 overflow-hidden">
         <div
-          className="pointer-events-none absolute -left-6 top-1/2 -translate-y-1/2 w-40 sm:w-52 h-40 sm:h-52 opacity-[0.1] dark:opacity-[0.14] hidden md:block [mask-image:radial-gradient(ellipse_70%_65%_at_50%_50%,#000_15%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_70%_65%_at_50%_50%,#000_15%,transparent_100%)]"
+          className="pointer-events-none absolute -left-6 top-1/2 -translate-y-1/2 w-40 sm:w-52 h-40 sm:h-52 opacity-[0.06] dark:opacity-[0.14] hidden md:block [mask-image:radial-gradient(ellipse_70%_65%_at_50%_50%,#000_15%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_70%_65%_at_50%_50%,#000_15%,transparent_100%)]"
           aria-hidden
         >
           <Image src="/imagenes/Inmunoglobulina.png" alt="" fill className="object-contain" unoptimized />
@@ -342,7 +347,7 @@ export default function Home() {
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Descripción</p>
           </div>
-          <p className="text-lg sm:text-xl leading-relaxed text-foreground/70 max-w-2xl">
+          <p className="text-lg sm:text-xl leading-relaxed text-foreground/60 max-w-2xl">
             Las III Jornadas Regionales de Inmunología Clínica reúnen a 16 especialistas de Chile y el mundo para abordar los desafíos más complejos en Errores Innatos de la Inmunidad — actualización médica continua acreditada por CONACEM, disponible en formato online con acceso completo a la grabación.
           </p>
         </div>
@@ -422,7 +427,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-20 sm:py-28">
           <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground dark:text-white/40 mb-16">Antes vs Ahora</p>
           <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-            <div className="rounded-2xl border p-7 sm:p-9 bg-card dark:bg-white/[0.03] border-border dark:border-white/8">
+            <div className="rounded-2xl border p-7 sm:p-9 bg-card/90 dark:bg-white/[0.03] border-border/80 dark:border-white/8">
               <p className="text-xs uppercase tracking-widest text-muted-foreground dark:text-white/30 mb-6">La forma antigua</p>
               <p className="text-muted-foreground dark:text-white/50 text-sm leading-relaxed mb-8 max-w-sm">
                 Para acceder al conocimiento de expertos había que desplazarse, pagar alojamiento, perder días de trabajo y aún así perderse ponencias por solapamiento de horarios.
@@ -444,8 +449,8 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-2xl border p-7 sm:p-9 bg-card dark:bg-[rgba(18,180,198,0.06)]"
-              style={{ borderColor: 'rgba(18,180,198,0.3)' }}>
+            <div className="relative overflow-hidden rounded-2xl border p-7 sm:p-9 bg-card/90 dark:bg-[rgba(18,180,198,0.06)]"
+              style={{ borderColor: 'rgba(18,180,198,0.22)' }}>
               <AntesAhoraImage />
               <div className="relative z-10">
               <p className="text-xs uppercase tracking-widest mb-6" style={{ color: 'var(--scai-teal)' }}>La forma nueva</p>
@@ -474,11 +479,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative border-b border-border overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, rgba(18,180,198,0.04) 0%, transparent 60%)' }}>
+      <section className="relative border-b border-border overflow-hidden bg-background">
+        <div className="pointer-events-none absolute inset-0 dark:hidden" style={{ background: 'linear-gradient(135deg, rgba(18,180,198,0.02) 0%, transparent 55%)' }} />
+        <div className="pointer-events-none absolute inset-0 hidden dark:block" style={{ background: 'linear-gradient(135deg, rgba(18,180,198,0.04) 0%, transparent 60%)' }} />
         <QuoteDecor />
         <div className="relative z-10 mx-auto max-w-4xl px-5 sm:px-8 py-20 sm:py-28 text-center">
-          <p className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight mb-8">
+          <p className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight mb-8 text-foreground/85">
             &ldquo;Actualización de primer nivel en inmunología clínica,{' '}
             <span style={{ color: 'var(--scai-teal)' }}>sin salir de tu consulta.</span>&rdquo;
           </p>
@@ -550,7 +556,8 @@ export default function Home() {
             <Link
               href="/carrito"
               className="inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-sm font-bold text-white transition-opacity hover:opacity-85"
-              style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 40px rgba(18,180,198,0.4)' }}
+              className="shadow-[0_6px_28px_rgba(18,180,198,0.18)] dark:shadow-[0_8px_40px_rgba(18,180,198,0.4)]"
+              style={{ background: 'var(--scai-teal)' }}
             >
               <ShoppingCart size={16} />
               Comprar acceso — $25.000 + IVA

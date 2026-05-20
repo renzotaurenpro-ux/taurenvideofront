@@ -14,7 +14,7 @@ const SCENES: Record<
 > = {
   login: {
     src: '/imagenes/Inmunoglobulina oscura.png',
-    position: '50% 108%',
+    position: '50% 55%',
     auth: true,
   },
   registro: {
@@ -23,8 +23,8 @@ const SCENES: Record<
     auth: true,
   },
   ver: {
-    src: '/imagenes/iamgen oficial.jpg',
-    position: '50% 42%',
+    src: '/imagenes/Inmunoglobulina adeherida.jpg',
+    position: '50% 48%',
     auth: false,
   },
 }
@@ -35,34 +35,36 @@ export default function PageBackground({ scene }: Props) {
 
   return (
     <>
-      <div
-        className={`fixed inset-0 -z-10 pointer-events-none overflow-hidden ${
-          scene === 'login'
-            ? '[mask-image:radial-gradient(ellipse_105%_95%_at_50%_88%,#000_18%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_105%_95%_at_50%_88%,#000_18%,transparent_100%)]'
-            : ''
-        }`}
-      >
-        <Image
-          src={cfg.src}
-          alt=""
-          fill
-          priority
-          quality={92}
-          sizes="100vw"
-          className={`object-cover saturate-[1.05] ${
+      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden bg-[#0B1928]">
+        <div
+          className={
             scene === 'login'
-              ? 'brightness-[0.95] scale-[1]'
-              : isAuth
-              ? 'brightness-[0.88] dark:brightness-[0.72] dark:saturate-[1.1]'
-              : 'brightness-[0.92] dark:brightness-50 dark:saturate-[1.2]'
-          }`}
-          style={{ objectPosition: cfg.position }}
-        />
+              ? 'absolute -inset-[6%] min-h-0 min-w-0'
+              : 'absolute inset-0'
+          }
+        >
+          <Image
+            src={cfg.src}
+            alt=""
+            fill
+            priority
+            quality={92}
+            sizes="100vw"
+            className={`object-cover saturate-[1.08] ${
+              scene === 'login'
+                ? 'brightness-[1]'
+                : isAuth
+                ? 'brightness-[0.88] dark:brightness-[0.72] dark:saturate-[1.1]'
+                : 'brightness-[0.92] dark:brightness-50 dark:saturate-[1.2]'
+            }`}
+            style={{ objectPosition: cfg.position }}
+          />
+        </div>
       </div>
       <div
         className={`fixed inset-0 -z-10 pointer-events-none ${
           scene === 'login'
-            ? 'bg-[radial-gradient(ellipse_85%_55%_at_50%_12%,rgba(11,25,40,0.72)_0%,rgba(11,25,40,0.22)_42%,transparent_62%),radial-gradient(ellipse_120%_45%_at_50%_112%,transparent_0%,rgba(11,25,40,0.08)_45%,rgba(11,25,40,0.35)_100%)]'
+            ? 'bg-[radial-gradient(ellipse_95%_70%_at_50%_18%,rgba(11,25,40,0.42)_0%,rgba(11,25,40,0.12)_38%,transparent_58%),linear-gradient(to_top,rgba(11,25,40,0.18)_0%,transparent_28%)]'
             : isAuth
             ? 'bg-gradient-to-br from-background/75 via-background/65 to-background/80 dark:from-[rgba(8,20,36,0.35)] dark:via-[rgba(4,12,24,0.45)] dark:to-[rgba(4,12,24,0.5)]'
             : 'bg-gradient-to-br from-background/82 via-background/72 to-background/85 dark:from-[rgba(8,20,36,0.45)] dark:via-[rgba(4,12,24,0.55)] dark:to-[rgba(4,12,24,0.6)]'

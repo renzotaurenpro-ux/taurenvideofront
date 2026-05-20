@@ -69,7 +69,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-4 sm:px-6 pt-[max(3.25rem,calc(env(safe-area-inset-top,0px)+2.75rem))] pb-8">
+    <div className="relative min-h-[100dvh] min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-4 sm:px-6 pt-[max(2.75rem,calc(env(safe-area-inset-top,0px)+2.25rem))] pb-8">
       <PageBackground scene="login" />
       <Link
         href="/"
@@ -78,24 +78,24 @@ export default function LoginPage() {
         <Home size={12} style={{ color: 'var(--scai-teal)' }} />
         Inicio
       </Link>
-      <div className="w-full max-w-[min(100%,20rem)] mx-auto relative z-10 shrink-0">
-        <div className="flex flex-col items-center mb-3">
-          <Link href="/" className="flex items-center mb-3">
-            <Image src={ScaiLogo} alt="SCAI" priority className="h-8 w-auto" />
+      <div className="w-full max-w-[min(100%,18.5rem)] mx-auto relative z-10 shrink-0">
+        <div className="flex flex-col items-center mb-2.5">
+          <Link href="/" className="flex items-center mb-2.5">
+            <Image src={ScaiLogo} alt="SCAI" priority className="h-7 w-auto" />
           </Link>
           <h1 className="text-lg font-bold text-white text-center">Inicio de sesión</h1>
-          <p className="text-white/45 text-[11px] sm:text-xs mt-1 text-center max-w-[16rem] leading-snug">
+          <p className="text-white/45 text-[11px] mt-1 text-center max-w-[15rem] leading-snug">
             Accede a las III Jornadas de Inmunología Clínica
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-xl p-4 space-y-3 border w-full"
-          style={{ background: 'rgba(14,32,53,0.62)', borderColor: 'rgba(18,180,198,0.16)', backdropFilter: 'blur(12px)' }}
+          className="rounded-xl p-3.5 space-y-3 border border-white/10 w-full"
+          style={{ background: 'rgba(14,32,53,0.52)', backdropFilter: 'blur(14px)' }}
         >
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2.5 text-red-400 text-xs">
               {error}
             </div>
           )}
@@ -108,10 +108,7 @@ export default function LoginPage() {
               onChange={e => setEmail(e.target.value)}
               required
               placeholder="doctor@hospital.com"
-              className="w-full rounded-lg px-3 py-2.5 text-white placeholder:text-white/20 focus:outline-none transition-colors text-sm"
-              style={{ background: 'rgba(11,25,40,0.8)', border: '1px solid rgba(18,180,198,0.2)' }}
-              onFocus={e => e.target.style.borderColor = 'var(--scai-teal)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(18,180,198,0.2)'}
+              className="w-full rounded-lg px-3 py-2.5 text-white placeholder:text-white/20 focus:outline-none border border-white/10 focus:border-white/20 bg-[rgba(11,25,40,0.8)] transition-colors text-sm"
             />
           </div>
 
@@ -124,17 +121,14 @@ export default function LoginPage() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full rounded-lg px-3 py-2.5 pr-10 text-white placeholder:text-white/20 focus:outline-none transition-colors text-sm"
-                style={{ background: 'rgba(11,25,40,0.8)', border: '1px solid rgba(18,180,198,0.2)' }}
-                onFocus={e => e.target.style.borderColor = 'var(--scai-teal)'}
-                onBlur={e => e.target.style.borderColor = 'rgba(18,180,198,0.2)'}
+                className="w-full rounded-lg px-3 py-2.5 pr-10 text-white placeholder:text-white/20 focus:outline-none border border-white/10 focus:border-white/20 bg-[rgba(11,25,40,0.8)] transition-colors text-sm"
               />
               <button
                 type="button"
                 onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors p-0.5"
               >
-                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
           </div>
@@ -143,13 +137,13 @@ export default function LoginPage() {
             type="submit"
             disabled={loading}
             className="w-full text-white font-semibold py-2.5 rounded-lg transition-all duration-200 active:scale-[0.98] text-sm disabled:opacity-50"
-            style={{ background: 'var(--scai-teal)', boxShadow: '0 4px 16px rgba(18,180,198,0.3)' }}
+            style={{ background: 'var(--scai-teal)', boxShadow: '0 4px 14px rgba(18,180,198,0.28)' }}
           >
             {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </form>
 
-        <p className="text-center text-white/30 text-[11px] mt-3 px-1">
+        <p className="text-center text-white/30 text-[11px] mt-2.5 px-1">
           ¿No tienes cuenta?{' '}
           <Link href="/registro" style={{ color: 'var(--scai-teal)' }} className="hover:brightness-125">
             Regístrate aquí

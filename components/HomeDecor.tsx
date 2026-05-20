@@ -25,10 +25,10 @@ function Vignette() {
         className="pointer-events-none absolute inset-0 z-[3] dark:hidden"
         style={{
           background: `
-            radial-gradient(ellipse 140% 95% at 50% 115%, var(--background) 8%, transparent 72%),
-            radial-gradient(ellipse 110% 85% at -5% 50%, var(--background) 5%, transparent 68%),
-            radial-gradient(ellipse 110% 85% at 105% 50%, var(--background) 5%, transparent 68%),
-            radial-gradient(ellipse 100% 75% at 50% -5%, var(--background) 5%, transparent 65%)
+            radial-gradient(ellipse 140% 95% at 50% 115%, var(--background) 14%, transparent 68%),
+            radial-gradient(ellipse 110% 85% at -5% 50%, var(--background) 10%, transparent 62%),
+            radial-gradient(ellipse 110% 85% at 105% 50%, var(--background) 10%, transparent 62%),
+            radial-gradient(ellipse 100% 75% at 50% -5%, var(--background) 10%, transparent 58%)
           `,
         }}
       />
@@ -50,7 +50,7 @@ function Vignette() {
 export function HeroDecor() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      <div className={`absolute -right-[4%] top-[4%] h-[85%] w-[55%] opacity-[0.1] dark:opacity-[0.14] hidden sm:block ${featherSide}`}>
+      <div className={`absolute -right-[4%] top-[4%] h-[85%] w-[55%] opacity-[0.06] dark:opacity-[0.14] hidden sm:block ${featherSide}`}>
         <Image src={IMG.lluvia} alt="" fill className="object-cover object-center scale-110" sizes="55vw" quality={75} />
         <div
           className="absolute inset-0"
@@ -65,7 +65,7 @@ export function HeroDecor() {
           }}
         />
       </div>
-      <div className={`absolute left-[2%] top-[24%] h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48 opacity-[0.14] dark:opacity-[0.18] ${feather}`}>
+      <div className={`absolute left-[2%] top-[24%] h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48 opacity-[0.08] dark:opacity-[0.18] ${feather}`}>
         <Image src={IMG.mol} alt="" fill className="object-contain" unoptimized />
       </div>
     </div>
@@ -83,14 +83,14 @@ export function HeroVisual() {
           priority
           quality={88}
           sizes="(max-width: 768px) 100vw, 45vw"
-          className="object-cover object-[24%_center] scale-[1.08]"
+          className="object-cover object-[24%_center] scale-[1.08] brightness-[0.9] contrast-[0.94] saturate-[0.82] dark:brightness-100 dark:contrast-100 dark:saturate-100"
         />
         <div
           className="absolute inset-0 dark:hidden"
           style={{
             background: `
-              linear-gradient(105deg, var(--background) 0%, transparent 48%),
-              linear-gradient(to top, var(--background) 0%, transparent 52%)
+              linear-gradient(105deg, var(--background) 0%, color-mix(in srgb, var(--background) 55%, transparent) 42%, transparent 58%),
+              linear-gradient(to top, var(--background) 0%, color-mix(in srgb, var(--background) 70%, transparent) 38%, transparent 58%)
             `,
           }}
         />
@@ -127,7 +127,7 @@ export function HeroMobileVisual() {
   return (
     <div className={`relative mt-8 md:hidden w-full max-w-sm mx-auto ${featherLg}`}>
       <div className="relative aspect-[16/10] w-full">
-        <Image src={IMG.adherida} alt="" fill className="object-cover object-center" sizes="100vw" quality={80} />
+        <Image src={IMG.adherida} alt="" fill className="object-cover object-center brightness-[0.9] saturate-[0.85] dark:brightness-100 dark:saturate-100" sizes="100vw" quality={80} />
         <Vignette />
       </div>
     </div>
@@ -142,19 +142,19 @@ export function StatsDecor() {
           src={IMG.adherida}
           alt=""
           fill
-          className="object-cover object-right opacity-[0.07] dark:opacity-[0.1]"
+          className="object-cover object-right opacity-[0.05] dark:opacity-[0.1] brightness-[0.92] saturate-[0.85] dark:brightness-100 dark:saturate-100"
           sizes="70vw"
           quality={70}
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-r from-background from-30% via-background/97 to-background dark:from-[#0B1928] dark:via-[#0B1928]/97 dark:to-[#0B1928]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background from-25% via-background/98 to-background dark:from-[#0B1928] dark:via-[#0B1928]/97 dark:to-[#0B1928]" />
     </div>
   )
 }
 
 export function ModulosDecor() {
   return (
-    <div className={`pointer-events-none absolute right-0 top-0 h-full w-[min(45%,300px)] opacity-[0.08] dark:opacity-[0.11] ${featherSide}`} aria-hidden>
+    <div className={`pointer-events-none absolute right-0 top-0 h-full w-[min(45%,300px)] opacity-[0.05] dark:opacity-[0.11] ${featherSide}`} aria-hidden>
       <Image src={IMG.lluvia} alt="" fill className="object-cover object-top scale-105" sizes="300px" quality={70} />
       <div className="absolute inset-0 bg-gradient-to-l from-card from-20% to-transparent dark:from-[#0E2035] dark:from-25%" />
     </div>
@@ -169,12 +169,12 @@ export function QuoteDecor() {
           src={IMG.bola}
           alt=""
           fill
-          className="object-cover object-center opacity-[0.1] dark:opacity-[0.14]"
+          className="object-cover object-center opacity-[0.06] dark:opacity-[0.14] brightness-[0.9] saturate-[0.82] dark:brightness-100 dark:saturate-100"
           sizes="100vw"
           quality={70}
         />
       </div>
-      <div className="absolute inset-0 bg-background/88 dark:bg-[#0B1928]/88" />
+      <div className="absolute inset-0 bg-background/94 dark:bg-[#0B1928]/88" />
     </div>
   )
 }
@@ -187,12 +187,12 @@ export function AntesAhoraImage() {
           src={IMG.adherida}
           alt=""
           fill
-          className="object-cover opacity-[0.22] dark:opacity-[0.28]"
+          className="object-cover opacity-[0.14] dark:opacity-[0.28] brightness-[0.92] saturate-[0.88] dark:brightness-100 dark:saturate-100"
           sizes="400px"
           quality={70}
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-br from-card/97 via-card/92 to-card/82 dark:from-[#0B1928]/94 dark:via-[#0B1928]/88 dark:to-[#0B1928]/78" />
+      <div className="absolute inset-0 bg-gradient-to-br from-card/98 via-card/95 to-card/88 dark:from-[#0B1928]/94 dark:via-[#0B1928]/88 dark:to-[#0B1928]/78" />
     </div>
   )
 }
@@ -205,12 +205,12 @@ export function CtaDecor() {
           src={IMG.lluvia}
           alt=""
           fill
-          className="object-cover object-[center_25%] opacity-[0.14] dark:opacity-[0.2]"
+          className="object-cover object-[center_25%] opacity-[0.08] dark:opacity-[0.2] brightness-[0.9] saturate-[0.85] dark:brightness-100 dark:saturate-100"
           sizes="100vw"
           quality={75}
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-r from-card from-25% via-card/92 to-card/80 dark:from-[#0B1928] dark:from-30% dark:via-[#0B1928]/92 dark:to-[#0B1928]/75" />
+      <div className="absolute inset-0 bg-gradient-to-r from-card from-20% via-card/96 to-card/88 dark:from-[#0B1928] dark:from-30% dark:via-[#0B1928]/92 dark:to-[#0B1928]/75" />
     </div>
   )
 }

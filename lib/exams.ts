@@ -128,22 +128,22 @@ export type Certificate = {
 
 function parseExamsList(data: unknown): ExamListItem[] {
   const arr = Array.isArray(data) ? data : Array.isArray((data as { data?: unknown })?.data) ? (data as { data: unknown[] }).data : []
-  return arr
-    .map(item => {
-      if (!item || typeof item !== 'object') return null
-      const o = item as Record<string, unknown>
-      const id = pickId(o)
-      if (!id) return null
-      const full = normalizeExam(o)
-      return {
-        id,
-        title: typeof o.title === 'string' ? o.title : undefined,
-        name: typeof o.name === 'string' ? o.name : undefined,
-        published: o.published !== false,
-        questions: full?.questions,
-      }
+  const out: ExamListItem[] = []
+  for (const item of arr) {
+    if (!item || typeof item !== 'object') continue
+    const o = item as Record<string, unknown>
+    const id = pickId(o)
+    if (!id) continue
+    const full = normalizeExam(o)
+    out.push({
+      id,
+      title: typeof o.title === 'string' ? o.title : undefined,
+      name: typeof o.name === 'string' ? o.name : undefined,
+      published: o.published !== false,
+      questions: full?.questions,
     })
-    .filter((e): e is ExamListItem => e !== null)
+  }
+  return out
 }
 
 export async function fetchExams(): Promise<ExamListItem[]> {
