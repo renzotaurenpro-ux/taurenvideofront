@@ -70,7 +70,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 py-12 overflow-hidden">
-      <PageBackground />
+      <PageBackground variant="auth" />
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-6 sm:mb-8">
           <Link href="/" className="self-start inline-flex items-center gap-1.5 text-sm mb-4 sm:mb-6 text-white/40 hover:text-white/70">

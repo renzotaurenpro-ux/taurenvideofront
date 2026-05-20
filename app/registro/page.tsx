@@ -119,7 +119,7 @@ export default function RegistroPage() {
 
   return (
     <div className="relative min-h-screen px-4 py-10 sm:py-12 overflow-hidden">
-      <PageBackground />
+      <PageBackground variant="auth" />
       <div className="relative mx-auto w-full max-w-4xl">
 
         <div className="flex items-center justify-between mb-6">
