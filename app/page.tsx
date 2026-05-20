@@ -223,8 +223,18 @@ export default function Home() {
         className="relative flex min-h-screen flex-col justify-between overflow-hidden px-5 sm:px-8 pt-24 pb-8 bg-gradient-to-br from-background via-secondary to-background dark:from-[#0B1928] dark:via-[#0E2035] dark:to-[#0B2240]"
       >
         <HeroDecor />
-        <div className="pointer-events-none absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse at 65% 25%, rgba(18,180,198,0.11) 0%, transparent 58%)' }} />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(ellipse 80% 60% at 72% 30%, rgba(18,180,198,0.07) 0%, transparent 65%)' }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 dark:hidden"
+          style={{ background: 'linear-gradient(90deg, var(--background) 0%, transparent 38%, transparent 72%, color-mix(in srgb, var(--background) 40%, transparent) 100%)' }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 hidden dark:block"
+          style={{ background: 'linear-gradient(90deg, #0B1928 0%, transparent 40%, transparent 70%, rgba(14,32,53,0.35) 100%)' }}
+        />
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48 dark:block hidden"
           style={{ background: 'linear-gradient(to top, rgba(11,25,40,0.6) 0%, transparent 100%)' }} />
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48 dark:hidden block"
@@ -323,7 +333,7 @@ export default function Home() {
 
       <section className="relative mx-auto max-w-7xl px-5 sm:px-8 py-20 sm:py-28 overflow-hidden">
         <div
-          className="pointer-events-none absolute -left-8 top-1/2 -translate-y-1/2 w-48 sm:w-64 h-48 sm:h-64 opacity-[0.18] dark:opacity-[0.24] hidden md:block mask-[radial-gradient(ellipse_90%_85%_at_50%_50%,#000_40%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_90%_85%_at_50%_50%,#000_40%,transparent_100%)]"
+          className="pointer-events-none absolute -left-6 top-1/2 -translate-y-1/2 w-40 sm:w-52 h-40 sm:h-52 opacity-[0.1] dark:opacity-[0.14] hidden md:block [mask-image:radial-gradient(ellipse_70%_65%_at_50%_50%,#000_15%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_70%_65%_at_50%_50%,#000_15%,transparent_100%)]"
           aria-hidden
         >
           <Image src="/imagenes/Inmunoglobulina.png" alt="" fill className="object-contain" unoptimized />

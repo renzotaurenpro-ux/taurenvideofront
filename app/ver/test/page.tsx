@@ -7,8 +7,8 @@ import { ArrowLeft, Award } from 'lucide-react'
 import { useAuth } from '@/lib/authContext'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchExams, fetchExamById, issueCertificate, submitExam, type Exam, type ExamSubmitResult } from '@/lib/exams'
-import { fetchPublishedVideos } from '@/lib/videos'
-import { fetchAuth, getCachedPurchase, setCachedPurchase } from '@/lib/api'
+import { fetchPublishedCourse, checkCoursePurchase } from '@/lib/courses'
+import { getCachedPurchase, setCachedPurchase } from '@/lib/api'
 
 export default function VerTestPage() {
   const router = useRouter()
@@ -37,35 +37,23 @@ export default function VerTestPage() {
 
     ;(async () => {
       try {
-        const [videos, examsEarly] = await Promise.all([
-          fetchPublishedVideos(),
+        const [course, examsEarly] = await Promise.all([
+          fetchPublishedCourse(),
           fetchExams(),
         ])
 
-        const video = videos[0] ?? null
-
-        if (video?.id) {
-          const cached = getCachedPurchase(video.id)
+        if (course?.id) {
+          const cached = getCachedPurchase(course.id)
           let hasPurchase: boolean
 
           if (cached !== null) {
             hasPurchase = cached
-            fetchAuth(`/purchases/check/${video.id}`)
-              .then(async (r) => {
-                if (!r.ok) return
-                const d: any = await r.json().catch(() => null)
-                setCachedPurchase(video.id, d?.purchased === true || d?.hasPurchase === true)
-              })
+            checkCoursePurchase(course.id)
+              .then(v => setCachedPurchase(course.id, v))
               .catch(() => {})
           } else {
-            const check = await fetchAuth(`/purchases/check/${video.id}`).catch(() => null)
-            hasPurchase = check?.ok
-              ? await check.json().then((d: any) => {
-                  const v = d?.purchased === true || d?.hasPurchase === true
-                  setCachedPurchase(video.id, v)
-                  return v
-                }).catch(() => false)
-              : false
+            hasPurchase = await checkCoursePurchase(course.id)
+            setCachedPurchase(course.id, hasPurchase)
           }
 
           if (!cancelled) setPurchased(hasPurchase)

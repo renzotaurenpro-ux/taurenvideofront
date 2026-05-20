@@ -1,4 +1,5 @@
-import { fetchVideoById, normalizeBunnyUrl, type BackendVideo } from './videos'
+import type { CourseEpisode } from './courses'
+import { sortEpisodes } from './courses'
 
 function modulo1Order(title: string) {
   const t = title.toLowerCase()
@@ -8,24 +9,19 @@ function modulo1Order(title: string) {
   return 99
 }
 
-function pickModulo1(videos: BackendVideo[]) {
-  const m1 = videos.filter(v => /m[oó]dulo\s*1/i.test(v.title || ''))
-  return [...m1].sort((a, b) => modulo1Order(a.title || '') - modulo1Order(b.title || '')).slice(0, 3)
+function pickModulo1Episodes(episodes: CourseEpisode[]) {
+  const m1 = episodes.filter(v => /m[oó]dulo\s*1/i.test(v.title || ''))
+  const sorted = [...m1].sort((a, b) => modulo1Order(a.title || '') - modulo1Order(b.title || ''))
+  if (sorted.length >= 3) return sorted.slice(0, 3)
+  return sortEpisodes(episodes).slice(0, 3)
 }
 
-export async function buildBunnyLessonMap(videos: BackendVideo[]): Promise<Record<string, string>> {
+export function buildLessonMapFromEpisodes(episodes: CourseEpisode[]): Record<string, string> {
   const map: Record<string, string> = {}
-  const lessons = pickModulo1(videos)
-  await Promise.all(
-    lessons.map(async (v, i) => {
-      let url = normalizeBunnyUrl(v.url)
-      if (!url && v.id) {
-        const full = await fetchVideoById(v.id)
-        url = normalizeBunnyUrl(full?.url)
-      }
-      if (url) map[`0-${i}`] = url
-    }),
-  )
+  const lessons = pickModulo1Episodes(episodes)
+  lessons.forEach((ep, i) => {
+    if (ep.url) map[`0-${i}`] = ep.url
+  })
   return map
 }
 

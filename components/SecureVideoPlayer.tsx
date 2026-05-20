@@ -10,9 +10,7 @@ interface Props {
 export default function SecureVideoPlayer({ videoUrl, mimeType, onError, onReady }: Props) {
   const isEmbed =
     videoUrl.startsWith('http') &&
-    (videoUrl.includes('iframe.mediadelivery.net') ||
-      videoUrl.includes('player.vimeo.com') ||
-      videoUrl.includes('youtu'))
+    (videoUrl.includes('iframe.mediadelivery.net') || videoUrl.includes('youtu'))
 
   return (
     <div className="relative select-none w-full">

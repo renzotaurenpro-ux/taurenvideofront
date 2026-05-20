@@ -1,5 +1,6 @@
 export type CartItem = {
   id: string
+  courseId?: string
   videoId?: string
   title: string
   subtitle?: string
@@ -26,6 +27,7 @@ export function getCart(): CartItem[] {
     .filter(Boolean)
     .map((x: any) => ({
       id: String(x.id || ''),
+      courseId: x.courseId ? String(x.courseId) : undefined,
       videoId: x.videoId ? String(x.videoId) : undefined,
       title: String(x.title || ''),
       subtitle: x.subtitle ? String(x.subtitle) : undefined,

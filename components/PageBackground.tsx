@@ -13,8 +13,8 @@ const SCENES: Record<
   { src: string; position: string; auth: boolean }
 > = {
   login: {
-    src: '/imagenes/iamgen oficial.jpg',
-    position: '18% 42%',
+    src: '/imagenes/Inmunoglobulina adeherida.jpg',
+    position: '50% 118%',
     auth: true,
   },
   registro: {
@@ -23,7 +23,7 @@ const SCENES: Record<
     auth: true,
   },
   ver: {
-    src: '/imagenes/Inmunoglobulina adeherida.jpg',
+    src: '/imagenes/iamgen oficial.jpg',
     position: '50% 42%',
     auth: false,
   },
@@ -35,7 +35,13 @@ export default function PageBackground({ scene }: Props) {
 
   return (
     <>
-      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+      <div
+        className={`fixed inset-0 -z-10 pointer-events-none overflow-hidden ${
+          scene === 'login'
+            ? '[mask-image:radial-gradient(ellipse_100%_88%_at_50%_78%,#000_28%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_100%_88%_at_50%_78%,#000_28%,transparent_100%)]'
+            : ''
+        }`}
+      >
         <Image
           src={cfg.src}
           alt=""
@@ -44,7 +50,9 @@ export default function PageBackground({ scene }: Props) {
           quality={92}
           sizes="100vw"
           className={`object-cover saturate-[1.05] ${
-            isAuth
+            scene === 'login'
+              ? 'brightness-[0.82] scale-[1.08]'
+              : isAuth
               ? 'brightness-[0.88] dark:brightness-[0.72] dark:saturate-[1.1]'
               : 'brightness-[0.92] dark:brightness-50 dark:saturate-[1.2]'
           }`}
@@ -54,7 +62,7 @@ export default function PageBackground({ scene }: Props) {
       <div
         className={`fixed inset-0 -z-10 pointer-events-none ${
           scene === 'login'
-            ? 'bg-gradient-to-r from-transparent from-0% via-[rgba(4,12,24,0.12)] via-[32%] to-[rgba(4,12,24,0.78)] to-100% dark:from-transparent dark:via-[rgba(4,12,24,0.08)] dark:via-[28%] dark:to-[rgba(4,12,24,0.82)]'
+            ? 'bg-[radial-gradient(ellipse_100%_70%_at_50%_8%,rgba(11,25,40,0.88)_0%,rgba(11,25,40,0.4)_38%,transparent_68%),radial-gradient(ellipse_140%_50%_at_50%_108%,transparent_0%,rgba(11,25,40,0.15)_35%,rgba(11,25,40,0.75)_100%)]'
             : isAuth
             ? 'bg-gradient-to-br from-background/75 via-background/65 to-background/80 dark:from-[rgba(8,20,36,0.35)] dark:via-[rgba(4,12,24,0.45)] dark:to-[rgba(4,12,24,0.5)]'
             : 'bg-gradient-to-br from-background/82 via-background/72 to-background/85 dark:from-[rgba(8,20,36,0.45)] dark:via-[rgba(4,12,24,0.55)] dark:to-[rgba(4,12,24,0.6)]'

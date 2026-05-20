@@ -7,8 +7,7 @@ import Image from 'next/image'
 import { CheckCircle, Loader2, ArrowRight } from 'lucide-react'
 import ScaiLogo from '../../../Logotipo-SCAI.png'
 import { clearCart } from '@/lib/cart'
-import { fetchAuth } from '@/lib/api'
-import { fetchPublishedVideos } from '@/lib/videos'
+import { fetchPublishedCourse, checkCoursePurchase } from '@/lib/courses'
 import { useRequireAuth } from '@/lib/useRequireAuth'
 
 function SuccessContent() {
@@ -28,18 +27,13 @@ function SuccessContent() {
     async function verify() {
       if (!firebaseUser) { setChecking(false); return }
       try {
-        const videos = await fetchPublishedVideos()
-        const video = videos[0]
-        if (!video) { setChecking(false); return }
+        const course = await fetchPublishedCourse()
+        if (!course) { setChecking(false); return }
 
         for (let i = 0; i < 5; i++) {
-          const res = await fetchAuth(`/purchases/check/${video.id}`)
-          if (res.ok) {
-            const data = await res.json()
-            if (data.purchased === true || data.hasPurchase === true) {
-              setPurchased(true)
-              break
-            }
+          if (await checkCoursePurchase(course.id)) {
+            setPurchased(true)
+            break
           }
           if (i < 4) await new Promise(r => setTimeout(r, 2000))
         }

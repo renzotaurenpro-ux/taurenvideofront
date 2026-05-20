@@ -69,7 +69,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] min-h-screen w-full flex items-center justify-center overflow-x-hidden overflow-y-auto px-4 sm:px-6 md:px-8 py-[max(4.5rem,env(safe-area-inset-top,0px)+3.5rem)] pb-[max(1.5rem,env(safe-area-inset-bottom,0px)+1rem)]">
+    <div className="relative min-h-[100dvh] min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-4 sm:px-6 md:px-8 pt-[max(4.5rem,calc(env(safe-area-inset-top,0px)+3.5rem))] sm:pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4rem))] pb-12 sm:pb-16">
       <PageBackground scene="login" />
       <Link
         href="/"
@@ -78,12 +78,12 @@ export default function LoginPage() {
         <Home size={12} style={{ color: 'var(--scai-teal)' }} />
         Inicio
       </Link>
-      <div className="w-full max-w-[min(100%,28rem)] mx-auto relative z-10 shrink-0">
+      <div className="w-full max-w-[min(100%,26rem)] mx-auto relative z-10 shrink-0">
         <div className="flex flex-col items-center mb-5 sm:mb-7">
           <Link href="/" className="flex items-center mb-4 sm:mb-5">
             <Image src={ScaiLogo} alt="SCAI" priority className="h-9 sm:h-10 w-auto" />
           </Link>
-          <h1 className="text-xl sm:text-2xl font-bold text-white text-center">Iniciar sesión</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white text-center">Inicio de sesión</h1>
           <p className="text-white/40 text-xs sm:text-sm mt-1.5 text-center max-w-[18rem] sm:max-w-xs px-1">
             Accede a las III Jornadas de Inmunología Clínica
           </p>
@@ -92,7 +92,7 @@ export default function LoginPage() {
         <form
           onSubmit={handleSubmit}
           className="rounded-2xl p-5 sm:p-7 md:p-8 space-y-4 sm:space-y-5 border w-full"
-          style={{ background: 'rgba(14,32,53,0.88)', borderColor: 'rgba(18,180,198,0.2)', backdropFilter: 'blur(10px)' }}
+          style={{ background: 'rgba(14,32,53,0.78)', borderColor: 'rgba(18,180,198,0.18)', backdropFilter: 'blur(14px)' }}
         >
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">

@@ -10,14 +10,13 @@ import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
-import { fetchAuth } from '@/lib/api'
-import { fetchPublishedVideos } from '@/lib/videos'
-import { buildBunnyLessonMap } from '@/lib/bunnyLessons'
+import { getCachedPurchase, setCachedPurchase } from '@/lib/api'
+import { fetchPublishedCourse, checkCoursePurchase, fetchCourseWatch } from '@/lib/courses'
+import { buildLessonMapFromEpisodes } from '@/lib/bunnyLessons'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchMyCertificates } from '@/lib/exams'
 
-const DEMO_VIDEO = 'https://player.vimeo.com/video/76979871?h=8272103f6e&title=0&byline=0&portrait=0&autoplay=0&muted=0&loop=0'
 const PRODUCT = {
   id: 'scai-jornadas-2026',
   title: 'III Jornadas Regionales de Inmunología Clínica',
@@ -90,7 +89,8 @@ export default function VerPage() {
   const [activeTab, setActiveTab] = useState<'descripcion' | 'ponentes' | 'programa'>('descripcion')
   const [paid, setPaid] = useState(false)
   const [inCart, setInCart] = useState(false)
-  const [backendVideoId, setBackendVideoId] = useState<string | null>(null)
+  const [courseId, setCourseId] = useState<string | null>(null)
+  const [coursePrice, setCoursePrice] = useState(PRODUCT.priceNeto)
   const [certUnlocked, setCertUnlocked] = useState(false)
   const [bunnyMap, setBunnyMap] = useState<Record<string, string>>({})
 
@@ -133,28 +133,37 @@ export default function VerPage() {
     if (!firebaseUser) { router.push('/login'); return }
 
     setLoading(false)
-    setInCart(hasItem(PRODUCT.id))
 
     const ac = new AbortController()
     const timeout = setTimeout(() => ac.abort(), 4500)
 
     ;(async () => {
       try {
-        const videos = await fetchPublishedVideos()
-        const video = videos[0] ?? null
-        if (!video) return
+        const course = await fetchPublishedCourse()
+        if (!course) return
 
-        setBackendVideoId(video.id)
+        setCourseId(course.id)
+        setCoursePrice(course.priceClp ?? PRODUCT.priceNeto)
+        setInCart(hasItem(course.id))
 
-        const res = await fetchAuth(`/purchases/check/${video.id}`, { signal: ac.signal })
-        if (!res.ok) return
+        const cached = getCachedPurchase(course.id)
+        let hasPurchased = cached === true
 
-        const data = await res.json()
-        const hasPurchased = data.purchased === true || data.hasPurchase === true
+        if (cached === null) {
+          hasPurchased = await checkCoursePurchase(course.id, ac.signal)
+          setCachedPurchase(course.id, hasPurchased)
+        } else {
+          checkCoursePurchase(course.id, ac.signal)
+            .then(v => setCachedPurchase(course.id, v))
+            .catch(() => {})
+        }
+
         setPaid(hasPurchased)
         if (hasPurchased) {
-          const all = await fetchPublishedVideos()
-          setBunnyMap(await buildBunnyLessonMap(all))
+          const watch = await fetchCourseWatch(course.id)
+          if (watch?.videos?.length) {
+            setBunnyMap(buildLessonMapFromEpisodes(watch.videos))
+          }
         }
       } catch {
       }
@@ -167,7 +176,14 @@ export default function VerPage() {
   }, [authLoading, firebaseUser, router])
 
   function handleAddToCart() {
-    addToCart({ ...PRODUCT, videoId: backendVideoId ?? undefined }, 1)
+    const id = courseId ?? PRODUCT.id
+    addToCart({
+      id,
+      courseId: courseId ?? undefined,
+      title: PRODUCT.title,
+      subtitle: PRODUCT.subtitle,
+      priceNeto: coursePrice,
+    }, 1)
     setInCart(true)
     router.push('/carrito')
   }
@@ -231,13 +247,27 @@ export default function VerPage() {
                     <div className="h-8 w-8 rounded-full border-2 border-border border-t-[color:var(--scai-teal)] animate-spin" />
                   </div>
                 )}
-                <SecureVideoPlayer
-                  key={playerKey}
-                  videoUrl={paid ? videoUrl : DEMO_VIDEO}
-                  mimeType={videoMime}
-                  onError={onVideoError}
-                  onReady={onPlayerReady}
-                />
+                {paid ? (
+                  <SecureVideoPlayer
+                    key={playerKey}
+                    videoUrl={videoUrl}
+                    mimeType={videoMime}
+                    onError={onVideoError}
+                    onReady={onPlayerReady}
+                  />
+                ) : (
+                  <div className="relative w-full overflow-hidden rounded-xl bg-[#0B1928]" style={{ aspectRatio: '16/9' }}>
+                    <Image
+                      src="/imagenes/Inmunoglobulina adeherida.jpg"
+                      alt=""
+                      fill
+                      className="object-cover object-[50%_85%] opacity-35"
+                      sizes="(max-width: 768px) 100vw, 60vw"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B1928]/90 via-[#0B1928]/50 to-[#0B1928]/30" />
+                  </div>
+                )}
               </div>
 
               {!paid && (
