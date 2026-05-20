@@ -273,8 +273,7 @@ export default function Home() {
             <div className="flex flex-col gap-3">
               <Link
                 href="/registro"
-                className="self-start inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-80"
-                className="shadow-[0_6px_24px_rgba(18,180,198,0.16)] dark:shadow-[0_8px_32px_rgba(18,180,198,0.32)]"
+                className="self-start inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-80 shadow-[0_6px_24px_rgba(18,180,198,0.16)] dark:shadow-[0_8px_32px_rgba(18,180,198,0.32)]"
                 style={{ background: 'var(--scai-teal)' }}
               >
                 <ShoppingCart size={15} />
@@ -555,8 +554,7 @@ export default function Home() {
           <div className="flex flex-col items-start gap-4">
             <Link
               href="/carrito"
-              className="inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-sm font-bold text-white transition-opacity hover:opacity-85"
-              className="shadow-[0_6px_28px_rgba(18,180,198,0.18)] dark:shadow-[0_8px_40px_rgba(18,180,198,0.4)]"
+              className="inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-sm font-bold text-white transition-opacity hover:opacity-85 shadow-[0_6px_28px_rgba(18,180,198,0.18)] dark:shadow-[0_8px_40px_rgba(18,180,198,0.4)]"
               style={{ background: 'var(--scai-teal)' }}
             >
               <ShoppingCart size={16} />
