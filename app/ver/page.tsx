@@ -12,8 +12,8 @@ import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
 import { fetchPublishedVideos } from '@/lib/videos'
+import { buildBunnyLessonMap } from '@/lib/bunnyLessons'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
-import { staticVideoPath } from '@/lib/staticVideos'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchMyCertificates } from '@/lib/exams'
 
@@ -44,44 +44,41 @@ const PONENTES = [
 ]
 
 
-const V1 = 'Video Modulo 1 - Primera Clase.mp4'
-const V3 = 'Video Modulo 1  - Tercera Presentación.mp4'
-
 const MODULOS_DATA = [
   {
     titulo: 'Módulo 1 · Errores Innatos de la Inmunidad',
     videos: [
-      { titulo: 'Apertura y marco conceptual', duracion: '18 min', file: V1 },
-      { titulo: 'Bases moleculares y fenotípicas', duracion: '22 min', file: V3 },
-      { titulo: 'Enfoque clínico inicial', duracion: '24 min', file: V3 },
-      { titulo: 'Mesa de preguntas — bloque 1', duracion: '16 min', file: V1 },
+      { titulo: 'Apertura y marco conceptual', duracion: '14 seg' },
+      { titulo: 'Bases moleculares y fenotípicas', duracion: '2 min' },
+      { titulo: 'Enfoque clínico inicial', duracion: '1 min' },
+      { titulo: 'Mesa de preguntas — bloque 1', duracion: 'Próximamente', soon: true },
     ],
   },
   {
     titulo: 'Módulo 2 · Diagnóstico y laboratorio',
     videos: [
-      { titulo: 'Inmunodeficiencias primarias: enfoque temprano', duracion: '25 min', file: V1 },
-      { titulo: 'Citometría de flujo en práctica clínica', duracion: '28 min', file: V3 },
-      { titulo: 'Genética molecular y utilidad práctica', duracion: '26 min', file: V3 },
-      { titulo: 'Correlación clínico-laboratorio', duracion: '21 min', file: V1 },
+      { titulo: 'Inmunodeficiencias primarias: enfoque temprano', duracion: 'Próximamente', soon: true },
+      { titulo: 'Citometría de flujo en práctica clínica', duracion: 'Próximamente', soon: true },
+      { titulo: 'Genética molecular y utilidad práctica', duracion: 'Próximamente', soon: true },
+      { titulo: 'Correlación clínico-laboratorio', duracion: 'Próximamente', soon: true },
     ],
   },
   {
     titulo: 'Módulo 3 · Manifestaciones y abordaje',
     videos: [
-      { titulo: 'Manifestaciones sistémicas complejas', duracion: '30 min', file: V1 },
-      { titulo: 'Solapamiento autoinmune y autoinflamación', duracion: '27 min', file: V3 },
-      { titulo: 'Casos clínicos transversales', duracion: '29 min', file: V3 },
-      { titulo: 'Estrategias de derivación y seguimiento', duracion: '19 min', file: V1 },
+      { titulo: 'Manifestaciones sistémicas complejas', duracion: 'Próximamente', soon: true },
+      { titulo: 'Solapamiento autoinmune y autoinflamación', duracion: 'Próximamente', soon: true },
+      { titulo: 'Casos clínicos transversales', duracion: 'Próximamente', soon: true },
+      { titulo: 'Estrategias de derivación y seguimiento', duracion: 'Próximamente', soon: true },
     ],
   },
   {
     titulo: 'Módulo 4 · Tratamiento y perspectivas',
     videos: [
-      { titulo: 'Terapias de reemplazo e inmunomodulación', duracion: '22 min', file: V1 },
-      { titulo: 'Trasplante y cuidados perioperatorios', duracion: '24 min', file: V3 },
-      { titulo: 'Terapia génica e innovación', duracion: '23 min', file: V3 },
-      { titulo: 'Panel de cierre y Q&A final', duracion: '15 min', file: V1 },
+      { titulo: 'Terapias de reemplazo e inmunomodulación', duracion: 'Próximamente', soon: true },
+      { titulo: 'Trasplante y cuidados perioperatorios', duracion: 'Próximamente', soon: true },
+      { titulo: 'Terapia génica e innovación', duracion: 'Próximamente', soon: true },
+      { titulo: 'Panel de cierre y Q&A final', duracion: 'Próximamente', soon: true },
     ],
   },
 ]
@@ -95,8 +92,9 @@ export default function VerPage() {
   const [inCart, setInCart] = useState(false)
   const [backendVideoId, setBackendVideoId] = useState<string | null>(null)
   const [certUnlocked, setCertUnlocked] = useState(false)
+  const [bunnyMap, setBunnyMap] = useState<Record<string, string>>({})
 
-  const getLessonFile = useCallback((mi: number, vi: number) => MODULOS_DATA[mi]?.videos[vi]?.file, [])
+  const getLessonFile = useCallback(() => undefined, [])
 
   const {
     activeModulo,
@@ -107,10 +105,11 @@ export default function VerPage() {
     videoMime,
     playerKey,
     selectLesson,
+    hasPlayback,
     onVideoError,
     buffering,
     onPlayerReady,
-  } = useLessonPlayer(paid, backendVideoId, getLessonFile)
+  } = useLessonPlayer(paid, bunnyMap, getLessonFile)
 
   useEffect(() => {
     const sync = () => {
@@ -153,6 +152,10 @@ export default function VerPage() {
         const data = await res.json()
         const hasPurchased = data.purchased === true || data.hasPurchase === true
         setPaid(hasPurchased)
+        if (hasPurchased) {
+          const all = await fetchPublishedVideos()
+          setBunnyMap(await buildBunnyLessonMap(all))
+        }
       } catch {
       }
     })()
@@ -405,13 +408,16 @@ export default function VerPage() {
                       <div className="divide-y" style={{ borderColor: 'rgba(18,180,198,0.08)' }}>
                         {mod.videos.map((v, vi) => {
                           const sel = activeModulo === mi && activeVideoIdx === vi && paid
+                          const canPlay = paid && hasPlayback(mi, vi) && !(v as { soon?: boolean }).soon
                           return (
                             <button
                               key={vi}
                               type="button"
-                              disabled={!paid}
+                              disabled={!canPlay}
                               onClick={() => selectLesson(mi, vi)}
-                              className={`w-full flex items-center gap-3 p-3 sm:p-3.5 transition-colors text-left ${paid ? 'hover:bg-white/[0.04] cursor-pointer' : 'cursor-default'}`}
+                              className={`w-full flex items-center gap-3 p-3 sm:p-3.5 transition-colors text-left ${
+                                canPlay ? 'hover:bg-white/[0.04] cursor-pointer' : 'cursor-default opacity-45'
+                              }`}
                               style={sel ? { background: 'rgba(18,180,198,0.08)', borderLeft: '3px solid var(--scai-teal)' } : {}}
                             >
                               <div
@@ -492,12 +498,16 @@ export default function VerPage() {
                       <div className="pb-2 px-2 space-y-0.5">
                         {mod.videos.map((v, vi) => {
                           const sel = paid && activeModulo === mi && activeVideoIdx === vi
+                          const canPlay = paid && hasPlayback(mi, vi) && !(v as { soon?: boolean }).soon
                           return (
                             <button
                               key={vi}
                               type="button"
+                              disabled={!canPlay}
                               onClick={() => selectLesson(mi, vi)}
-                              className={`w-full text-left rounded-xl px-3 py-2.5 flex items-start gap-2.5 transition-colors ${paid ? 'hover:bg-white/[0.04]' : 'cursor-default'}`}
+                              className={`w-full text-left rounded-xl px-3 py-2.5 flex items-start gap-2.5 transition-colors ${
+                                canPlay ? 'hover:bg-white/[0.04] cursor-pointer' : 'cursor-default opacity-45'
+                              }`}
                               style={sel ? { background: 'rgba(18,180,198,0.14)' } : {}}
                             >
                               <span className="text-[10px] font-bold tabular-nums mt-0.5 w-7 flex-shrink-0" style={{ color: sel ? 'var(--scai-teal)' : 'rgba(255,255,255,0.25)' }}>

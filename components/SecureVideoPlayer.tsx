@@ -19,6 +19,7 @@ export default function SecureVideoPlayer({ videoUrl, mimeType, onError, onReady
       <div className="relative bg-black rounded-2xl overflow-hidden w-full" style={{ aspectRatio: '16/9' }}>
         {videoUrl && isEmbed ? (
           <iframe
+            key={videoUrl}
             src={videoUrl}
             className="absolute inset-0 h-full w-full"
             allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
@@ -27,6 +28,7 @@ export default function SecureVideoPlayer({ videoUrl, mimeType, onError, onReady
           />
         ) : videoUrl ? (
           <video
+            key={videoUrl}
             src={videoUrl}
             controls
             playsInline

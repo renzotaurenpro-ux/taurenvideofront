@@ -1,11 +1,16 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { lessonPlaybackKey } from './bunnyLessons'
 import { resolveLessonPlayback } from './lessonPlayback'
 
 type GetFile = (mi: number, vi: number) => string | undefined
 
-export function useLessonPlayer(paid: boolean, _backendVideoId: string | null, getFile: GetFile) {
+export function useLessonPlayer(
+  paid: boolean,
+  bunnyMap: Record<string, string>,
+  getFile: GetFile,
+) {
   const [activeModulo, setActiveModulo] = useState(0)
   const [activeVideoIdx, setActiveVideoIdx] = useState(0)
   const [openModuloIdx, setOpenModuloIdx] = useState(0)
@@ -13,42 +18,50 @@ export function useLessonPlayer(paid: boolean, _backendVideoId: string | null, g
   const [videoMime, setVideoMime] = useState('video/mp4')
   const [playerKey, setPlayerKey] = useState('init')
   const [buffering, setBuffering] = useState(false)
-  const initializedRef = useRef(false)
+  const [isPending, startTransition] = useTransition()
+  const readyRef = useRef(false)
+
+  const hasPlayback = useCallback((mi: number, vi: number) => {
+    const key = lessonPlaybackKey(mi, vi)
+    return Boolean(bunnyMap[key] || getFile(mi, vi))
+  }, [bunnyMap, getFile])
 
   const applyLesson = useCallback((mi: number, vi: number) => {
-    const pb = resolveLessonPlayback(mi, vi, getFile)
+    const pb = resolveLessonPlayback(mi, vi, bunnyMap, getFile)
     setVideoMime(pb.mime)
     setVideoUrl(pb.url)
     setPlayerKey(pb.key)
-    setBuffering(true)
-  }, [getFile])
-
-  useEffect(() => {
-    if (!paid || initializedRef.current) return
-    initializedRef.current = true
-    applyLesson(0, 0)
-  }, [paid, applyLesson])
+    setBuffering(Boolean(pb.url))
+  }, [bunnyMap, getFile])
 
   useEffect(() => {
     if (!paid) {
-      initializedRef.current = false
+      readyRef.current = false
       setVideoUrl('')
       setPlayerKey('init')
+      return
     }
-  }, [paid])
+    if (!readyRef.current) {
+      readyRef.current = true
+      setOpenModuloIdx(0)
+      setActiveModulo(0)
+      setActiveVideoIdx(0)
+    }
+    applyLesson(activeModulo, activeVideoIdx)
+  }, [paid, bunnyMap, activeModulo, activeVideoIdx, applyLesson])
 
   const selectLesson = useCallback((mi: number, vi: number) => {
-    if (!paid) return
-    setActiveModulo(mi)
-    setActiveVideoIdx(vi)
-    setOpenModuloIdx(mi)
+    if (!paid || !hasPlayback(mi, vi)) return
+    setBuffering(true)
+    startTransition(() => {
+      setActiveModulo(mi)
+      setActiveVideoIdx(vi)
+      setOpenModuloIdx(mi)
+    })
     applyLesson(mi, vi)
-  }, [paid, applyLesson])
+  }, [paid, hasPlayback, applyLesson])
 
-  const onVideoError = useCallback(() => {
-    setBuffering(false)
-  }, [])
-
+  const onVideoError = useCallback(() => setBuffering(false), [])
   const onPlayerReady = useCallback(() => setBuffering(false), [])
 
   return {
@@ -60,8 +73,9 @@ export function useLessonPlayer(paid: boolean, _backendVideoId: string | null, g
     videoMime,
     playerKey,
     selectLesson,
+    hasPlayback,
     onVideoError,
     onPlayerReady,
-    buffering,
+    buffering: buffering || isPending,
   }
 }
