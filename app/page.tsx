@@ -5,7 +5,16 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ShoppingCart, Check, X } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
-import { HeroDecor, QuoteDecor, CtaDecor } from '@/components/HomeDecor'
+import {
+  HeroDecor,
+  HeroVisual,
+  HeroMobileVisual,
+  StatsDecor,
+  ModulosDecor,
+  QuoteDecor,
+  AntesAhoraImage,
+  CtaDecor,
+} from '@/components/HomeDecor'
 import ScaiLogo from '../Logotipo-SCAI.png'
 
 const PONENTES = [
@@ -263,39 +272,11 @@ export default function Home() {
                 Ya tengo acceso →
               </Link>
             </div>
+            <HeroMobileVisual />
           </div>
 
-          <div className="relative hidden md:block">
-            <div className="pointer-events-none absolute -inset-8 rounded-[2rem] blur-3xl"
-              style={{ background: 'rgba(18,180,198,0.1)' }} />
-            <div className="relative overflow-hidden rounded-2xl border shadow-2xl"
-              style={{ borderColor: 'rgba(18,180,198,0.25)' }}>
-              <div className="absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-md"
-                style={{ background: 'rgba(11,25,40,0.75)', border: '1px solid rgba(18,180,198,0.2)' }}>
-                <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: 'var(--scai-teal)' }} />
-                <span className="text-[11px] font-semibold text-white/80">Grabación disponible</span>
-              </div>
-              <div className="relative h-[280px] lg:h-[360px] w-full">
-                <iframe
-                  src="https://player.vimeo.com/video/76979871?h=8272103f6e&title=0&byline=0&portrait=0&autoplay=1&muted=1&loop=1&background=1"
-                  className="absolute inset-0 h-full w-full"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                />
-                <div className="absolute inset-0 pointer-events-none dark:block hidden" style={{ background: 'rgba(11,25,40,0.35)' }} />
-                <div className="absolute inset-0 pointer-events-none dark:hidden block" style={{ background: 'rgba(255,255,255,0.25)' }} />
-              </div>
-              <div className="absolute inset-x-0 bottom-0 z-10 p-4"
-                style={{ background: 'linear-gradient(to top, rgba(11,25,40,0.85) 0%, transparent 100%)' }}>
-                <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'var(--scai-teal)' }}>
-                  Conferencia destacada
-                </p>
-                <h3 className="text-base font-bold text-white leading-snug">
-                  Cuando el Sistema Inmune Falla
-                </h3>
-                <p className="text-xs text-white/45 mt-1">16 expositores · 4 módulos · Acreditado CONACEM</p>
-              </div>
-            </div>
+          <div className="relative hidden md:block w-full max-w-lg lg:max-w-none mx-auto">
+            <HeroVisual />
           </div>
         </div>
 
@@ -319,8 +300,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section ref={statsRef} className="border-b border-border">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <section ref={statsRef} className="relative border-b border-border overflow-hidden">
+        <StatsDecor />
+        <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4">
             {[
               { value: statsVisible ? cntSpeakers : 0, suffix: '', label: 'Expositores invitados' },
@@ -339,8 +321,14 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 sm:px-8 py-20 sm:py-28">
-        <div className="grid md:grid-cols-[240px_1fr] gap-10 md:gap-24">
+      <section className="relative mx-auto max-w-7xl px-5 sm:px-8 py-20 sm:py-28 overflow-hidden">
+        <div
+          className="pointer-events-none absolute -left-8 top-1/2 -translate-y-1/2 w-48 sm:w-64 h-48 sm:h-64 opacity-[0.18] dark:opacity-[0.24] hidden md:block mask-[radial-gradient(ellipse_90%_85%_at_50%_50%,#000_40%,transparent_100%)] [-webkit-mask-image:radial-gradient(ellipse_90%_85%_at_50%_50%,#000_40%,transparent_100%)]"
+          aria-hidden
+        >
+          <Image src="/imagenes/Inmunoglobulina.png" alt="" fill className="object-contain" unoptimized />
+        </div>
+        <div className="relative z-10 grid md:grid-cols-[240px_1fr] gap-10 md:gap-24">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Descripción</p>
           </div>
@@ -368,8 +356,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8 py-20 sm:py-28">
+      <section className="relative border-b border-border bg-card overflow-hidden">
+        <ModulosDecor />
+        <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 py-20 sm:py-28">
           <div className="grid md:grid-cols-[240px_1fr] gap-10 md:gap-24">
             <div>
               <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-4">4 Módulos</p>
@@ -445,8 +434,10 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="rounded-2xl border p-7 sm:p-9 bg-card dark:bg-[rgba(18,180,198,0.06)]"
+            <div className="relative overflow-hidden rounded-2xl border p-7 sm:p-9 bg-card dark:bg-[rgba(18,180,198,0.06)]"
               style={{ borderColor: 'rgba(18,180,198,0.3)' }}>
+              <AntesAhoraImage />
+              <div className="relative z-10">
               <p className="text-xs uppercase tracking-widest mb-6" style={{ color: 'var(--scai-teal)' }}>La forma nueva</p>
               <p className="text-foreground/70 dark:text-white/70 text-sm leading-relaxed mb-8 max-w-sm">
                 Accede a los 16 mejores especialistas en inmunología clínica desde donde estés, con grabación HD disponible en el momento y acreditación CONACEM incluida.
@@ -466,6 +457,7 @@ export default function Home() {
                     <span className="text-xs text-foreground/70 dark:text-white/70">{item}</span>
                   </div>
                 ))}
+              </div>
               </div>
             </div>
           </div>
