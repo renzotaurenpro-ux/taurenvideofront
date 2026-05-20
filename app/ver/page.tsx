@@ -11,7 +11,8 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
-import { fetchPublishedVideos } from '@/lib/videos'
+import { fetchPublishedVideos, fetchVideoById, normalizeBunnyUrl } from '@/lib/videos'
+import { staticVideoPath, staticVideoMime, isBrowserNativeVideo } from '@/lib/staticVideos'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchMyCertificates } from '@/lib/exams'
 
@@ -41,10 +42,6 @@ const PONENTES = [
   { nombre: 'Dr. Alonso Hernández', especialidad: 'Medicina Interna', avatar: 'AH' },
 ]
 
-function staticVideoSrc(file?: string) {
-  if (!file) return ''
-  return `/videos/${encodeURI(file)}`
-}
 
 const MODULOS_DATA = [
   {
@@ -98,6 +95,7 @@ export default function VerPage() {
   const [activeVideoIdx, setActiveVideoIdx] = useState(0)
   const [openModuloIdx, setOpenModuloIdx] = useState(0)
   const [certUnlocked, setCertUnlocked] = useState(false)
+  const [videoMime, setVideoMime] = useState('video/mp4')
 
   useEffect(() => {
     const sync = () => {
@@ -153,10 +151,48 @@ export default function VerPage() {
 
   useEffect(() => {
     if (!paid) return
-    const file = MODULOS_DATA[activeModulo]?.videos[activeVideoIdx]?.file
-    const src = staticVideoSrc(file)
-    if (src) setVideoUrl(src)
-  }, [paid, activeModulo, activeVideoIdx])
+    let cancelled = false
+
+    async function applyBunny() {
+      if (!backendVideoId) return
+      const full = await fetchVideoById(backendVideoId)
+      const url = normalizeBunnyUrl(full?.url) ?? full?.url
+      if (url && !cancelled) {
+        setVideoMime('video/mp4')
+        setVideoUrl(url)
+      }
+    }
+
+    async function resolve() {
+      const file = MODULOS_DATA[activeModulo]?.videos[activeVideoIdx]?.file
+      if (!file) {
+        if (!cancelled) setVideoUrl('')
+        return
+      }
+
+      if (!isBrowserNativeVideo(file)) {
+        await applyBunny()
+        return
+      }
+
+      const src = staticVideoPath(file)
+      setVideoMime(staticVideoMime(file))
+
+      try {
+        const head = await fetch(src, { method: 'HEAD' })
+        const len = parseInt(head.headers.get('content-length') || '0', 10)
+        if (head.ok && len > 500000) {
+          if (!cancelled) setVideoUrl(src)
+          return
+        }
+      } catch {}
+
+      await applyBunny()
+    }
+
+    resolve()
+    return () => { cancelled = true }
+  }, [paid, activeModulo, activeVideoIdx, backendVideoId])
 
   function handleAddToCart() {
     addToCart({ ...PRODUCT, videoId: backendVideoId ?? undefined }, 1)
@@ -218,7 +254,7 @@ export default function VerPage() {
               )}
 
               <div className="relative z-10 p-2 sm:p-3">
-                <SecureVideoPlayer videoUrl={videoUrl} />
+                <SecureVideoPlayer videoUrl={videoUrl} mimeType={videoMime} />
               </div>
 
               {!paid && (
