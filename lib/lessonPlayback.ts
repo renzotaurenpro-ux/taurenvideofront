@@ -1,7 +1,5 @@
 import { staticVideoMime, staticVideoPath } from './staticVideos'
 
-export type PlaybackMode = 'static'
-
 export function resolveLessonPlayback(
   mi: number,
   vi: number,
@@ -10,7 +8,7 @@ export function resolveLessonPlayback(
   const file = getFile(mi, vi) ?? ''
   return {
     url: file ? staticVideoPath(file) : '',
-    mime: file ? staticVideoMime(file) : 'video/mp4',
+    mime: staticVideoMime(file),
     key: `${mi}-${vi}-${file}`,
   }
 }

@@ -44,41 +44,44 @@ const PONENTES = [
 ]
 
 
+const V1 = 'Video Modulo 1 - Primera Clase.mp4'
+const V3 = 'Video Modulo 1  - Tercera Presentación.mp4'
+
 const MODULOS_DATA = [
   {
     titulo: 'Módulo 1 · Errores Innatos de la Inmunidad',
     videos: [
-      { titulo: 'Apertura y marco conceptual', duracion: '18 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
-      { titulo: 'Bases moleculares y fenotípicas', duracion: '22 min', file: 'Video Modulo 1  - Segunda Presentación.mov' },
-      { titulo: 'Enfoque clínico inicial', duracion: '24 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
-      { titulo: 'Mesa de preguntas — bloque 1', duracion: '16 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
+      { titulo: 'Apertura y marco conceptual', duracion: '18 min', file: V1 },
+      { titulo: 'Bases moleculares y fenotípicas', duracion: '22 min', file: V3 },
+      { titulo: 'Enfoque clínico inicial', duracion: '24 min', file: V3 },
+      { titulo: 'Mesa de preguntas — bloque 1', duracion: '16 min', file: V1 },
     ],
   },
   {
     titulo: 'Módulo 2 · Diagnóstico y laboratorio',
     videos: [
-      { titulo: 'Inmunodeficiencias primarias: enfoque temprano', duracion: '25 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
-      { titulo: 'Citometría de flujo en práctica clínica', duracion: '28 min', file: 'Video Modulo 1  - Segunda Presentación.mov' },
-      { titulo: 'Genética molecular y utilidad práctica', duracion: '26 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
-      { titulo: 'Correlación clínico-laboratorio', duracion: '21 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
+      { titulo: 'Inmunodeficiencias primarias: enfoque temprano', duracion: '25 min', file: V1 },
+      { titulo: 'Citometría de flujo en práctica clínica', duracion: '28 min', file: V3 },
+      { titulo: 'Genética molecular y utilidad práctica', duracion: '26 min', file: V3 },
+      { titulo: 'Correlación clínico-laboratorio', duracion: '21 min', file: V1 },
     ],
   },
   {
     titulo: 'Módulo 3 · Manifestaciones y abordaje',
     videos: [
-      { titulo: 'Manifestaciones sistémicas complejas', duracion: '30 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
-      { titulo: 'Solapamiento autoinmune y autoinflamación', duracion: '27 min', file: 'Video Modulo 1  - Segunda Presentación.mov' },
-      { titulo: 'Casos clínicos transversales', duracion: '29 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
-      { titulo: 'Estrategias de derivación y seguimiento', duracion: '19 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
+      { titulo: 'Manifestaciones sistémicas complejas', duracion: '30 min', file: V1 },
+      { titulo: 'Solapamiento autoinmune y autoinflamación', duracion: '27 min', file: V3 },
+      { titulo: 'Casos clínicos transversales', duracion: '29 min', file: V3 },
+      { titulo: 'Estrategias de derivación y seguimiento', duracion: '19 min', file: V1 },
     ],
   },
   {
     titulo: 'Módulo 4 · Tratamiento y perspectivas',
     videos: [
-      { titulo: 'Terapias de reemplazo e inmunomodulación', duracion: '22 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
-      { titulo: 'Trasplante y cuidados perioperatorios', duracion: '24 min', file: 'Video Modulo 1  - Segunda Presentación.mov' },
-      { titulo: 'Terapia génica e innovación', duracion: '23 min', file: 'Video Modulo 1  - Tercera Presentación.mp4' },
-      { titulo: 'Panel de cierre y Q&A final', duracion: '15 min', file: 'Video Modulo 1 - Primera Clase.mp4' },
+      { titulo: 'Terapias de reemplazo e inmunomodulación', duracion: '22 min', file: V1 },
+      { titulo: 'Trasplante y cuidados perioperatorios', duracion: '24 min', file: V3 },
+      { titulo: 'Terapia génica e innovación', duracion: '23 min', file: V3 },
+      { titulo: 'Panel de cierre y Q&A final', duracion: '15 min', file: V1 },
     ],
   },
 ]
@@ -493,17 +496,6 @@ export default function VerPage() {
                             <button
                               key={vi}
                               type="button"
-                              onMouseEnter={() => {
-                                const f = MODULOS_DATA[mi]?.videos[vi]?.file
-                                if (!f || !paid) return
-                                const href = staticVideoPath(f)
-                                if (!document.querySelector(`link[rel="prefetch"][href="${href}"]`)) {
-                                  const l = document.createElement('link')
-                                  l.rel = 'prefetch'
-                                  l.href = href
-                                  document.head.appendChild(l)
-                                }
-                              }}
                               onClick={() => selectLesson(mi, vi)}
                               className={`w-full text-left rounded-xl px-3 py-2.5 flex items-start gap-2.5 transition-colors ${paid ? 'hover:bg-white/[0.04]' : 'cursor-default'}`}
                               style={sel ? { background: 'rgba(18,180,198,0.14)' } : {}}
