@@ -8,6 +8,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import * as tus from 'tus-js-client'
+import { fetchAuth } from '@/lib/api'
 
 const API_BASE = '/api/proxy'
 const ADMIN_SESSION_KEY = 'tauren-admin-session'
@@ -117,9 +118,7 @@ export default function AdminPage() {
       const credential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword)
       const token = await credential.user.getIdToken()
 
-      const res = await fetch(`${API_BASE}/auth/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetchAuth('/auth/profile')
       if (!res.ok) throw new Error('No se pudo verificar el perfil')
       const profile = await res.json()
 

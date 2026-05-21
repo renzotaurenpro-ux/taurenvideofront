@@ -1,5 +1,5 @@
 import { fetchAuth, fetchPublic } from './api'
-import { normalizeBunnyUrl } from './videos'
+import { normalizeBunnyUrl } from './bunny'
 
 export type CourseEpisode = {
   id: string

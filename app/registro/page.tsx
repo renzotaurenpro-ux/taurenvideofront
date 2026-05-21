@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -9,6 +9,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
+import { registerAuthUser, setSessionCookie, syncAuthLogin } from '@/lib/auth'
 import PageBackground from '@/components/PageBackground'
 
 type FormState = {
@@ -58,8 +59,6 @@ export default function RegistroPage() {
   const [error, setError] = useState('')
   const [ok, setOk] = useState(false)
 
-  const apiBase = useMemo(() => '/api/proxy', [])
-
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
@@ -67,35 +66,16 @@ export default function RegistroPage() {
     setLoading(true)
     try {
       const payload = { ...form, ...(form.rut ? {} : { rut: undefined }) }
-      const res = await fetch(`${apiBase}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const data = await res.json().catch(() => null)
-      if (!res.ok) {
-        throw new Error(typeof data?.message === 'string' ? data.message : 'No se pudo completar el registro')
-      }
+      await registerAuthUser(payload)
 
       const credential = await signInWithEmailAndPassword(auth, form.email, form.password)
       const idToken = await credential.user.getIdToken()
-
-      const secure = window.location.protocol === 'https:' ? '; Secure' : ''
-      document.cookie = `__tauren_session=${credential.user.uid}; path=/; max-age=86400; SameSite=Lax${secure}`
-
-      fetch(`${apiBase}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      })
-        .then(r => (r.ok ? r.json() : null))
-        .then(d => {
-          if (!d) return
-          const p = d.user ?? d
-          setProfile(p)
-          cacheProfileToStorage(credential.user.uid, p)
-        })
-        .catch(() => {})
+      setSessionCookie(credential.user.uid)
+      const profile = await syncAuthLogin(idToken)
+      if (profile) {
+        setProfile(profile)
+        cacheProfileToStorage(credential.user.uid, profile)
+      }
 
       setOk(true)
       setTimeout(() => router.push('/ver'), 300)

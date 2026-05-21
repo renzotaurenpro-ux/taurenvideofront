@@ -2,7 +2,6 @@ import { fetchAuth } from './api'
 
 const TTL_EXAMS = 10 * 60 * 1000
 const KEY_EXAMS = '__scai_exams_v2'
-const KEY_EXAM = (id: string) => `__scai_exam_v2_${id}`
 
 function cacheGet<T>(key: string, ttl: number): T | null {
   if (typeof window === 'undefined') return null
@@ -21,13 +20,6 @@ function cacheSet(key: string, data: unknown) {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }))
-  } catch {}
-}
-
-function cacheDrop(key: string) {
-  if (typeof window === 'undefined') return
-  try {
-    localStorage.removeItem(key)
   } catch {}
 }
 
@@ -167,50 +159,18 @@ export async function fetchExams(): Promise<ExamListItem[]> {
   return list
 }
 
-async function requestExamById(id: string): Promise<Exam | null> {
-  const paths = [`/exams/${encodeURIComponent(id)}`, `/exams/${encodeURIComponent(id)}/take`]
-  let lastStatus = 0
-  for (const path of paths) {
-    const res = await fetchAuth(path)
-    lastStatus = res.status
-    if (res.status === 404) continue
-    if (!res.ok) continue
-    const data = await res.json().catch(() => null)
-    const nested = data && typeof data === 'object' ? (data as { exam?: unknown }).exam ?? data : data
-    const exam = normalizeExam(nested)
-    if (exam) return exam
-  }
-  if (lastStatus === 404) cacheDrop(KEY_EXAM(id))
-  return null
-}
-
 export async function fetchExamById(id: string): Promise<Exam | null> {
-  const key = KEY_EXAM(id)
-  const cached = cacheGet<Exam>(key, TTL_EXAMS)
-  const cachedOk = cached ? normalizeExam(cached) : null
-  if (cachedOk) {
-    requestExamById(id)
-      .then(fresh => {
-        if (fresh) cacheSet(key, fresh)
-      })
-      .catch(() => {})
-    return cachedOk
-  }
-  if (cached) cacheDrop(key)
-  const fresh = await requestExamById(id)
-  if (fresh) cacheSet(key, fresh)
-  return fresh
+  const list = await fetchExams()
+  const item = list.find(e => e.id === id)
+  if (!item) return null
+  return normalizeExam(item)
 }
 
 export async function fetchPublishedExam(): Promise<Exam | null> {
   const list = await fetchExams()
   const picked = list.find(e => e.published !== false) ?? list[0]
   if (!picked?.id) return null
-  if (picked.questions?.length) {
-    const inline = normalizeExam(picked)
-    if (inline) return inline
-  }
-  return fetchExamById(picked.id)
+  return normalizeExam(picked)
 }
 
 export async function submitExam(id: string, answers: ExamSubmitAnswer[]): Promise<ExamSubmitResult | null> {

@@ -9,9 +9,8 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
+import { setSessionCookie, syncAuthLogin } from '@/lib/auth'
 import PageBackground from '@/components/PageBackground'
-
-const API_BASE = '/api/proxy'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,24 +32,12 @@ export default function LoginPage() {
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password)
       const idToken = await credential.user.getIdToken()
-
-      const secure = window.location.protocol === 'https:' ? '; Secure' : ''
-      document.cookie = `__tauren_session=${credential.user.uid}; path=/; max-age=86400; SameSite=Lax${secure}`
-
-      fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      })
-        .then(r => (r.ok ? r.json() : null))
-        .then(data => {
-          if (!data) return
-          const p = data.user ?? data
-          setProfile(p)
-          cacheProfileToStorage(credential.user.uid, p)
-        })
-        .catch(() => {})
-
+      setSessionCookie(credential.user.uid)
+      const profile = await syncAuthLogin(idToken)
+      if (profile) {
+        setProfile(profile)
+        cacheProfileToStorage(credential.user.uid, profile)
+      }
       router.push('/ver')
     } catch (err: any) {
       const code = err?.code ?? ''
