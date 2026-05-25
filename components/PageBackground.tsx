@@ -13,7 +13,7 @@ const SCENES: Record<
   { src: string; position: string; auth: boolean }
 > = {
   login: {
-    src: '/imagenes/Inmunoglobulina oscura.png',
+    src: '/imagenes/Inmunoglobulina adeherida.jpg',
     position: '50% 55%',
     auth: true,
   },
@@ -36,23 +36,17 @@ export default function PageBackground({ scene }: Props) {
   return (
     <>
       <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden bg-[#0B1928]">
-        <div
-          className={
-            scene === 'login'
-              ? 'absolute -inset-[6%] min-h-0 min-w-0'
-              : 'absolute inset-0'
-          }
-        >
+        <div className="absolute inset-0 min-h-0 min-w-0">
           <Image
             src={cfg.src}
             alt=""
             fill
             priority
-            quality={92}
+            quality={scene === 'login' ? 95 : 92}
             sizes="100vw"
             className={`object-cover saturate-[1.08] ${
               scene === 'login'
-                ? 'brightness-[1]'
+                ? 'brightness-[0.92] contrast-[1.02]'
                 : isAuth
                 ? 'brightness-[0.88] dark:brightness-[0.72] dark:saturate-[1.1]'
                 : 'brightness-[0.92] dark:brightness-50 dark:saturate-[1.2]'
