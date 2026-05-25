@@ -43,6 +43,7 @@ async function handler(req: NextRequest, ctx: { params: Promise<{ path?: string[
   outHeaders.delete('content-encoding')
   outHeaders.delete('transfer-encoding')
   outHeaders.delete('connection')
+  outHeaders.delete('content-length')
 
   const responseBuffer = await res.arrayBuffer()
 
