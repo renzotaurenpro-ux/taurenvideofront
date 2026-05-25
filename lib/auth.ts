@@ -10,14 +10,15 @@ export function setSessionCookie(uid: string) {
 
 export function parseProfile(data: unknown): UserProfile | null {
   if (!data || typeof data !== 'object') return null
-  const raw = (data as { user?: unknown }).user ?? data
+  const root = data as Record<string, unknown>
+  const raw = root.user ?? root.data ?? root
   if (!raw || typeof raw !== 'object') return null
   const o = raw as Record<string, unknown>
-  const id = String(o.id ?? '')
+  const id = String(o.id ?? o._id ?? '')
   const email = String(o.email ?? '')
-  const firstName = String(o.firstName ?? '')
-  const lastName = String(o.lastName ?? '')
-  const firebaseUid = String(o.firebaseUid ?? '')
+  const firstName = String(o.firstName ?? o.first_name ?? '')
+  const lastName = String(o.lastName ?? o.last_name ?? '')
+  const firebaseUid = String(o.firebaseUid ?? o.firebase_uid ?? o.uid ?? '')
   if (!email && !firebaseUid && !id) return null
   return {
     id: id || firebaseUid,
@@ -42,22 +43,31 @@ function backendMessage(data: unknown, fallback: string) {
 }
 
 export async function syncAuthLogin(idToken: string): Promise<UserProfile | null> {
-  let res: Response
-  try {
-    res = await postPublic('/auth/login', { idToken })
-  } catch {
-    return null
-  }
-  const data = await res.json().catch(() => null)
-  if (!res.ok) {
-    const msg = backendMessage(data, '')
-    if (res.status === 401 && msg.toLowerCase().includes('token')) return null
-    if (res.status === 404 || msg === 'USER_NOT_FOUND') {
-      throw new Error('No hay cuenta registrada. Regístrate primero')
+  for (let i = 0; i < 2; i++) {
+    let res: Response
+    try {
+      res = await postPublic('/auth/login', { idToken })
+    } catch {
+      if (i === 0) { await new Promise(r => setTimeout(r, 400)); continue }
+      return null
     }
-    return null
+    const data = await res.json().catch(() => null)
+    if (!res.ok) {
+      const msg = backendMessage(data, '')
+      if (res.status === 404 || msg === 'USER_NOT_FOUND') {
+        throw new Error('No hay cuenta registrada. Regístrate primero')
+      }
+      if (i === 0 && (res.status >= 500 || res.status === 408)) {
+        await new Promise(r => setTimeout(r, 400))
+        continue
+      }
+      return null
+    }
+    const profile = parseProfile(data)
+    if (profile) return profile
+    if (i === 0) { await new Promise(r => setTimeout(r, 300)); continue }
   }
-  return parseProfile(data)
+  return null
 }
 
 export async function fetchAuthProfile(): Promise<UserProfile | null> {

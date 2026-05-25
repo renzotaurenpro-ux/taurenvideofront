@@ -77,20 +77,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    const unsub = onAuthStateChanged(auth, (fbUser) => {
+    const applyUser = (fbUser: User | null) => {
       setFirebaseUser(fbUser)
-
       if (fbUser) {
         document.cookie = `__tauren_session=${fbUser.uid}; ${cookieFlags()}`
-
         const cached = loadProfileFromStorage(fbUser.uid)
         if (cached) {
           setProfile(cached)
           document.cookie = `__tauren_name=${encodeURIComponent(`${cached.firstName} ${cached.lastName}`)}; ${cookieFlags()}`
         }
-
         setLoading(false)
-
         fetchAuth('/auth/profile')
           .then(r => (r.ok ? r.json() : null))
           .then(data => {
@@ -107,9 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearProfileStorage()
         setLoading(false)
       }
-    })
+    }
 
-    return unsub
+    if (auth.currentUser) applyUser(auth.currentUser)
+    return onAuthStateChanged(auth, applyUser)
   }, [])
 
   async function logout() {

@@ -1,26 +1,53 @@
+import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from './firebase'
 
 const API_BASE = '/api/proxy'
 
+function waitForAuthUser(timeoutMs = 8000) {
+  if (!auth) return Promise.reject(new Error('UNAUTHENTICATED'))
+  if (auth.currentUser) return Promise.resolve(auth.currentUser)
+  return new Promise<NonNullable<typeof auth.currentUser>>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('UNAUTHENTICATED')), timeoutMs)
+    const unsub = onAuthStateChanged(auth, user => {
+      if (user) {
+        clearTimeout(timer)
+        unsub()
+        resolve(user)
+      }
+    })
+  })
+}
+
 async function getToken(forceRefresh = false): Promise<string> {
-  if (!auth) throw new Error('UNAUTHENTICATED')
-  const user = auth.currentUser
-  if (!user) throw new Error('UNAUTHENTICATED')
+  const user = await waitForAuthUser()
   return user.getIdToken(forceRefresh)
 }
 
-const PURCHASE_CACHE_TTL = 2 * 60 * 1000
-const purchaseCache = new Map<string, { ts: number; purchased: boolean }>()
+const PURCHASE_CACHE_TTL = 10 * 60 * 1000
+const PURCHASE_LS_KEY = '__scai_purchase_v1'
+
+function lsGetPurchaseMap(): Record<string, { ts: number; purchased: boolean }> {
+  if (typeof window === 'undefined') return {}
+  try { return JSON.parse(localStorage.getItem(PURCHASE_LS_KEY) ?? '{}') } catch { return {} }
+}
+
+function lsSetPurchaseMap(map: Record<string, { ts: number; purchased: boolean }>) {
+  if (typeof window === 'undefined') return
+  try { localStorage.setItem(PURCHASE_LS_KEY, JSON.stringify(map)) } catch {}
+}
 
 export function getCachedPurchase(courseId: string): boolean | null {
-  const entry = purchaseCache.get(courseId)
+  const map = lsGetPurchaseMap()
+  const entry = map[courseId]
   if (!entry) return null
-  if (Date.now() - entry.ts > PURCHASE_CACHE_TTL) { purchaseCache.delete(courseId); return null }
+  if (Date.now() - entry.ts > PURCHASE_CACHE_TTL) return null
   return entry.purchased
 }
 
 export function setCachedPurchase(courseId: string, purchased: boolean) {
-  purchaseCache.set(courseId, { ts: Date.now(), purchased })
+  const map = lsGetPurchaseMap()
+  map[courseId] = { ts: Date.now(), purchased }
+  lsSetPurchaseMap(map)
 }
 
 let warmupDone = false

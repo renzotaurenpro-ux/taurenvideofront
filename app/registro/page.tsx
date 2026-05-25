@@ -8,9 +8,11 @@ import { Home, CheckCircle2, Loader2 } from 'lucide-react'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, hasFirebaseConfig } from '@/lib/firebase'
-import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
+import { useAuth } from '@/lib/authContext'
 import type { UserProfile } from '@/lib/authContext'
-import { registerAuthUser, setSessionCookie, syncAuthLogin } from '@/lib/auth'
+import { registerAuthUser, setSessionCookie, syncAuthLogin, fetchAuthProfile, waitForFirebaseUser } from '@/lib/auth'
+import { setCachedPurchase } from '@/lib/api'
+import { fetchPublishedCourse, checkCoursePurchase } from '@/lib/courses'
 import PageBackground from '@/components/PageBackground'
 
 type FormState = {
@@ -54,7 +56,7 @@ const AREAS_MEDICAS = [
 
 export default function RegistroPage() {
   const router = useRouter()
-  const { setProfile } = useAuth()
+  const { cacheProfile } = useAuth()
   const [form, setForm] = useState<FormState>(initialState)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -76,25 +78,33 @@ export default function RegistroPage() {
       const credential = await signInWithEmailAndPassword(auth, form.email.trim(), form.password)
       const uid = credential.user.uid
       setSessionCookie(uid)
+      await waitForFirebaseUser()
       const idToken = await credential.user.getIdToken()
-      const backendProfile = await syncAuthLogin(idToken)
-      const profile: UserProfile = backendProfile ?? {
-        id: uid,
-        email: form.email.trim(),
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        role: 'USER',
-        firebaseUid: uid,
-        workplace: form.workplace,
-        medicalArea: form.medicalArea,
-        phoneNumber: form.phoneNumber,
-        city: form.city,
-        rut: form.rut || undefined,
+      let profile: UserProfile | null = await syncAuthLogin(idToken)
+      if (!profile) profile = await fetchAuthProfile()
+      if (!profile) {
+        profile = {
+          id: uid,
+          email: form.email.trim(),
+          firstName: form.firstName.trim(),
+          lastName: form.lastName.trim(),
+          role: 'USER',
+          firebaseUid: uid,
+          workplace: form.workplace,
+          medicalArea: form.medicalArea,
+          phoneNumber: form.phoneNumber,
+          city: form.city,
+          rut: form.rut || undefined,
+        }
       }
-      setProfile(profile)
-      cacheProfileToStorage(uid, profile)
+      cacheProfile(uid, profile)
+      const course = await fetchPublishedCourse()
+      if (course) {
+        const purchased = await checkCoursePurchase(course.id)
+        setCachedPurchase(course.id, purchased)
+      }
       setOk(true)
-      setTimeout(() => router.replace('/ver'), 300)
+      router.replace('/ver')
     } catch (err: any) {
       const code = err?.code ?? ''
       if (code === 'auth/email-already-in-use') {

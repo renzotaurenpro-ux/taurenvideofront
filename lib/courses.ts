@@ -68,14 +68,28 @@ export async function fetchPublishedCourse(): Promise<Course | null> {
 }
 
 export async function checkCoursePurchase(courseId: string, signal?: AbortSignal): Promise<boolean> {
-  try {
-    const res = await fetchAuth(`/purchases/check/course/${courseId}`, { signal })
-    if (!res.ok) return false
-    const data = await res.json()
-    return data.purchased === true || data.hasPurchase === true
-  } catch {
-    return false
+  for (let i = 0; i < 2; i++) {
+    try {
+      const res = await fetchAuth(`/purchases/check/course/${courseId}`, { signal })
+      if (res.ok) {
+        const data = await res.json()
+        return data.purchased === true || data.hasPurchase === true || data.hasAccess === true
+      }
+      if (res.status >= 500 && i === 0) {
+        await new Promise(r => setTimeout(r, 500))
+        continue
+      }
+      return false
+    } catch (e) {
+      if (signal?.aborted) return false
+      if (i === 0) {
+        await new Promise(r => setTimeout(r, 500))
+        continue
+      }
+      return false
+    }
   }
+  return false
 }
 
 export async function fetchCourseWatch(courseId: string): Promise<Course | null> {

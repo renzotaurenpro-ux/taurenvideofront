@@ -10,8 +10,10 @@ import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
+import { auth } from '@/lib/firebase'
 import { getCachedPurchase, setCachedPurchase } from '@/lib/api'
 import { fetchPublishedCourse, checkCoursePurchase, fetchCourseWatch } from '@/lib/courses'
+import { waitForFirebaseUser } from '@/lib/auth'
 import { buildLessonMapFromEpisodes } from '@/lib/bunnyLessons'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
@@ -85,6 +87,7 @@ const MODULOS_DATA = [
 export default function VerPage() {
   const router = useRouter()
   const { firebaseUser, profile, loading: authLoading } = useAuth()
+  const activeUser = firebaseUser ?? auth?.currentUser ?? null
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'descripcion' | 'ponentes' | 'programa'>('descripcion')
   const [paid, setPaid] = useState(false)
@@ -126,42 +129,60 @@ export default function VerPage() {
     fetchMyCertificates()
       .then(list => { if (Array.isArray(list) && list.length > 0) setCertUnlocked(true) })
       .catch(() => {})
-  }, [authLoading, firebaseUser])
+  }, [authLoading, activeUser])
 
   useEffect(() => {
     if (authLoading) return
-    if (!firebaseUser) { router.replace('/login'); return }
+    if (!activeUser) {
+      const hasCookie = typeof document !== 'undefined' && document.cookie.includes('__tauren_session=')
+      if (!hasCookie) {
+        router.replace('/login')
+        return
+      }
+      let cancelled = false
+      waitForFirebaseUser(6000)
+        .catch(() => {})
+        .finally(() => {
+          if (!cancelled && !auth?.currentUser) router.replace('/login')
+        })
+      return () => { cancelled = true }
+    }
 
     setLoading(false)
-
-    const ac = new AbortController()
-    const timeout = setTimeout(() => ac.abort(), 4500)
+    let cancelled = false
 
     ;(async () => {
       try {
         const course = await fetchPublishedCourse()
-        if (!course) return
+        if (!course || cancelled) return
 
         setCourseId(course.id)
         setCoursePrice(course.priceClp ?? PRODUCT.priceNeto)
         setInCart(hasItem(course.id))
 
         const cached = getCachedPurchase(course.id)
-        let hasPurchased = cached === true
-
-        if (cached === null) {
-          hasPurchased = await checkCoursePurchase(course.id, ac.signal)
-          setCachedPurchase(course.id, hasPurchased)
-        } else {
-          checkCoursePurchase(course.id, ac.signal)
-            .then(v => setCachedPurchase(course.id, v))
+        if (cached === true) {
+          setPaid(true)
+          fetchCourseWatch(course.id)
+            .then(watch => {
+              if (cancelled || !watch?.videos?.length) return
+              setBunnyMap(buildLessonMapFromEpisodes(watch.videos))
+            })
             .catch(() => {})
+          checkCoursePurchase(course.id)
+            .then(v => { if (!cancelled) { setCachedPurchase(course.id, v); if (!v) setPaid(false) } })
+            .catch(() => {})
+          return
         }
 
+        const hasPurchased = await checkCoursePurchase(course.id)
+        if (cancelled) return
+        setCachedPurchase(course.id, hasPurchased)
         setPaid(hasPurchased)
+
         if (hasPurchased) {
           const watch = await fetchCourseWatch(course.id)
-          if (watch?.videos?.length) {
+          if (!cancelled && watch?.videos?.length) {
             setBunnyMap(buildLessonMapFromEpisodes(watch.videos))
           }
         }
@@ -169,11 +190,8 @@ export default function VerPage() {
       }
     })()
 
-    return () => {
-      clearTimeout(timeout)
-      ac.abort()
-    }
-  }, [authLoading, firebaseUser, router])
+    return () => { cancelled = true }
+  }, [authLoading, activeUser, router])
 
   function handleAddToCart() {
     const id = courseId ?? PRODUCT.id
@@ -188,10 +206,10 @@ export default function VerPage() {
     router.push('/carrito')
   }
 
-  const displayEmail = profile?.email ?? firebaseUser?.email ?? ''
+  const displayEmail = profile?.email ?? activeUser?.email ?? ''
   const clipActual = MODULOS_DATA[activeModulo]?.videos[activeVideoIdx]
 
-  if (loading || (!firebaseUser && !authLoading)) {
+  if (loading || (!activeUser && !authLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">

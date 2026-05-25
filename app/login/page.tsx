@@ -8,14 +8,16 @@ import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, hasFirebaseConfig } from '@/lib/firebase'
-import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
-import { setSessionCookie, syncAuthLogin } from '@/lib/auth'
+import { useAuth } from '@/lib/authContext'
+import { setSessionCookie, syncAuthLogin, fetchAuthProfile, waitForFirebaseUser } from '@/lib/auth'
 import type { UserProfile } from '@/lib/authContext'
+import { setCachedPurchase } from '@/lib/api'
+import { fetchPublishedCourse, checkCoursePurchase } from '@/lib/courses'
 import PageBackground from '@/components/PageBackground'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { setProfile } = useAuth()
+  const { cacheProfile } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -38,18 +40,26 @@ export default function LoginPage() {
       const credential = await signInWithEmailAndPassword(auth, email.trim(), password)
       const uid = credential.user.uid
       setSessionCookie(uid)
+      await waitForFirebaseUser()
       const idToken = await credential.user.getIdToken()
-      const backendProfile = await syncAuthLogin(idToken)
-      const profile: UserProfile = backendProfile ?? {
-        id: uid,
-        email: credential.user.email ?? email.trim(),
-        firstName: credential.user.displayName?.split(' ')[0] ?? '',
-        lastName: credential.user.displayName?.split(' ').slice(1).join(' ') ?? '',
-        role: 'USER',
-        firebaseUid: uid,
+      let profile: UserProfile | null = await syncAuthLogin(idToken)
+      if (!profile) profile = await fetchAuthProfile()
+      if (!profile) {
+        profile = {
+          id: uid,
+          email: credential.user.email ?? email.trim(),
+          firstName: credential.user.displayName?.split(' ')[0] ?? '',
+          lastName: credential.user.displayName?.split(' ').slice(1).join(' ') ?? '',
+          role: 'USER',
+          firebaseUid: uid,
+        }
       }
-      setProfile(profile)
-      cacheProfileToStorage(uid, profile)
+      cacheProfile(uid, profile)
+      const course = await fetchPublishedCourse()
+      if (course) {
+        const purchased = await checkCoursePurchase(course.id)
+        setCachedPurchase(course.id, purchased)
+      }
       router.replace('/ver')
     } catch (err: any) {
       document.cookie = '__tauren_session=; path=/; max-age=0; SameSite=Lax'
