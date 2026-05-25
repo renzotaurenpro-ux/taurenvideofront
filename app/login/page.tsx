@@ -55,12 +55,13 @@ export default function LoginPage() {
         }
       }
       cacheProfile(uid, profile)
-      const course = await fetchPublishedCourse()
-      if (course) {
-        const purchased = await checkCoursePurchase(course.id)
-        setCachedPurchase(course.id, purchased)
-      }
       router.replace('/ver')
+      fetchPublishedCourse()
+        .then(course => {
+          if (!course) return
+          return checkCoursePurchase(course.id).then(purchased => setCachedPurchase(course.id, purchased))
+        })
+        .catch(() => {})
     } catch (err: any) {
       document.cookie = '__tauren_session=; path=/; max-age=0; SameSite=Lax'
       const code = err?.code ?? ''
