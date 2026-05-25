@@ -1,13 +1,13 @@
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, type User } from 'firebase/auth'
 import { auth } from './firebase'
 
 const API_BASE = '/api/proxy'
 
-function waitForAuthUser(timeoutMs = 8000) {
+function waitForAuthUser(timeoutMs = 8000): Promise<User> {
   const firebaseAuth = auth
   if (!firebaseAuth) return Promise.reject(new Error('UNAUTHENTICATED'))
   if (firebaseAuth.currentUser) return Promise.resolve(firebaseAuth.currentUser)
-  return new Promise<NonNullable<typeof firebaseAuth.currentUser>>((resolve, reject) => {
+  return new Promise<User>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('UNAUTHENTICATED')), timeoutMs)
     const unsub = onAuthStateChanged(firebaseAuth, user => {
       if (user) {
