@@ -41,24 +41,23 @@ function backendMessage(data: unknown, fallback: string) {
   return fallback
 }
 
-export async function syncAuthLogin(idToken: string): Promise<UserProfile> {
+export async function syncAuthLogin(idToken: string): Promise<UserProfile | null> {
   let res: Response
   try {
     res = await postPublic('/auth/login', { idToken })
   } catch {
-    throw new Error('No se pudo conectar con el servidor')
+    return null
   }
   const data = await res.json().catch(() => null)
   if (!res.ok) {
-    const msg = backendMessage(data, 'Error al sincronizar la sesión')
+    const msg = backendMessage(data, '')
+    if (res.status === 401 && msg.toLowerCase().includes('token')) return null
     if (res.status === 404 || msg === 'USER_NOT_FOUND') {
       throw new Error('No hay cuenta registrada. Regístrate primero')
     }
-    throw new Error(msg)
+    return null
   }
-  const profile = parseProfile(data)
-  if (!profile) throw new Error('Respuesta inválida del servidor')
-  return profile
+  return parseProfile(data)
 }
 
 export async function fetchAuthProfile(): Promise<UserProfile | null> {

@@ -9,6 +9,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, hasFirebaseConfig } from '@/lib/firebase'
 import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
+import type { UserProfile } from '@/lib/authContext'
 import { registerAuthUser, setSessionCookie, syncAuthLogin } from '@/lib/auth'
 import PageBackground from '@/components/PageBackground'
 
@@ -73,11 +74,25 @@ export default function RegistroPage() {
       await registerAuthUser(payload)
 
       const credential = await signInWithEmailAndPassword(auth, form.email.trim(), form.password)
+      const uid = credential.user.uid
+      setSessionCookie(uid)
       const idToken = await credential.user.getIdToken()
-      setSessionCookie(credential.user.uid)
-      const profile = await syncAuthLogin(idToken)
+      const backendProfile = await syncAuthLogin(idToken)
+      const profile: UserProfile = backendProfile ?? {
+        id: uid,
+        email: form.email.trim(),
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        role: 'USER',
+        firebaseUid: uid,
+        workplace: form.workplace,
+        medicalArea: form.medicalArea,
+        phoneNumber: form.phoneNumber,
+        city: form.city,
+        rut: form.rut || undefined,
+      }
       setProfile(profile)
-      cacheProfileToStorage(credential.user.uid, profile)
+      cacheProfileToStorage(uid, profile)
       setOk(true)
       setTimeout(() => router.replace('/ver'), 300)
     } catch (err: any) {

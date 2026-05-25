@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Home } from 'lucide-react'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, hasFirebaseConfig } from '@/lib/firebase'
 import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
 import { setSessionCookie, syncAuthLogin } from '@/lib/auth'
+import type { UserProfile } from '@/lib/authContext'
 import PageBackground from '@/components/PageBackground'
 
 export default function LoginPage() {
@@ -35,14 +36,22 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const credential = await signInWithEmailAndPassword(auth, email.trim(), password)
+      const uid = credential.user.uid
+      setSessionCookie(uid)
       const idToken = await credential.user.getIdToken()
-      setSessionCookie(credential.user.uid)
-      const profile = await syncAuthLogin(idToken)
+      const backendProfile = await syncAuthLogin(idToken)
+      const profile: UserProfile = backendProfile ?? {
+        id: uid,
+        email: credential.user.email ?? email.trim(),
+        firstName: credential.user.displayName?.split(' ')[0] ?? '',
+        lastName: credential.user.displayName?.split(' ').slice(1).join(' ') ?? '',
+        role: 'USER',
+        firebaseUid: uid,
+      }
       setProfile(profile)
-      cacheProfileToStorage(credential.user.uid, profile)
+      cacheProfileToStorage(uid, profile)
       router.replace('/ver')
     } catch (err: any) {
-      if (auth?.currentUser) await signOut(auth).catch(() => {})
       document.cookie = '__tauren_session=; path=/; max-age=0; SameSite=Lax'
       const code = err?.code ?? ''
       if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
