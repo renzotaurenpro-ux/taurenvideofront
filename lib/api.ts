@@ -3,7 +3,8 @@ import { auth } from './firebase'
 const API_BASE = '/api/proxy'
 
 async function getToken(forceRefresh = false): Promise<string> {
-  const user = auth?.currentUser
+  if (!auth) throw new Error('UNAUTHENTICATED')
+  const user = auth.currentUser
   if (!user) throw new Error('UNAUTHENTICATED')
   return user.getIdToken(forceRefresh)
 }

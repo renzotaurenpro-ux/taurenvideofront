@@ -7,9 +7,15 @@ import Image from 'next/image'
 import { Home, CheckCircle2, Loader2 } from 'lucide-react'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
+import { auth, hasFirebaseConfig } from '@/lib/firebase'
 import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
-import { registerAuthUser, setSessionCookie, syncAuthLogin } from '@/lib/auth'
+import {
+  registerAuthUser,
+  setSessionCookie,
+  syncAuthLogin,
+  fetchAuthProfile,
+  waitForFirebaseUser,
+} from '@/lib/auth'
 import PageBackground from '@/components/PageBackground'
 
 type FormState = {
@@ -63,22 +69,37 @@ export default function RegistroPage() {
     e.preventDefault()
     setError('')
     setOk(false)
+    if (!hasFirebaseConfig() || !auth) {
+      setError('Autenticación no configurada en este entorno')
+      return
+    }
     setLoading(true)
     try {
       const payload = { ...form, ...(form.rut ? {} : { rut: undefined }) }
       await registerAuthUser(payload)
 
-      const credential = await signInWithEmailAndPassword(auth, form.email, form.password)
-      const idToken = await credential.user.getIdToken()
+      const credential = await signInWithEmailAndPassword(auth, form.email.trim(), form.password)
+      const idToken = await credential.user.getIdToken(true)
       setSessionCookie(credential.user.uid)
-      const profile = await syncAuthLogin(idToken)
-      if (profile) {
-        setProfile(profile)
-        cacheProfileToStorage(credential.user.uid, profile)
+
+      let profile = await syncAuthLogin(idToken)
+      setProfile(profile)
+      cacheProfileToStorage(credential.user.uid, profile)
+
+      await waitForFirebaseUser()
+
+      const refreshed = await fetchAuthProfile()
+      if (refreshed) {
+        profile = refreshed
+        setProfile(refreshed)
+        cacheProfileToStorage(credential.user.uid, refreshed)
       }
 
       setOk(true)
-      setTimeout(() => router.push('/ver'), 300)
+      setTimeout(() => {
+        router.replace('/ver')
+        router.refresh()
+      }, 300)
     } catch (err: any) {
       const code = err?.code ?? ''
       if (code === 'auth/email-already-in-use') {

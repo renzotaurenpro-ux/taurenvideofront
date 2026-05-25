@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { onAuthStateChanged, signOut, User } from 'firebase/auth'
 import { auth } from './firebase'
 import { fetchAuth } from './api'
+import { parseProfile } from './auth'
 
 export type UserProfile = {
   id: string
@@ -93,10 +94,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchAuth('/auth/profile')
           .then(r => (r.ok ? r.json() : null))
           .then(data => {
-            if (!data) return
-            setProfile(data)
-            cacheProfileToStorage(fbUser.uid, data)
-            document.cookie = `__tauren_name=${encodeURIComponent(`${data.firstName} ${data.lastName}`)}; ${cookieFlags()}`
+            const p = parseProfile(data)
+            if (!p) return
+            setProfile(p)
+            cacheProfileToStorage(fbUser.uid, p)
+            document.cookie = `__tauren_name=${encodeURIComponent(`${p.firstName} ${p.lastName}`)}; ${cookieFlags()}`
           })
           .catch(() => {})
       } else {

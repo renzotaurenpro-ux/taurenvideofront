@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { ArrowLeft, Eye, EyeOff, LogOut, Upload, Video, Shield, CheckCircle2, Loader2, FileVideo, X } from 'lucide-react'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
+import { auth, hasFirebaseConfig } from '@/lib/firebase'
 import * as tus from 'tus-js-client'
 import { fetchAuth } from '@/lib/api'
 
@@ -113,9 +113,13 @@ export default function AdminPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoginError('')
+    if (!hasFirebaseConfig() || !auth) {
+      setLoginError('Autenticación no configurada')
+      return
+    }
     setLoginLoading(true)
     try {
-      const credential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword)
+      const credential = await signInWithEmailAndPassword(auth, loginEmail.trim(), loginPassword)
       const token = await credential.user.getIdToken()
 
       const res = await fetchAuth('/auth/profile')

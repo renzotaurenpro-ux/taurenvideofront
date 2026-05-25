@@ -130,7 +130,7 @@ export default function VerPage() {
 
   useEffect(() => {
     if (authLoading) return
-    if (!firebaseUser) { router.push('/login'); return }
+    if (!firebaseUser) { router.replace('/login'); return }
 
     setLoading(false)
 

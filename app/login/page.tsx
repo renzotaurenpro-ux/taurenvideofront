@@ -6,10 +6,15 @@ import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Home } from 'lucide-react'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
-import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import { auth, hasFirebaseConfig } from '@/lib/firebase'
 import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
-import { setSessionCookie, syncAuthLogin } from '@/lib/auth'
+import {
+  setSessionCookie,
+  syncAuthLogin,
+  fetchAuthProfile,
+  waitForFirebaseUser,
+} from '@/lib/auth'
 import PageBackground from '@/components/PageBackground'
 
 export default function LoginPage() {
@@ -28,18 +33,34 @@ export default function LoginPage() {
       setError('Completa todos los campos')
       return
     }
+    if (!hasFirebaseConfig() || !auth) {
+      setError('Autenticación no configurada en este entorno')
+      return
+    }
     setLoading(true)
     try {
-      const credential = await signInWithEmailAndPassword(auth, email, password)
-      const idToken = await credential.user.getIdToken()
+      const credential = await signInWithEmailAndPassword(auth, email.trim(), password)
+      const idToken = await credential.user.getIdToken(true)
       setSessionCookie(credential.user.uid)
-      const profile = await syncAuthLogin(idToken)
-      if (profile) {
-        setProfile(profile)
-        cacheProfileToStorage(credential.user.uid, profile)
+
+      let profile = await syncAuthLogin(idToken)
+      setProfile(profile)
+      cacheProfileToStorage(credential.user.uid, profile)
+
+      await waitForFirebaseUser()
+
+      const refreshed = await fetchAuthProfile()
+      if (refreshed) {
+        profile = refreshed
+        setProfile(refreshed)
+        cacheProfileToStorage(credential.user.uid, refreshed)
       }
-      router.push('/ver')
+
+      router.replace('/ver')
+      router.refresh()
     } catch (err: any) {
+      if (auth?.currentUser) await signOut(auth).catch(() => {})
+      document.cookie = '__tauren_session=; path=/; max-age=0; SameSite=Lax'
       const code = err?.code ?? ''
       if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         setError('Correo o contraseña incorrectos')

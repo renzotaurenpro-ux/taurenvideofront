@@ -2,10 +2,16 @@ import { NextRequest } from 'next/server'
 
 export const runtime = 'nodejs'
 
-const BACKEND_URL = process.env.API_BASE_URL ?? 'http://localhost:3001'
+function backendUrl() {
+  return (
+    process.env.API_BASE_URL ??
+    process.env.NEXT_PUBLIC_API_BASE_URL ??
+    'http://localhost:3001'
+  ).replace(/\/+$/, '')
+}
 
 function buildTargetUrl(req: NextRequest, pathParts: string[]) {
-  const base = BACKEND_URL.replace(/\/+$/, '')
+  const base = backendUrl()
   const joined = pathParts.map(encodeURIComponent).join('/')
   const url = new URL(`${base}/${joined}`)
   req.nextUrl.searchParams.forEach((v, k) => url.searchParams.append(k, v))

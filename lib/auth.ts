@@ -1,4 +1,6 @@
-import { postPublic } from './api'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from './firebase'
+import { fetchAuth, postPublic } from './api'
 import type { UserProfile } from './authContext'
 
 export function setSessionCookie(uid: string) {
@@ -6,7 +8,7 @@ export function setSessionCookie(uid: string) {
   document.cookie = `__tauren_session=${uid}; path=/; max-age=86400; SameSite=Lax${secure}`
 }
 
-function parseProfile(data: unknown): UserProfile | null {
+export function parseProfile(data: unknown): UserProfile | null {
   if (!data || typeof data !== 'object') return null
   const raw = (data as { user?: unknown }).user ?? data
   if (!raw || typeof raw !== 'object') return null
@@ -32,17 +34,69 @@ function parseProfile(data: unknown): UserProfile | null {
   }
 }
 
-export async function syncAuthLogin(idToken: string): Promise<UserProfile | null> {
-  const res = await postPublic('/auth/login', { idToken })
-  if (!res.ok) return null
+function backendMessage(data: unknown, fallback: string) {
+  if (data && typeof data === 'object' && typeof (data as { message?: unknown }).message === 'string') {
+    return (data as { message: string }).message
+  }
+  return fallback
+}
+
+export async function syncAuthLogin(idToken: string): Promise<UserProfile> {
+  let res: Response
+  try {
+    res = await postPublic('/auth/login', { idToken })
+  } catch {
+    throw new Error('No se pudo conectar con el servidor')
+  }
   const data = await res.json().catch(() => null)
-  return parseProfile(data)
+  if (!res.ok) {
+    const msg = backendMessage(data, 'Error al sincronizar la sesión')
+    if (res.status === 404 || msg === 'USER_NOT_FOUND') {
+      throw new Error('No hay cuenta registrada. Regístrate primero')
+    }
+    throw new Error(msg)
+  }
+  const profile = parseProfile(data)
+  if (!profile) throw new Error('Respuesta inválida del servidor')
+  return profile
+}
+
+export async function fetchAuthProfile(): Promise<UserProfile | null> {
+  try {
+    const res = await fetchAuth('/auth/profile')
+    if (!res.ok) return null
+    const data = await res.json().catch(() => null)
+    return parseProfile(data)
+  } catch {
+    return null
+  }
+}
+
+export async function waitForFirebaseUser(timeoutMs = 8000): Promise<void> {
+  const firebaseAuth = auth
+  if (!firebaseAuth) throw new Error('Auth no disponible')
+  if (firebaseAuth.currentUser) return
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Tiempo de espera agotado')), timeoutMs)
+    const unsub = onAuthStateChanged(firebaseAuth, user => {
+      if (user) {
+        clearTimeout(timer)
+        unsub()
+        resolve()
+      }
+    })
+  })
 }
 
 export async function registerAuthUser(body: Record<string, unknown>): Promise<void> {
-  const res = await postPublic('/auth/register', body)
+  let res: Response
+  try {
+    res = await postPublic('/auth/register', body)
+  } catch {
+    throw new Error('No se pudo conectar con el servidor')
+  }
   if (!res.ok) {
     const data = await res.json().catch(() => null)
-    throw new Error(typeof data?.message === 'string' ? data.message : 'No se pudo completar el registro')
+    throw new Error(backendMessage(data, 'No se pudo completar el registro'))
   }
 }

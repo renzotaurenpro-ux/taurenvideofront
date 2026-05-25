@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app'
-import { getAuth, Auth } from 'firebase/auth'
+import { getAuth, Auth, setPersistence, browserLocalPersistence } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,16 +14,17 @@ function isClient() {
   return typeof window !== 'undefined'
 }
 
-function hasConfig() {
+export function hasFirebaseConfig() {
   return Boolean(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId)
 }
 
 let _auth: Auth | null = null
 
-if (isClient() && hasConfig()) {
+if (isClient() && hasFirebaseConfig()) {
   const app: FirebaseApp =
     getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
   _auth = getAuth(app)
+  setPersistence(_auth, browserLocalPersistence).catch(() => {})
 }
 
-export const auth: Auth = _auth as Auth
+export const auth: Auth | null = _auth
