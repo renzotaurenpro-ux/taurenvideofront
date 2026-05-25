@@ -46,12 +46,15 @@ export async function syncAuthLogin(idToken: string): Promise<UserProfile | null
   for (let i = 0; i < 2; i++) {
     let res: Response
     try {
+      console.log('[auth] syncAuthLogin attempt', i + 1)
       res = await postPublic('/auth/login', { idToken })
-    } catch {
+    } catch (e: any) {
+      console.warn('[auth] syncAuthLogin network error:', e?.message)
       if (i === 0) { await new Promise(r => setTimeout(r, 400)); continue }
       return null
     }
     const data = await res.json().catch(() => null)
+    console.log('[auth] syncAuthLogin status:', res.status, 'data:', JSON.stringify(data)?.slice(0, 120))
     if (!res.ok) {
       const msg = backendMessage(data, '')
       if (res.status === 404 || msg === 'USER_NOT_FOUND') {
@@ -64,6 +67,7 @@ export async function syncAuthLogin(idToken: string): Promise<UserProfile | null
       return null
     }
     const profile = parseProfile(data)
+    console.log('[auth] syncAuthLogin parseProfile:', profile ? 'ok email=' + profile.email : 'null')
     if (profile) return profile
     if (i === 0) { await new Promise(r => setTimeout(r, 300)); continue }
   }

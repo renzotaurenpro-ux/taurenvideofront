@@ -78,26 +78,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const applyUser = (fbUser: User | null) => {
+      console.log('[auth] onAuthStateChanged uid=', fbUser?.uid?.slice(0, 8) ?? 'null')
       setFirebaseUser(fbUser)
       if (fbUser) {
         document.cookie = `__tauren_session=${fbUser.uid}; ${cookieFlags()}`
         const cached = loadProfileFromStorage(fbUser.uid)
         if (cached) {
+          console.log('[auth] loaded profile from cache:', cached.email)
           setProfile(cached)
           document.cookie = `__tauren_name=${encodeURIComponent(`${cached.firstName} ${cached.lastName}`)}; ${cookieFlags()}`
         }
         setLoading(false)
         fetchAuth('/auth/profile')
-          .then(r => (r.ok ? r.json() : null))
+          .then(r => {
+            console.log('[auth] /auth/profile status:', r.status)
+            return r.ok ? r.json() : null
+          })
           .then(data => {
             const p = parseProfile(data)
-            if (!p) return
+            if (!p) { console.warn('[auth] parseProfile returned null for /auth/profile'); return }
+            console.log('[auth] profile refreshed from backend:', p.email)
             setProfile(p)
             cacheProfileToStorage(fbUser.uid, p)
             document.cookie = `__tauren_name=${encodeURIComponent(`${p.firstName} ${p.lastName}`)}; ${cookieFlags()}`
           })
-          .catch(() => {})
+          .catch(e => console.warn('[auth] /auth/profile fetch error:', e?.message))
       } else {
+        console.log('[auth] no firebase user → clearing session')
         setProfile(null)
         clearSessionCookies()
         clearProfileStorage()
@@ -105,7 +112,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    if (auth.currentUser) applyUser(auth.currentUser)
+    if (auth.currentUser) {
+      console.log('[auth] currentUser already set on mount, uid=', auth.currentUser.uid.slice(0, 8))
+      applyUser(auth.currentUser)
+    }
     return onAuthStateChanged(auth, applyUser)
   }, [])
 

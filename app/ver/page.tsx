@@ -91,6 +91,7 @@ export default function VerPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'descripcion' | 'ponentes' | 'programa'>('descripcion')
   const [paid, setPaid] = useState(false)
+  const [checkingAccess, setCheckingAccess] = useState(true)
   const [inCart, setInCart] = useState(false)
   const [courseId, setCourseId] = useState<string | null>(null)
   const [coursePrice, setCoursePrice] = useState(PRODUCT.priceNeto)
@@ -163,6 +164,7 @@ export default function VerPage() {
         const cached = getCachedPurchase(course.id)
         if (cached === true) {
           setPaid(true)
+          setCheckingAccess(false)
           fetchCourseWatch(course.id)
             .then(watch => {
               if (cancelled || !watch?.videos?.length) return
@@ -179,6 +181,7 @@ export default function VerPage() {
         if (cancelled) return
         setCachedPurchase(course.id, hasPurchased)
         setPaid(hasPurchased)
+        setCheckingAccess(false)
 
         if (hasPurchased) {
           const watch = await fetchCourseWatch(course.id)
@@ -187,6 +190,7 @@ export default function VerPage() {
           }
         }
       } catch {
+        if (!cancelled) setCheckingAccess(false)
       }
     })()
 
@@ -291,26 +295,42 @@ export default function VerPage() {
               {!paid && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center p-5 sm:p-10">
                   <div className="w-full max-w-md rounded-2xl border border-border p-5 sm:p-6 text-center bg-card dark:bg-[rgba(8,15,26,0.88)] shadow-xl">
-                    <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center bg-primary/15 border border-primary/30">
-                      <Lock size={20} style={{ color: 'var(--scai-teal)' }} />
-                    </div>
-                    <p className="text-foreground dark:text-white font-bold text-base sm:text-lg leading-snug">
-                      Agrega el acceso al carrito para ver la grabación completa
-                    </p>
-                    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-muted-foreground dark:text-white/45">
-                      Pago único de $25.000 + IVA · Acceso inmediato tras el pago
-                    </p>
-                    <div className="mt-5">
-                      <button
-                        type="button"
-                        onClick={handleAddToCart}
-                        className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-transform"
-                        style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 28px rgba(18,180,198,0.35)' }}
-                      >
-                        <ShoppingCart size={16} />
-                        {inCart ? 'Ir al carrito' : 'Agregar al carrito'}
-                      </button>
-                    </div>
+                    {checkingAccess ? (
+                      <>
+                        <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center bg-primary/15 border border-primary/30">
+                          <div className="h-5 w-5 rounded-full border-2 border-[color:var(--scai-teal)] border-t-transparent animate-spin" />
+                        </div>
+                        <p className="text-foreground dark:text-white font-bold text-base sm:text-lg leading-snug">
+                          Verificando tu acceso...
+                        </p>
+                        <p className="mt-2 text-xs sm:text-sm leading-relaxed text-muted-foreground dark:text-white/45">
+                          Espera un momento
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center bg-primary/15 border border-primary/30">
+                          <Lock size={20} style={{ color: 'var(--scai-teal)' }} />
+                        </div>
+                        <p className="text-foreground dark:text-white font-bold text-base sm:text-lg leading-snug">
+                          Agrega el acceso al carrito para ver la grabación completa
+                        </p>
+                        <p className="mt-2 text-xs sm:text-sm leading-relaxed text-muted-foreground dark:text-white/45">
+                          Pago único de $25.000 + IVA · Acceso inmediato tras el pago
+                        </p>
+                        <div className="mt-5">
+                          <button
+                            type="button"
+                            onClick={handleAddToCart}
+                            className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-transform"
+                            style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 28px rgba(18,180,198,0.35)' }}
+                          >
+                            <ShoppingCart size={16} />
+                            {inCart ? 'Ir al carrito' : 'Agregar al carrito'}
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -494,7 +514,12 @@ export default function VerPage() {
                   <p className="text-sm text-foreground dark:text-white font-medium truncate max-w-full">{displayEmail}</p>
                 </div>
               </div>
-              {paid ? (
+              {checkingAccess ? (
+                <div className="flex items-center gap-2 text-xs rounded-xl px-3 py-2 border border-border bg-secondary/80 dark:bg-[rgba(18,180,198,0.08)] dark:border-[rgba(18,180,198,0.2)]">
+                  <div className="h-3 w-3 rounded-full border border-[color:var(--scai-teal)] border-t-transparent animate-spin flex-shrink-0" />
+                  <span className="text-muted-foreground dark:text-white/55">Verificando acceso...</span>
+                </div>
+              ) : paid ? (
                 <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-400 bg-green-500/15 dark:bg-green-500/10 border border-green-500/25 dark:border-green-500/20 rounded-xl px-3 py-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-green-600 dark:bg-green-400 animate-pulse flex-shrink-0" />
                   Acceso completo activo

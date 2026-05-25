@@ -21,7 +21,9 @@ function waitForAuthUser(timeoutMs = 8000): Promise<User> {
 
 async function getToken(forceRefresh = false): Promise<string> {
   const user = await waitForAuthUser()
-  return user.getIdToken(forceRefresh)
+  const token = await user.getIdToken(forceRefresh)
+  console.log('[api] token ok uid=' + user.uid.slice(0, 8) + ' refresh=' + forceRefresh)
+  return token
 }
 
 const PURCHASE_CACHE_TTL = 10 * 60 * 1000
@@ -67,11 +69,15 @@ export async function fetchAuth(path: string, options: RequestInit = {}): Promis
     Authorization: `Bearer ${t}`,
   })
 
+  console.log('[api] fetchAuth', options.method ?? 'GET', path)
   let res = await fetch(`${API_BASE}${path}`, { ...options, headers: makeHeaders(token) })
+  console.log('[api] fetchAuth response', path, res.status)
 
   if (res.status === 401) {
+    console.log('[api] 401 → refreshing token for', path)
     token = await getToken(true)
     res = await fetch(`${API_BASE}${path}`, { ...options, headers: makeHeaders(token) })
+    console.log('[api] retry response', path, res.status)
   }
 
   return res
@@ -82,9 +88,12 @@ export async function fetchPublic(path: string): Promise<Response> {
 }
 
 export async function postPublic<T>(path: string, body: T): Promise<Response> {
-  return fetch(`${API_BASE}${path}`, {
+  console.log('[api] postPublic', path)
+  const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+  console.log('[api] postPublic response', path, res.status)
+  return res
 }

@@ -37,14 +37,23 @@ export default function LoginPage() {
     }
     setLoading(true)
     try {
+      console.log('[login] signIn start', email.trim())
       const credential = await signInWithEmailAndPassword(auth, email.trim(), password)
       const uid = credential.user.uid
+      console.log('[login] firebase ok uid=' + uid.slice(0, 8))
       setSessionCookie(uid)
       await waitForFirebaseUser()
       const idToken = await credential.user.getIdToken()
+      console.log('[login] idToken ok, calling syncAuthLogin')
       let profile: UserProfile | null = await syncAuthLogin(idToken)
-      if (!profile) profile = await fetchAuthProfile()
+      console.log('[login] syncAuthLogin result:', profile ? 'ok' : 'null')
       if (!profile) {
+        console.log('[login] fallback → fetchAuthProfile')
+        profile = await fetchAuthProfile()
+        console.log('[login] fetchAuthProfile result:', profile ? 'ok' : 'null')
+      }
+      if (!profile) {
+        console.log('[login] fallback → firebase display data')
         profile = {
           id: uid,
           email: credential.user.email ?? email.trim(),
@@ -54,14 +63,20 @@ export default function LoginPage() {
           firebaseUid: uid,
         }
       }
+      console.log('[login] profile final:', profile.email, 'role:', profile.role)
       cacheProfile(uid, profile)
+      console.log('[login] navigating to /ver')
       router.replace('/ver')
       fetchPublishedCourse()
         .then(course => {
-          if (!course) return
-          return checkCoursePurchase(course.id).then(purchased => setCachedPurchase(course.id, purchased))
+          if (!course) { console.log('[login] bg: no course found'); return }
+          console.log('[login] bg: checking purchase for', course.id)
+          return checkCoursePurchase(course.id).then(purchased => {
+            console.log('[login] bg: purchased=', purchased)
+            setCachedPurchase(course.id, purchased)
+          })
         })
-        .catch(() => {})
+        .catch(e => console.warn('[login] bg purchase check failed:', e?.message))
     } catch (err: any) {
       document.cookie = '__tauren_session=; path=/; max-age=0; SameSite=Lax'
       const code = err?.code ?? ''
