@@ -9,12 +9,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { auth, hasFirebaseConfig } from '@/lib/firebase'
 import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
-import {
-  setSessionCookie,
-  syncAuthLogin,
-  fetchAuthProfile,
-  waitForFirebaseUser,
-} from '@/lib/auth'
+import { setSessionCookie, syncAuthLogin } from '@/lib/auth'
 import PageBackground from '@/components/PageBackground'
 
 export default function LoginPage() {
@@ -40,24 +35,12 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const credential = await signInWithEmailAndPassword(auth, email.trim(), password)
-      const idToken = await credential.user.getIdToken(true)
+      const idToken = await credential.user.getIdToken()
       setSessionCookie(credential.user.uid)
-
-      let profile = await syncAuthLogin(idToken)
+      const profile = await syncAuthLogin(idToken)
       setProfile(profile)
       cacheProfileToStorage(credential.user.uid, profile)
-
-      await waitForFirebaseUser()
-
-      const refreshed = await fetchAuthProfile()
-      if (refreshed) {
-        profile = refreshed
-        setProfile(refreshed)
-        cacheProfileToStorage(credential.user.uid, refreshed)
-      }
-
       router.replace('/ver')
-      router.refresh()
     } catch (err: any) {
       if (auth?.currentUser) await signOut(auth).catch(() => {})
       document.cookie = '__tauren_session=; path=/; max-age=0; SameSite=Lax'

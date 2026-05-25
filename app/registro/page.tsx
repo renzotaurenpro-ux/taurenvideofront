@@ -9,13 +9,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, hasFirebaseConfig } from '@/lib/firebase'
 import { useAuth, cacheProfileToStorage } from '@/lib/authContext'
-import {
-  registerAuthUser,
-  setSessionCookie,
-  syncAuthLogin,
-  fetchAuthProfile,
-  waitForFirebaseUser,
-} from '@/lib/auth'
+import { registerAuthUser, setSessionCookie, syncAuthLogin } from '@/lib/auth'
 import PageBackground from '@/components/PageBackground'
 
 type FormState = {
@@ -79,27 +73,13 @@ export default function RegistroPage() {
       await registerAuthUser(payload)
 
       const credential = await signInWithEmailAndPassword(auth, form.email.trim(), form.password)
-      const idToken = await credential.user.getIdToken(true)
+      const idToken = await credential.user.getIdToken()
       setSessionCookie(credential.user.uid)
-
-      let profile = await syncAuthLogin(idToken)
+      const profile = await syncAuthLogin(idToken)
       setProfile(profile)
       cacheProfileToStorage(credential.user.uid, profile)
-
-      await waitForFirebaseUser()
-
-      const refreshed = await fetchAuthProfile()
-      if (refreshed) {
-        profile = refreshed
-        setProfile(refreshed)
-        cacheProfileToStorage(credential.user.uid, refreshed)
-      }
-
       setOk(true)
-      setTimeout(() => {
-        router.replace('/ver')
-        router.refresh()
-      }, 300)
+      setTimeout(() => router.replace('/ver'), 300)
     } catch (err: any) {
       const code = err?.code ?? ''
       if (code === 'auth/email-already-in-use') {
