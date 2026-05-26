@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User, ChevronDown } from 'lucide-react'
+import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User, ChevronDown, Play, ChevronUp } from 'lucide-react'
 import SecureVideoPlayer from '@/components/SecureVideoPlayer'
 import PageBackground from '@/components/PageBackground'
 import Image from 'next/image'
@@ -92,6 +92,7 @@ export default function VerPage() {
   const [activeTab, setActiveTab] = useState<'descripcion' | 'ponentes' | 'programa'>('descripcion')
   const [paid, setPaid] = useState(false)
   const [checkingAccess, setCheckingAccess] = useState(true)
+  const [mobileListOpen, setMobileListOpen] = useState(false)
   const [inCart, setInCart] = useState(false)
   const [courseId, setCourseId] = useState<string | null>(null)
   const [coursePrice, setCoursePrice] = useState(PRODUCT.priceNeto)
@@ -336,6 +337,75 @@ export default function VerPage() {
               )}
             </div>
 
+            {paid && (
+              <div className="lg:hidden mt-3 rounded-2xl border border-border bg-card dark:bg-[rgba(14,32,53,0.85)] overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setMobileListOpen(o => !o)}
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 active:bg-accent/30 transition-colors"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 bg-primary/15">
+                      <Play size={12} style={{ color: 'var(--scai-teal)' }} fill="currentColor" className="ml-0.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground dark:text-white/40">Reproduciendo</p>
+                      <p className="text-xs font-semibold text-foreground dark:text-white truncate">
+                        {clipActual?.titulo ?? 'Selecciona un video'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-[10px] text-muted-foreground dark:text-white/30">{MODULOS_DATA[activeModulo]?.titulo?.split(' · ')[0] ?? ''}</span>
+                    {mobileListOpen ? <ChevronUp size={15} className="text-muted-foreground" /> : <ChevronDown size={15} className="text-muted-foreground" />}
+                  </div>
+                </button>
+                {mobileListOpen && (
+                  <div className="border-t border-border max-h-64 overflow-y-auto overscroll-contain">
+                    {MODULOS_DATA.map((mod, mi) => (
+                      <div key={mi}>
+                        <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider bg-secondary/60 dark:bg-white/[0.03] text-muted-foreground dark:text-white/30">
+                          {mod.titulo}
+                        </p>
+                        {mod.videos.map((v, vi) => {
+                          const sel = activeModulo === mi && activeVideoIdx === vi
+                          const canPlay = hasPlayback(mi, vi) && !(v as { soon?: boolean }).soon
+                          return (
+                            <button
+                              key={vi}
+                              type="button"
+                              disabled={!canPlay}
+                              onClick={() => { selectLesson(mi, vi); setMobileListOpen(false) }}
+                              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors border-b border-border/50 last:border-b-0 ${
+                                canPlay ? 'active:bg-accent/40' : 'opacity-40'
+                              } ${sel ? 'bg-primary/10 dark:bg-[rgba(18,180,198,0.1)]' : ''}`}
+                            >
+                              <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 tabular-nums ${
+                                sel ? 'bg-[color:var(--scai-teal)] text-white' : 'bg-secondary dark:bg-white/10 text-muted-foreground dark:text-white/30'
+                              }`}>
+                                {sel
+                                  ? <Play size={9} fill="currentColor" className="ml-0.5" />
+                                  : `${mi + 1}.${vi + 1}`}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-xs font-medium leading-snug truncate ${sel ? 'text-foreground dark:text-white' : 'text-foreground/75 dark:text-white/55'}`}>
+                                  {v.titulo}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground dark:text-white/25 flex items-center gap-1 mt-0.5">
+                                  <Clock size={8} />{v.duracion}
+                                </p>
+                              </div>
+                              {sel && <div className="h-1.5 w-1.5 rounded-full bg-[color:var(--scai-teal)] animate-pulse flex-shrink-0" />}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="mt-4">
               <h1 className="text-base sm:text-xl md:text-2xl font-bold leading-snug text-foreground dark:text-white">
                 Cuando el Sistema Inmune Falla: Desafíos en Errores Innatos de la Inmunidad
@@ -503,7 +573,7 @@ export default function VerPage() {
             </div>
           </div>
 
-          <aside className="space-y-3 lg:space-y-4 lg:sticky lg:top-[76px] h-fit">
+          <aside className="hidden lg:block space-y-3 lg:space-y-4 lg:sticky lg:top-[76px] h-fit">
             <div className="rounded-2xl p-4 sm:p-5 border border-border bg-card shadow-sm dark:bg-[rgba(14,32,53,0.75)] dark:backdrop-blur-md">
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 bg-primary/15">

@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { Play } from 'lucide-react'
 
 const IMG = {
   bola: '/imagenes/iamgen oficial.jpg',
@@ -104,6 +105,14 @@ export function HeroVisual() {
           }}
         />
         <Vignette />
+        <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
+          <div
+            className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full border border-white/25 backdrop-blur-md"
+            style={{ background: 'rgba(11,25,40,0.45)', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}
+          >
+            <Play size={22} className="text-white/90 ml-1" fill="currentColor" />
+          </div>
+        </div>
         <div className="absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
           style={{ background: 'rgba(11,25,40,0.5)' }}>
           <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: 'var(--scai-teal)' }} />
@@ -129,6 +138,19 @@ export function HeroMobileVisual() {
       <div className="relative aspect-[16/10] w-full">
         <Image src={IMG.adherida} alt="" fill className="object-cover object-center brightness-[0.9] saturate-[0.85] dark:brightness-100 dark:saturate-100" sizes="100vw" quality={80} />
         <Vignette />
+        <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
+          <div
+            className="flex h-12 w-12 items-center justify-center rounded-full border border-white/25 backdrop-blur-md"
+            style={{ background: 'rgba(11,25,40,0.45)', boxShadow: '0 6px 24px rgba(0,0,0,0.3)' }}
+          >
+            <Play size={18} className="text-white/90 ml-0.5" fill="currentColor" />
+          </div>
+        </div>
+        <div className="absolute left-3 top-3 z-20 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 backdrop-blur-sm"
+          style={{ background: 'rgba(11,25,40,0.5)' }}>
+          <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: 'var(--scai-teal)' }} />
+          <span className="text-[10px] font-semibold text-white/85">Grabación</span>
+        </div>
       </div>
     </div>
   )

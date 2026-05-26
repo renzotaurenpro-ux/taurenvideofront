@@ -195,42 +195,47 @@ export default function Home() {
     <main className="home-soft min-h-screen bg-background text-foreground">
 
       <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b border-border bg-background/92 dark:border-white/5 dark:bg-[rgba(11,25,40,0.85)]">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8 py-3.5 flex items-center justify-between">
-          <div className="h-11 sm:h-12 w-auto">
+        <div className="mx-auto max-w-7xl px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2">
+          <div className="h-9 sm:h-12 w-auto flex-shrink-0">
             <Image
               src={ScaiLogo}
               alt="SCAI"
               priority
-              className="h-11 sm:h-12 w-auto block dark:hidden"
+              className="h-9 sm:h-12 w-auto block dark:hidden"
               style={{ filter: 'invert(1) brightness(0)' }}
             />
             <Image
               src={ScaiLogo}
               alt="SCAI"
               priority
-              className="h-11 sm:h-12 w-auto hidden dark:block"
+              className="h-9 sm:h-12 w-auto hidden dark:block"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
             <ThemeToggle />
-            <Link href="/login" className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground dark:text-white/50 dark:hover:text-white/80 px-2 transition-colors">
-              Iniciar sesión
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full px-2.5 sm:px-2 py-2 text-[11px] sm:text-sm font-semibold border transition-colors whitespace-nowrap"
+              style={{ borderColor: 'rgba(18,180,198,0.35)', color: 'var(--scai-teal)', background: 'rgba(18,180,198,0.08)' }}
+            >
+              <span className="sm:hidden">Entrar</span>
+              <span className="hidden sm:inline">Iniciar sesión</span>
             </Link>
             <Link
               href="/registro"
-              className="hidden sm:inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold border transition-colors"
+              className="hidden md:inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold border transition-colors"
               style={{ borderColor: 'rgba(18,180,198,0.35)', color: 'var(--scai-teal)', background: 'rgba(18,180,198,0.08)' }}
             >
               Registrarme
             </Link>
             <Link
               href="/registro"
-              className="inline-flex items-center gap-2 rounded-full px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-85"
+              className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-sm font-semibold text-white transition-opacity hover:opacity-85 flex-shrink-0"
               style={{ background: 'var(--scai-teal)' }}
             >
-              <ShoppingCart size={13} />
+              <ShoppingCart size={13} className="flex-shrink-0" />
               <span className="hidden sm:inline">{`Comprar — $${priceText} + IVA`}</span>
-              <span className="sm:hidden">{`$${priceText}`}</span>
+              <span className="sm:hidden tabular-nums">{`$${priceText}`}</span>
             </Link>
           </div>
         </div>
