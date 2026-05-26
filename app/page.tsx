@@ -16,6 +16,7 @@ import {
   CtaDecor,
 } from '@/components/HomeDecor'
 import ScaiLogo from '../Logotipo-SCAI.png'
+import { fetchPublishedCourse } from '@/lib/courses'
 
 const PONENTES = [
   { nombre: 'Dra. Ligia Rodríguez', cv: 'Especialista en Inmunodeficiencias Primarias. Docente universitaria y referente nacional en diagnóstico de errores innatos de la inmunidad.' },
@@ -156,11 +157,27 @@ export default function Home() {
   const [statsVisible, setStatsVisible] = useState(false)
   const [activeModulo, setActiveModulo] = useState(0)
   const statsRef = useRef<HTMLDivElement>(null)
+  const [priceClp, setPriceClp] = useState<number | null>(null)
 
   const cntSpeakers = useCountUp(16, 1800, statsVisible)
   const cntPercent = useCountUp(100, 2200, statsVisible)
 
   useEffect(() => { setMounted(true) }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+    let cancelled = false
+    fetchPublishedCourse()
+      .then(c => {
+        if (cancelled) return
+        const p = typeof c?.priceClp === 'number' && Number.isFinite(c.priceClp) ? c.priceClp : null
+        setPriceClp(p)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [mounted])
+
+  const priceText = (priceClp ?? 25000).toLocaleString('es-CL')
 
   useEffect(() => {
     if (!mounted || !statsRef.current) return
@@ -212,8 +229,8 @@ export default function Home() {
               style={{ background: 'var(--scai-teal)' }}
             >
               <ShoppingCart size={13} />
-              <span className="hidden sm:inline">Comprar — $25.000 + IVA</span>
-              <span className="sm:hidden">$25.000</span>
+              <span className="hidden sm:inline">{`Comprar — $${priceText} + IVA`}</span>
+              <span className="sm:hidden">{`$${priceText}`}</span>
             </Link>
           </div>
         </div>
@@ -277,7 +294,7 @@ export default function Home() {
                 style={{ background: 'var(--scai-teal)' }}
               >
                 <ShoppingCart size={15} />
-                $25.000 + IVA — Obtener acceso
+                {`$${priceText} + IVA — Obtener acceso`}
               </Link>
               <Link href="/registro" className="text-xs text-muted-foreground hover:text-foreground dark:text-white/30 dark:hover:text-white/60 pl-1 transition-colors">
                 Soy nuevo/a · Registrarme →
@@ -359,7 +376,7 @@ export default function Home() {
               { label: 'Fecha', value: '19 Junio 2026' },
               { label: 'Modalidad', value: 'Online · Cupos limitados' },
               { label: 'Acreditación', value: 'CONACEM' },
-              { label: 'Inversión', value: '$25.000 + IVA · Pago único' },
+                { label: 'Inversión', value: `$${priceText} + IVA · Pago único` },
             ].map(({ label, value }) => (
               <div key={label} className="pr-6">
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">{label}</p>
@@ -461,7 +478,7 @@ export default function Home() {
                   '100% online — sin desplazamiento',
                   'Grabación HD disponible de inmediato',
                   'Acreditación CONACEM oficial',
-                  '$25.000 + IVA · Pago único',
+                  `$${priceText} + IVA · Pago único`,
                 ].map(item => (
                   <div key={item} className="flex items-center gap-3">
                     <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full"
@@ -558,7 +575,7 @@ export default function Home() {
               style={{ background: 'var(--scai-teal)' }}
             >
               <ShoppingCart size={16} />
-              Comprar acceso — $25.000 + IVA
+              {`Comprar acceso — $${priceText} + IVA`}
             </Link>
             <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground dark:text-white/35 dark:hover:text-white/60 pl-1 transition-colors">
               Ya tengo acceso →
