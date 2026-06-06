@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { onAuthStateChanged, signOut, User } from 'firebase/auth'
 import { auth } from './firebase'
-import { fetchAuth } from './api'
+import { fetchAuth, warmupBackend } from './api'
 import { parseProfile } from './auth'
 
 export type UserProfile = {
@@ -33,6 +33,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 const CACHE_KEY = '__tauren_profile_v1'
 const CACHE_TTL = 45 * 60 * 1000
+const PROFILE_REFRESH_MS = 5 * 60 * 1000
 
 export function cacheProfileToStorage(uid: string, profile: UserProfile) {
   try {
@@ -40,14 +41,14 @@ export function cacheProfileToStorage(uid: string, profile: UserProfile) {
   } catch {}
 }
 
-function loadProfileFromStorage(uid: string): UserProfile | null {
+function loadProfileFromStorage(uid: string): { profile: UserProfile; ts: number } | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw)
     if (parsed.uid !== uid) return null
     if (Date.now() - parsed.ts > CACHE_TTL) return null
-    return parsed.profile
+    return { profile: parsed.profile, ts: parsed.ts }
   } catch { return null }
 }
 
@@ -72,39 +73,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    warmupBackend()
+  }, [])
+
+  useEffect(() => {
     if (!auth) {
       setLoading(false)
       return
     }
 
     const applyUser = (fbUser: User | null) => {
-      console.log('[auth] onAuthStateChanged uid=', fbUser?.uid?.slice(0, 8) ?? 'null')
       setFirebaseUser(fbUser)
       if (fbUser) {
         document.cookie = `__tauren_session=${fbUser.uid}; ${cookieFlags()}`
         const cached = loadProfileFromStorage(fbUser.uid)
         if (cached) {
-          console.log('[auth] loaded profile from cache:', cached.email)
-          setProfile(cached)
-          document.cookie = `__tauren_name=${encodeURIComponent(`${cached.firstName} ${cached.lastName}`)}; ${cookieFlags()}`
+          setProfile(cached.profile)
+          document.cookie = `__tauren_name=${encodeURIComponent(`${cached.profile.firstName} ${cached.profile.lastName}`)}; ${cookieFlags()}`
         }
         setLoading(false)
-        fetchAuth('/auth/profile')
-          .then(r => {
-            console.log('[auth] /auth/profile status:', r.status)
-            return r.ok ? r.json() : null
-          })
+        if (cached && Date.now() - cached.ts < PROFILE_REFRESH_MS) return
+        fetchAuth('/auth/profile', {}, fbUser)
+          .then(r => (r.ok ? r.json() : null))
           .then(data => {
             const p = parseProfile(data)
-            if (!p) { console.warn('[auth] parseProfile returned null for /auth/profile'); return }
-            console.log('[auth] profile refreshed from backend:', p.email)
+            if (!p) return
             setProfile(p)
             cacheProfileToStorage(fbUser.uid, p)
             document.cookie = `__tauren_name=${encodeURIComponent(`${p.firstName} ${p.lastName}`)}; ${cookieFlags()}`
           })
-          .catch(e => console.warn('[auth] /auth/profile fetch error:', e?.message))
+          .catch(() => {})
       } else {
-        console.log('[auth] no firebase user → clearing session')
         setProfile(null)
         clearSessionCookies()
         clearProfileStorage()
@@ -112,10 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    if (auth.currentUser) {
-      console.log('[auth] currentUser already set on mount, uid=', auth.currentUser.uid.slice(0, 8))
-      applyUser(auth.currentUser)
-    }
+    if (auth.currentUser) applyUser(auth.currentUser)
     return onAuthStateChanged(auth, applyUser)
   }, [])
 

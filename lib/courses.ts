@@ -68,33 +68,14 @@ export async function fetchPublishedCourse(): Promise<Course | null> {
 }
 
 export async function checkCoursePurchase(courseId: string, signal?: AbortSignal): Promise<boolean> {
-  for (let i = 0; i < 2; i++) {
-    try {
-      console.log('[courses] checkCoursePurchase attempt', i + 1, 'courseId=', courseId)
-      const res = await fetchAuth(`/purchases/check/course/${courseId}`, { signal })
-      if (res.ok) {
-        const data = await res.json()
-        const result = data.purchased === true || data.hasPurchase === true || data.hasAccess === true
-        console.log('[courses] checkCoursePurchase result=', result, 'raw=', JSON.stringify(data).slice(0, 120))
-        return result
-      }
-      console.warn('[courses] checkCoursePurchase non-ok status:', res.status)
-      if (res.status >= 500 && i === 0) {
-        await new Promise(r => setTimeout(r, 500))
-        continue
-      }
-      return false
-    } catch (e: any) {
-      console.warn('[courses] checkCoursePurchase error:', e?.message)
-      if (signal?.aborted) return false
-      if (i === 0) {
-        await new Promise(r => setTimeout(r, 500))
-        continue
-      }
-      return false
-    }
+  try {
+    const res = await fetchAuth(`/purchases/check/course/${courseId}`, { signal })
+    if (!res.ok) return false
+    const data = await res.json()
+    return data.purchased === true || data.hasPurchase === true || data.hasAccess === true
+  } catch {
+    return false
   }
-  return false
 }
 
 export async function fetchCourseWatch(courseId: string): Promise<Course | null> {

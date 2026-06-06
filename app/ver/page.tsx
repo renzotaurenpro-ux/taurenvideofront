@@ -7,7 +7,6 @@ import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User, Che
 import SecureVideoPlayer from '@/components/SecureVideoPlayer'
 import PageBackground from '@/components/PageBackground'
 import Image from 'next/image'
-import ScaiLogo from '../../Logotipo-SCAI.png'
 import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { auth } from '@/lib/firebase'
@@ -84,6 +83,8 @@ const MODULOS_DATA = [
   },
 ]
 
+const PLACEHOLDER_MAP = buildPlaceholderLessonMap()
+
 export default function VerPage() {
   const router = useRouter()
   const { firebaseUser, profile, loading: authLoading } = useAuth()
@@ -97,7 +98,6 @@ export default function VerPage() {
   const [courseId, setCourseId] = useState<string | null>(null)
   const [coursePrice, setCoursePrice] = useState(PRODUCT.priceNeto)
   const [certUnlocked, setCertUnlocked] = useState(false)
-  const [bunnyMap, setBunnyMap] = useState<Record<string, string>>({})
 
   const getLessonFile = useCallback(() => undefined, [])
 
@@ -114,7 +114,7 @@ export default function VerPage() {
     onVideoError,
     buffering,
     onPlayerReady,
-  } = useLessonPlayer(paid, bunnyMap, getLessonFile)
+  } = useLessonPlayer(paid, PLACEHOLDER_MAP, getLessonFile)
 
   useEffect(() => {
     const sync = () => {
@@ -142,7 +142,7 @@ export default function VerPage() {
         return
       }
       let cancelled = false
-      waitForFirebaseUser(6000)
+      waitForFirebaseUser(2500)
         .catch(() => {})
         .finally(() => {
           if (!cancelled && !auth?.currentUser) router.replace('/login')
@@ -166,7 +166,6 @@ export default function VerPage() {
         if (cached === true) {
           setPaid(true)
           setCheckingAccess(false)
-          setBunnyMap(buildPlaceholderLessonMap())
           checkCoursePurchase(course.id)
             .then(v => { if (!cancelled) { setCachedPurchase(course.id, v); if (!v) setPaid(false) } })
             .catch(() => {})
@@ -178,10 +177,6 @@ export default function VerPage() {
         setCachedPurchase(course.id, hasPurchased)
         setPaid(hasPurchased)
         setCheckingAccess(false)
-
-        if (hasPurchased && !cancelled) {
-          setBunnyMap(buildPlaceholderLessonMap())
-        }
       } catch {
         if (!cancelled) setCheckingAccess(false)
       }

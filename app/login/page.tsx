@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Home } from 'lucide-react'
@@ -9,10 +9,9 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, hasFirebaseConfig } from '@/lib/firebase'
 import { useAuth } from '@/lib/authContext'
-import { setSessionCookie, syncAuthLogin, fetchAuthProfile, waitForFirebaseUser } from '@/lib/auth'
-import type { UserProfile } from '@/lib/authContext'
-import { setCachedPurchase } from '@/lib/api'
-import { fetchPublishedCourse, checkCoursePurchase } from '@/lib/courses'
+import { setSessionCookie, syncAuthLogin, profileFromFirebaseUser } from '@/lib/auth'
+import { warmupBackend, prefetchPurchase } from '@/lib/api'
+import { fetchPublishedCourse } from '@/lib/courses'
 import PageBackground from '@/components/PageBackground'
 
 export default function LoginPage() {
@@ -23,6 +22,10 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    warmupBackend()
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -37,49 +40,23 @@ export default function LoginPage() {
     }
     setLoading(true)
     try {
-      console.log('[login] signIn start', email.trim())
       const credential = await signInWithEmailAndPassword(auth, email.trim(), password)
-      const uid = credential.user.uid
-      console.log('[login] firebase ok uid=' + uid.slice(0, 8))
-      setSessionCookie(uid)
-      await waitForFirebaseUser()
-      const idToken = await credential.user.getIdToken()
-      console.log('[login] idToken ok, calling syncAuthLogin')
-      let profile: UserProfile | null = await syncAuthLogin(idToken)
-      console.log('[login] syncAuthLogin result:', profile ? 'ok' : 'null')
-      if (!profile) {
-        console.log('[login] fallback → fetchAuthProfile')
-        profile = await fetchAuthProfile()
-        console.log('[login] fetchAuthProfile result:', profile ? 'ok' : 'null')
-      }
-      if (!profile) {
-        console.log('[login] fallback → firebase display data')
-        profile = {
-          id: uid,
-          email: credential.user.email ?? email.trim(),
-          firstName: credential.user.displayName?.split(' ')[0] ?? '',
-          lastName: credential.user.displayName?.split(' ').slice(1).join(' ') ?? '',
-          role: 'USER',
-          firebaseUid: uid,
-        }
-      }
-      console.log('[login] profile final:', profile.email, 'role:', profile.role)
-      cacheProfile(uid, profile)
-      console.log('[login] navigating to /ver')
+      const user = credential.user
+      setSessionCookie(user.uid)
+      cacheProfile(user.uid, profileFromFirebaseUser(user, email.trim()))
       router.replace('/ver')
+
+      const idToken = await user.getIdToken()
+      syncAuthLogin(idToken)
+        .then(profile => { if (profile) cacheProfile(user.uid, profile) })
+        .catch(() => {})
+
       fetchPublishedCourse()
-        .then(course => {
-          if (!course) { console.log('[login] bg: no course found'); return }
-          console.log('[login] bg: checking purchase for', course.id)
-          return checkCoursePurchase(course.id).then(purchased => {
-            console.log('[login] bg: purchased=', purchased)
-            setCachedPurchase(course.id, purchased)
-          })
-        })
-        .catch(e => console.warn('[login] bg purchase check failed:', e?.message))
-    } catch (err: any) {
+        .then(course => { if (course) prefetchPurchase(course.id, user) })
+        .catch(() => {})
+    } catch (err: unknown) {
       document.cookie = '__tauren_session=; path=/; max-age=0; SameSite=Lax'
-      const code = err?.code ?? ''
+      const code = (err as { code?: string })?.code ?? ''
       if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         setError('Correo o contraseña incorrectos')
       } else if (code === 'auth/too-many-requests') {
@@ -87,7 +64,7 @@ export default function LoginPage() {
       } else if (code.startsWith('auth/')) {
         setError('Error de autenticación. Intenta de nuevo')
       } else {
-        setError(err?.message || 'Error al iniciar sesión')
+        setError((err as Error)?.message || 'Error al iniciar sesión')
       }
     } finally {
       setLoading(false)

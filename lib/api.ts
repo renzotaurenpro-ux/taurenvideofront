@@ -3,7 +3,7 @@ import { auth } from './firebase'
 
 const API_BASE = '/api/proxy'
 
-function waitForAuthUser(timeoutMs = 8000): Promise<User> {
+function waitForAuthUser(timeoutMs = 4000): Promise<User> {
   const firebaseAuth = auth
   if (!firebaseAuth) return Promise.reject(new Error('UNAUTHENTICATED'))
   if (firebaseAuth.currentUser) return Promise.resolve(firebaseAuth.currentUser)
@@ -19,11 +19,9 @@ function waitForAuthUser(timeoutMs = 8000): Promise<User> {
   })
 }
 
-async function getToken(forceRefresh = false): Promise<string> {
-  const user = await waitForAuthUser()
-  const token = await user.getIdToken(forceRefresh)
-  console.log('[api] token ok uid=' + user.uid.slice(0, 8) + ' refresh=' + forceRefresh)
-  return token
+async function getToken(forceRefresh = false, user?: User | null): Promise<string> {
+  const u = user ?? (await waitForAuthUser())
+  return u.getIdToken(forceRefresh)
 }
 
 const PURCHASE_CACHE_TTL = 10 * 60 * 1000
@@ -60,8 +58,8 @@ export function warmupBackend() {
   fetch(`${API_BASE}/courses`).catch(() => {})
 }
 
-export async function fetchAuth(path: string, options: RequestInit = {}): Promise<Response> {
-  let token = await getToken()
+export async function fetchAuth(path: string, options: RequestInit = {}, user?: User | null): Promise<Response> {
+  let token = await getToken(false, user)
 
   const makeHeaders = (t: string): Record<string, string> => ({
     'Content-Type': 'application/json',
@@ -69,15 +67,11 @@ export async function fetchAuth(path: string, options: RequestInit = {}): Promis
     Authorization: `Bearer ${t}`,
   })
 
-  console.log('[api] fetchAuth', options.method ?? 'GET', path)
   let res = await fetch(`${API_BASE}${path}`, { ...options, headers: makeHeaders(token) })
-  console.log('[api] fetchAuth response', path, res.status)
 
   if (res.status === 401) {
-    console.log('[api] 401 → refreshing token for', path)
-    token = await getToken(true)
+    token = await getToken(true, user ?? auth?.currentUser)
     res = await fetch(`${API_BASE}${path}`, { ...options, headers: makeHeaders(token) })
-    console.log('[api] retry response', path, res.status)
   }
 
   return res
@@ -88,12 +82,19 @@ export async function fetchPublic(path: string): Promise<Response> {
 }
 
 export async function postPublic<T>(path: string, body: T): Promise<Response> {
-  console.log('[api] postPublic', path)
-  const res = await fetch(`${API_BASE}${path}`, {
+  return fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  console.log('[api] postPublic response', path, res.status)
-  return res
+}
+
+export async function prefetchPurchase(courseId: string, user?: User | null) {
+  try {
+    const res = await fetchAuth(`/purchases/check/course/${courseId}`, {}, user)
+    if (!res.ok) return
+    const data = await res.json()
+    const purchased = data.purchased === true || data.hasPurchase === true || data.hasAccess === true
+    setCachedPurchase(courseId, purchased)
+  } catch {}
 }

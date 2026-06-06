@@ -1,4 +1,8 @@
-export const PLACEHOLDER_VIDEO_URL = '/videos/placeholder.mp4'
+export const PLACEHOLDER_VIDEO_URL = '/videos/demo.mp4'
+
+export const PLACEHOLDER_VIDEO_FALLBACKS = [
+  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+]
 
 const PLACEHOLDER_KEYS = ['0-0', '0-1', '0-2']
 

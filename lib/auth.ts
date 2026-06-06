@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, type User } from 'firebase/auth'
 import { auth } from './firebase'
 import { fetchAuth, postPublic } from './api'
 import type { UserProfile } from './authContext'
@@ -35,6 +35,19 @@ export function parseProfile(data: unknown): UserProfile | null {
   }
 }
 
+export function profileFromFirebaseUser(user: User, fallbackEmail = ''): UserProfile {
+  const name = user.displayName?.trim() ?? ''
+  const parts = name ? name.split(/\s+/) : []
+  return {
+    id: user.uid,
+    email: user.email ?? fallbackEmail,
+    firstName: parts[0] ?? '',
+    lastName: parts.slice(1).join(' '),
+    role: 'USER',
+    firebaseUid: user.uid,
+  }
+}
+
 function backendMessage(data: unknown, fallback: string) {
   if (data && typeof data === 'object' && typeof (data as { message?: unknown }).message === 'string') {
     return (data as { message: string }).message
@@ -43,40 +56,26 @@ function backendMessage(data: unknown, fallback: string) {
 }
 
 export async function syncAuthLogin(idToken: string): Promise<UserProfile | null> {
-  for (let i = 0; i < 2; i++) {
-    let res: Response
-    try {
-      console.log('[auth] syncAuthLogin attempt', i + 1)
-      res = await postPublic('/auth/login', { idToken })
-    } catch (e: any) {
-      console.warn('[auth] syncAuthLogin network error:', e?.message)
-      if (i === 0) { await new Promise(r => setTimeout(r, 400)); continue }
-      return null
-    }
+  try {
+    const res = await postPublic('/auth/login', { idToken })
     const data = await res.json().catch(() => null)
-    console.log('[auth] syncAuthLogin status:', res.status, 'data:', JSON.stringify(data)?.slice(0, 120))
     if (!res.ok) {
       const msg = backendMessage(data, '')
       if (res.status === 404 || msg === 'USER_NOT_FOUND') {
         throw new Error('No hay cuenta registrada. Regístrate primero')
       }
-      if (i === 0 && (res.status >= 500 || res.status === 408)) {
-        await new Promise(r => setTimeout(r, 400))
-        continue
-      }
       return null
     }
-    const profile = parseProfile(data)
-    console.log('[auth] syncAuthLogin parseProfile:', profile ? 'ok email=' + profile.email : 'null')
-    if (profile) return profile
-    if (i === 0) { await new Promise(r => setTimeout(r, 300)); continue }
+    return parseProfile(data)
+  } catch (e: unknown) {
+    if (e instanceof Error && e.message.includes('Regístrate')) throw e
+    return null
   }
-  return null
 }
 
-export async function fetchAuthProfile(): Promise<UserProfile | null> {
+export async function fetchAuthProfile(user?: User | null): Promise<UserProfile | null> {
   try {
-    const res = await fetchAuth('/auth/profile')
+    const res = await fetchAuth('/auth/profile', {}, user)
     if (!res.ok) return null
     const data = await res.json().catch(() => null)
     return parseProfile(data)
@@ -85,7 +84,7 @@ export async function fetchAuthProfile(): Promise<UserProfile | null> {
   }
 }
 
-export async function waitForFirebaseUser(timeoutMs = 8000): Promise<void> {
+export async function waitForFirebaseUser(timeoutMs = 3000): Promise<void> {
   const firebaseAuth = auth
   if (!firebaseAuth) throw new Error('Auth no disponible')
   if (firebaseAuth.currentUser) return
