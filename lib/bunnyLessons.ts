@@ -1,5 +1,6 @@
 import type { CourseEpisode } from './courses'
 import { sortEpisodes } from './courses'
+import { PLACEHOLDER_VIDEO_URL } from './placeholderVideo'
 
 function modulo1Order(title: string) {
   const t = title.toLowerCase()
@@ -19,8 +20,8 @@ function pickModulo1Episodes(episodes: CourseEpisode[]) {
 export function buildLessonMapFromEpisodes(episodes: CourseEpisode[]): Record<string, string> {
   const map: Record<string, string> = {}
   const lessons = pickModulo1Episodes(episodes)
-  lessons.forEach((ep, i) => {
-    if (ep.url) map[`0-${i}`] = ep.url
+  lessons.forEach((_, i) => {
+    map[`0-${i}`] = PLACEHOLDER_VIDEO_URL
   })
   return map
 }

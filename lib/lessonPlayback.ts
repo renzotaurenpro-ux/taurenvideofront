@@ -10,7 +10,8 @@ export function resolveLessonPlayback(
   const key = lessonPlaybackKey(mi, vi)
   const embed = bunnyMap[key]
   if (embed) {
-    return { url: embed, mime: 'video/mp4', key: `${key}-bunny`, isEmbed: true }
+    const isEmbed = embed.includes('mediadelivery.net')
+    return { url: embed, mime: 'video/mp4', key: `${key}-play`, isEmbed }
   }
   const file = getFile?.(mi, vi) ?? ''
   if (file) {

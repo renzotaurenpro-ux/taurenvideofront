@@ -52,9 +52,7 @@ export default function SecureVideoPlayer({ videoUrl, mimeType, onError, onReady
               onReady?.()
             }}
             onError={() => onError?.()}
-          >
-            <source src={videoUrl} type={mimeType ?? 'video/mp4'} />
-          </video>
+          />
         ) : null}
       </div>
     </div>

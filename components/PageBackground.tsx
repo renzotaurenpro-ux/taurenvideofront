@@ -14,7 +14,7 @@ const SCENES: Record<
 > = {
   login: {
     src: '/imagenes/Inmunoglobulina adeherida.jpg',
-    position: '50% 66%',
+    position: '50% 78%',
     auth: true,
   },
   registro: {
@@ -37,7 +37,7 @@ export default function PageBackground({ scene }: Props) {
   return (
     <>
       <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden bg-[#0B1928]">
-        <div className={isLogin ? 'absolute -inset-[10%]' : 'absolute inset-0 min-h-0 min-w-0'}>
+        <div className={isLogin ? 'absolute inset-0 scale-[0.86] origin-center' : 'absolute inset-0 min-h-0 min-w-0'}>
           <Image
             src={cfg.src}
             alt=""

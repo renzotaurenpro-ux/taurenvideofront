@@ -12,9 +12,9 @@ import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { auth } from '@/lib/firebase'
 import { getCachedPurchase, setCachedPurchase } from '@/lib/api'
-import { fetchPublishedCourse, checkCoursePurchase, fetchCourseWatch } from '@/lib/courses'
+import { fetchPublishedCourse, checkCoursePurchase } from '@/lib/courses'
 import { waitForFirebaseUser } from '@/lib/auth'
-import { buildLessonMapFromEpisodes } from '@/lib/bunnyLessons'
+import { buildPlaceholderLessonMap } from '@/lib/placeholderVideo'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchMyCertificates } from '@/lib/exams'
@@ -166,12 +166,7 @@ export default function VerPage() {
         if (cached === true) {
           setPaid(true)
           setCheckingAccess(false)
-          fetchCourseWatch(course.id)
-            .then(watch => {
-              if (cancelled || !watch?.videos?.length) return
-              setBunnyMap(buildLessonMapFromEpisodes(watch.videos))
-            })
-            .catch(() => {})
+          setBunnyMap(buildPlaceholderLessonMap())
           checkCoursePurchase(course.id)
             .then(v => { if (!cancelled) { setCachedPurchase(course.id, v); if (!v) setPaid(false) } })
             .catch(() => {})
@@ -184,11 +179,8 @@ export default function VerPage() {
         setPaid(hasPurchased)
         setCheckingAccess(false)
 
-        if (hasPurchased) {
-          const watch = await fetchCourseWatch(course.id)
-          if (!cancelled && watch?.videos?.length) {
-            setBunnyMap(buildLessonMapFromEpisodes(watch.videos))
-          }
+        if (hasPurchased && !cancelled) {
+          setBunnyMap(buildPlaceholderLessonMap())
         }
       } catch {
         if (!cancelled) setCheckingAccess(false)
