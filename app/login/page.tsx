@@ -72,86 +72,92 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-4 sm:px-6 pt-[max(2.75rem,calc(env(safe-area-inset-top,0px)+2.25rem))] pb-8">
+    <div className="relative min-h-[100dvh] min-h-screen w-full flex items-center justify-center px-4 py-10 sm:px-6">
       <PageBackground scene="login" />
       <Link
         href="/"
-        className="fixed top-[max(1rem,env(safe-area-inset-top,0px)+0.75rem)] left-[max(1rem,env(safe-area-inset-left,0px)+0.75rem)] z-20 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-medium text-white/65 hover:text-white/90 border border-white/12 bg-black/20 hover:bg-black/35 backdrop-blur-sm transition-colors"
+        className="fixed top-[max(1rem,env(safe-area-inset-top,0px)+0.75rem)] left-[max(1rem,env(safe-area-inset-left,0px)+0.75rem)] z-20 inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium text-white/80 hover:text-white border border-white/15 bg-[rgba(8,18,32,0.75)] hover:bg-[rgba(8,18,32,0.9)] backdrop-blur-md transition-colors"
       >
-        <Home size={12} style={{ color: 'var(--scai-teal)' }} />
+        <Home size={14} style={{ color: 'var(--scai-teal)' }} />
         Inicio
       </Link>
-      <div className="w-full max-w-[min(100%,18.5rem)] mx-auto relative z-10 shrink-0">
-        <div className="flex flex-col items-center mb-2.5">
-          <Link href="/" className="flex items-center mb-2.5">
-            <Image src={ScaiLogo} alt="SCAI" priority className="h-7 w-auto" />
-          </Link>
-          <h1 className="text-lg font-bold text-white text-center">Inicio de sesión</h1>
-          <p className="text-white/45 text-[11px] mt-1 text-center max-w-[15rem] leading-snug">
-            Accede a las III Jornadas de Inmunología Clínica
-          </p>
-        </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-xl p-3.5 space-y-3 border border-white/10 w-full"
-          style={{ background: 'rgba(14,32,53,0.52)', backdropFilter: 'blur(14px)' }}
+      <div className="relative z-10 w-full max-w-[22rem] sm:max-w-[24rem]">
+        <div
+          className="rounded-2xl border border-white/12 overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
+          style={{ background: 'rgba(8,18,32,0.94)', backdropFilter: 'blur(20px)' }}
         >
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2.5 text-red-400 text-xs">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-white/50 text-xs mb-1.5">Correo electrónico</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              placeholder="doctor@hospital.com"
-              className="w-full rounded-lg px-3 py-2.5 text-white placeholder:text-white/20 focus:outline-none border border-white/10 focus:border-white/20 bg-[rgba(11,25,40,0.8)] transition-colors text-sm"
-            />
+          <div className="px-6 pt-7 pb-2 text-center border-b border-white/8">
+            <Link href="/" className="inline-flex justify-center mb-4">
+              <Image src={ScaiLogo} alt="SCAI" priority className="h-8 w-auto" />
+            </Link>
+            <h1 className="text-xl font-bold text-white tracking-tight">Inicio de sesión</h1>
+            <p className="text-white/55 text-xs mt-2 leading-relaxed max-w-[16rem] mx-auto">
+              Accede a las III Jornadas de Inmunología Clínica
+            </p>
           </div>
 
-          <div>
-            <label className="block text-white/50 text-xs mb-1.5">Contraseña</label>
-            <div className="relative">
+          <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+            {error && (
+              <div className="bg-red-500/12 border border-red-500/25 rounded-xl px-3.5 py-2.5 text-red-300 text-xs leading-snug">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-white/70 text-xs font-medium mb-1.5">Correo electrónico</label>
               <input
-                type={showPass ? 'text' : 'password'}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 required
-                placeholder="••••••••"
-                className="w-full rounded-lg px-3 py-2.5 pr-10 text-white placeholder:text-white/20 focus:outline-none border border-white/10 focus:border-white/20 bg-[rgba(11,25,40,0.8)] transition-colors text-sm"
+                autoComplete="email"
+                placeholder="doctor@hospital.com"
+                className="w-full rounded-xl px-3.5 py-3 text-white placeholder:text-white/25 focus:outline-none border border-white/12 focus:border-[rgba(18,180,198,0.55)] bg-[rgba(4,12,22,0.9)] transition-colors text-sm"
               />
-              <button
-                type="button"
-                onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors p-0.5"
-              >
-                {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
             </div>
+
+            <div>
+              <label className="block text-white/70 text-xs font-medium mb-1.5">Contraseña</label>
+              <div className="relative">
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  className="w-full rounded-xl px-3.5 py-3 pr-11 text-white placeholder:text-white/25 focus:outline-none border border-white/12 focus:border-[rgba(18,180,198,0.55)] bg-[rgba(4,12,22,0.9)] transition-colors text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/70 transition-colors p-1"
+                >
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full text-white font-semibold py-3 rounded-xl transition-all duration-200 active:scale-[0.98] text-sm disabled:opacity-50 mt-1"
+              style={{ background: 'var(--scai-teal)', boxShadow: '0 6px 20px rgba(18,180,198,0.32)' }}
+            >
+              {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            </button>
+          </form>
+
+          <div className="px-6 py-4 border-t border-white/8 bg-[rgba(4,12,22,0.45)] text-center">
+            <p className="text-white/55 text-xs">
+              ¿No tienes cuenta?{' '}
+              <Link href="/registro" className="text-[color:var(--scai-teal)] font-semibold hover:brightness-125">
+                Regístrate aquí
+              </Link>
+            </p>
           </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full text-white font-semibold py-2.5 rounded-lg transition-all duration-200 active:scale-[0.98] text-sm disabled:opacity-50"
-            style={{ background: 'var(--scai-teal)', boxShadow: '0 4px 14px rgba(18,180,198,0.28)' }}
-          >
-            {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-          </button>
-        </form>
-
-        <p className="text-center text-white/30 text-[11px] mt-2.5 px-1">
-          ¿No tienes cuenta?{' '}
-          <Link href="/registro" style={{ color: 'var(--scai-teal)' }} className="hover:brightness-125">
-            Regístrate aquí
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   )
