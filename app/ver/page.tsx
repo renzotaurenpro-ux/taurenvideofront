@@ -11,7 +11,7 @@ import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { auth } from '@/lib/firebase'
 import { getCachedPurchase, setCachedPurchase } from '@/lib/api'
-import { fetchPublishedCourse, checkCoursePurchase } from '@/lib/courses'
+import { fetchPublishedCourse, resolveCourseAccess } from '@/lib/courses'
 import { waitForFirebaseUser } from '@/lib/auth'
 import { buildPlaceholderLessonMap } from '@/lib/placeholderVideo'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
@@ -154,28 +154,49 @@ export default function VerPage() {
     let cancelled = false
 
     ;(async () => {
+      const user = activeUser
       try {
         const course = await fetchPublishedCourse()
-        if (!course || cancelled) return
+        const id = course?.id
+        if (cancelled) return
 
-        setCourseId(course.id)
-        setCoursePrice(course.priceClp ?? PRODUCT.priceNeto)
-        setInCart(hasItem(course.id))
+        if (course) {
+          setCourseId(course.id)
+          setCoursePrice(course.priceClp ?? PRODUCT.priceNeto)
+          setInCart(hasItem(course.id))
+        }
 
-        const cached = getCachedPurchase(course.id)
+        if (!id) {
+          setCheckingAccess(false)
+          return
+        }
+
+        const cached = getCachedPurchase(id)
         if (cached === true) {
           setPaid(true)
           setCheckingAccess(false)
-          checkCoursePurchase(course.id)
-            .then(v => { if (!cancelled) { setCachedPurchase(course.id, v); if (!v) setPaid(false) } })
+          resolveCourseAccess(id, user)
+            .then(r => {
+              if (cancelled) return
+              if (r.ok === false && 'unauthorized' in r) router.replace('/login')
+              else if (r.ok) {
+                setCachedPurchase(id, r.paid)
+                setPaid(r.paid)
+              }
+            })
             .catch(() => {})
           return
         }
 
-        const hasPurchased = await checkCoursePurchase(course.id)
+        const access = await resolveCourseAccess(id, user)
         if (cancelled) return
-        setCachedPurchase(course.id, hasPurchased)
-        setPaid(hasPurchased)
+        if (access.ok === false) {
+          setCheckingAccess(false)
+          if ('unauthorized' in access) router.replace('/login')
+          return
+        }
+        setCachedPurchase(id, access.paid)
+        setPaid(access.paid)
         setCheckingAccess(false)
       } catch {
         if (!cancelled) setCheckingAccess(false)

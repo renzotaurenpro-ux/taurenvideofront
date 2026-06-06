@@ -1,5 +1,6 @@
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { auth } from './firebase'
+import { API_TIMEOUT_MS, SESSION_MS } from './session'
 
 const API_BASE = '/api/proxy'
 
@@ -24,7 +25,6 @@ async function getToken(forceRefresh = false, user?: User | null): Promise<strin
   return u.getIdToken(forceRefresh)
 }
 
-const PURCHASE_CACHE_TTL = 10 * 60 * 1000
 const PURCHASE_LS_KEY = '__scai_purchase_v1'
 
 function lsGetPurchaseMap(): Record<string, { ts: number; purchased: boolean }> {
@@ -41,7 +41,7 @@ export function getCachedPurchase(courseId: string): boolean | null {
   const map = lsGetPurchaseMap()
   const entry = map[courseId]
   if (!entry) return null
-  if (Date.now() - entry.ts > PURCHASE_CACHE_TTL) return null
+  if (Date.now() - entry.ts > SESSION_MS) return null
   return entry.purchased
 }
 
@@ -89,12 +89,15 @@ export async function postPublic<T>(path: string, body: T): Promise<Response> {
   })
 }
 
-export async function prefetchPurchase(courseId: string, user?: User | null) {
+export async function prefetchPurchase(courseId: string, user?: User | null): Promise<boolean> {
   try {
-    const res = await fetchAuth(`/purchases/check/course/${courseId}`, {}, user)
-    if (!res.ok) return
-    const data = await res.json()
-    const purchased = data.purchased === true || data.hasPurchase === true || data.hasAccess === true
+    const signal = AbortSignal.timeout(API_TIMEOUT_MS)
+    const res = await fetchAuth(`/courses/${encodeURIComponent(courseId)}/watch`, { signal }, user)
+    if (res.status === 401) return false
+    const purchased = res.status === 200
     setCachedPurchase(courseId, purchased)
-  } catch {}
+    return purchased
+  } catch {
+    return false
+  }
 }

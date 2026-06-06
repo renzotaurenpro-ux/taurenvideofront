@@ -44,15 +44,15 @@ export default function LoginPage() {
       const user = credential.user
       setSessionCookie(user.uid)
       cacheProfile(user.uid, profileFromFirebaseUser(user, email.trim()))
+
+      const course = await fetchPublishedCourse()
+      if (course) await prefetchPurchase(course.id, user)
+
       router.replace('/ver')
 
       const idToken = await user.getIdToken()
       syncAuthLogin(idToken)
         .then(profile => { if (profile) cacheProfile(user.uid, profile) })
-        .catch(() => {})
-
-      fetchPublishedCourse()
-        .then(course => { if (course) prefetchPurchase(course.id, user) })
         .catch(() => {})
     } catch (err: unknown) {
       document.cookie = '__tauren_session=; path=/; max-age=0; SameSite=Lax'

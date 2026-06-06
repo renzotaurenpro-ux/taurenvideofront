@@ -1,5 +1,7 @@
+import type { User } from 'firebase/auth'
 import { fetchAuth, fetchPublic } from './api'
 import { normalizeBunnyUrl } from './bunny'
+import { API_TIMEOUT_MS, SESSION_MS } from './session'
 
 export type CourseEpisode = {
   id: string
@@ -21,11 +23,27 @@ export type Course = {
   videos: CourseEpisode[]
 }
 
+export type CourseAccessResult =
+  | { ok: true; paid: true; course: Course }
+  | { ok: true; paid: false }
+  | { ok: false; unauthorized: true }
+  | { ok: false; timeout: true }
+  | { ok: false; error: true }
+
 const COURSES_CACHE_KEY = '__scai_courses_v1'
-const COURSES_CACHE_TTL = 5 * 60 * 1000
 
 function episodePlaybackUrl(ep: CourseEpisode): string | undefined {
   return normalizeBunnyUrl(ep.url || ep.embedUrl || ep.playbackUrl)
+}
+
+function parseWatchCourse(data: unknown): Course | null {
+  if (!data || typeof data !== 'object') return null
+  const o = data as Course
+  if (!o.id) return null
+  const videos: CourseEpisode[] = Array.isArray(o.videos)
+    ? o.videos.map(v => ({ ...v, url: episodePlaybackUrl(v) }))
+    : []
+  return { ...o, videos }
 }
 
 export async function fetchCourses(): Promise<Course[]> {
@@ -34,7 +52,7 @@ export async function fetchCourses(): Promise<Course[]> {
       const raw = localStorage.getItem(COURSES_CACHE_KEY)
       if (raw) {
         const { ts, data } = JSON.parse(raw)
-        if (Date.now() - ts < COURSES_CACHE_TTL && Array.isArray(data) && data.length > 0) {
+        if (Date.now() - ts < SESSION_MS && Array.isArray(data) && data.length > 0) {
           fetchCourses.__refresh().catch(() => {})
           return data
         }
@@ -67,33 +85,35 @@ export async function fetchPublishedCourse(): Promise<Course | null> {
   return courses[0] ?? null
 }
 
-export async function checkCoursePurchase(courseId: string, signal?: AbortSignal): Promise<boolean> {
+export async function resolveCourseAccess(courseId: string, user?: User | null): Promise<CourseAccessResult> {
+  const signal = AbortSignal.timeout(API_TIMEOUT_MS)
   try {
-    const res = await fetchAuth(`/purchases/check/course/${courseId}`, { signal })
-    if (!res.ok) return false
-    const data = await res.json()
-    return data.purchased === true || data.hasPurchase === true || data.hasAccess === true
-  } catch {
-    return false
+    const res = await fetchAuth(`/courses/${encodeURIComponent(courseId)}/watch`, { signal }, user)
+    if (res.status === 401) return { ok: false, unauthorized: true }
+    if (res.status === 403) return { ok: true, paid: false }
+    if (!res.ok) return { ok: false, error: true }
+    const data = await res.json().catch(() => null)
+    const course = parseWatchCourse(data)
+    if (!course) return { ok: true, paid: false }
+    return { ok: true, paid: true, course }
+  } catch (e: unknown) {
+    const name = (e as { name?: string })?.name
+    if (name === 'TimeoutError' || name === 'AbortError') return { ok: false, timeout: true }
+    return { ok: false, error: true }
   }
 }
 
-export async function fetchCourseWatch(courseId: string): Promise<Course | null> {
-  try {
-    const res = await fetchAuth(`/courses/${courseId}/watch`)
-    if (!res.ok) return null
-    const data = await res.json()
-    if (!data?.id) return null
-    const videos: CourseEpisode[] = Array.isArray(data.videos)
-      ? data.videos.map((v: CourseEpisode) => ({
-          ...v,
-          url: episodePlaybackUrl(v),
-        }))
-      : []
-    return { ...data, videos }
-  } catch {
-    return null
-  }
+export async function checkCoursePurchase(courseId: string, user?: User | null): Promise<boolean> {
+  const result = await resolveCourseAccess(courseId, user)
+  if (result.ok && result.paid) return true
+  if (result.ok && !result.paid) return false
+  return false
+}
+
+export async function fetchCourseWatch(courseId: string, user?: User | null): Promise<Course | null> {
+  const result = await resolveCourseAccess(courseId, user)
+  if (result.ok && result.paid) return result.course
+  return null
 }
 
 export function sortEpisodes(episodes: CourseEpisode[]): CourseEpisode[] {

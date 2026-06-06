@@ -5,6 +5,7 @@ import { onAuthStateChanged, signOut, User } from 'firebase/auth'
 import { auth } from './firebase'
 import { fetchAuth, warmupBackend } from './api'
 import { parseProfile } from './auth'
+import { SESSION_MS, SESSION_SEC } from './session'
 
 export type UserProfile = {
   id: string
@@ -32,8 +33,8 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 const CACHE_KEY = '__tauren_profile_v1'
-const CACHE_TTL = 45 * 60 * 1000
-const PROFILE_REFRESH_MS = 5 * 60 * 1000
+const CACHE_TTL = SESSION_MS
+const PROFILE_REFRESH_MS = SESSION_MS
 
 export function cacheProfileToStorage(uid: string, profile: UserProfile) {
   try {
@@ -58,7 +59,7 @@ function clearProfileStorage() {
 
 function cookieFlags() {
   const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : ''
-  return `path=/; max-age=86400; SameSite=Lax${secure}`
+  return `path=/; max-age=${SESSION_SEC}; SameSite=Lax${secure}`
 }
 
 function clearSessionCookies() {

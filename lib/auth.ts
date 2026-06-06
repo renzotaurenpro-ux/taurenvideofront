@@ -1,11 +1,12 @@
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { auth } from './firebase'
 import { fetchAuth, postPublic } from './api'
+import { SESSION_SEC } from './session'
 import type { UserProfile } from './authContext'
 
 export function setSessionCookie(uid: string) {
   const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : ''
-  document.cookie = `__tauren_session=${uid}; path=/; max-age=86400; SameSite=Lax${secure}`
+  document.cookie = `__tauren_session=${uid}; path=/; max-age=${SESSION_SEC}; SameSite=Lax${secure}`
 }
 
 export function parseProfile(data: unknown): UserProfile | null {
