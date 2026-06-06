@@ -72,7 +72,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] min-h-screen w-full flex items-center justify-center px-4 py-10 sm:px-6">
+    <div className="relative min-h-[100dvh] min-h-screen w-full flex items-start justify-center px-4 pt-[max(4.5rem,calc(env(safe-area-inset-top,0px)+3.5rem))] pb-8 sm:px-6">
       <PageBackground scene="login" />
       <Link
         href="/"
@@ -82,30 +82,30 @@ export default function LoginPage() {
         Inicio
       </Link>
 
-      <div className="relative z-10 w-full max-w-[22rem] sm:max-w-[24rem]">
+      <div className="relative z-10 w-full max-w-[17.5rem] sm:max-w-[18rem]">
         <div
-          className="rounded-2xl border border-white/12 overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
-          style={{ background: 'rgba(8,18,32,0.94)', backdropFilter: 'blur(20px)' }}
+          className="rounded-xl border border-white/12 overflow-hidden shadow-[0_16px_48px_rgba(0,0,0,0.45)]"
+          style={{ background: 'rgba(8,18,32,0.92)', backdropFilter: 'blur(16px)' }}
         >
-          <div className="px-6 pt-7 pb-2 text-center border-b border-white/8">
-            <Link href="/" className="inline-flex justify-center mb-4">
-              <Image src={ScaiLogo} alt="SCAI" priority className="h-8 w-auto" />
+          <div className="px-4 pt-4 pb-1 text-center">
+            <Link href="/" className="inline-flex justify-center mb-2">
+              <Image src={ScaiLogo} alt="SCAI" priority className="h-6 w-auto" />
             </Link>
-            <h1 className="text-xl font-bold text-white tracking-tight">Inicio de sesión</h1>
-            <p className="text-white/55 text-xs mt-2 leading-relaxed max-w-[16rem] mx-auto">
-              Accede a las III Jornadas de Inmunología Clínica
+            <h1 className="text-base font-bold text-white tracking-tight">Inicio de sesión</h1>
+            <p className="text-white/50 text-[10px] mt-1 leading-snug px-1">
+              III Jornadas de Inmunología Clínica
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+          <form onSubmit={handleSubmit} className="px-4 py-3 space-y-2.5">
             {error && (
-              <div className="bg-red-500/12 border border-red-500/25 rounded-xl px-3.5 py-2.5 text-red-300 text-xs leading-snug">
+              <div className="bg-red-500/12 border border-red-500/25 rounded-lg px-2.5 py-2 text-red-300 text-[11px] leading-snug">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-white/70 text-xs font-medium mb-1.5">Correo electrónico</label>
+              <label className="block text-white/60 text-[11px] font-medium mb-1">Correo electrónico</label>
               <input
                 type="email"
                 value={email}
@@ -113,12 +113,12 @@ export default function LoginPage() {
                 required
                 autoComplete="email"
                 placeholder="doctor@hospital.com"
-                className="w-full rounded-xl px-3.5 py-3 text-white placeholder:text-white/25 focus:outline-none border border-white/12 focus:border-[rgba(18,180,198,0.55)] bg-[rgba(4,12,22,0.9)] transition-colors text-sm"
+                className="w-full rounded-lg px-3 py-2 text-white placeholder:text-white/25 focus:outline-none border border-white/12 focus:border-[rgba(18,180,198,0.55)] bg-[rgba(4,12,22,0.9)] transition-colors text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-white/70 text-xs font-medium mb-1.5">Contraseña</label>
+              <label className="block text-white/60 text-[11px] font-medium mb-1">Contraseña</label>
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'}
@@ -127,14 +127,14 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full rounded-xl px-3.5 py-3 pr-11 text-white placeholder:text-white/25 focus:outline-none border border-white/12 focus:border-[rgba(18,180,198,0.55)] bg-[rgba(4,12,22,0.9)] transition-colors text-sm"
+                  className="w-full rounded-lg px-3 py-2 pr-9 text-white placeholder:text-white/25 focus:outline-none border border-white/12 focus:border-[rgba(18,180,198,0.55)] bg-[rgba(4,12,22,0.9)] transition-colors text-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/70 transition-colors p-1"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/70 transition-colors p-0.5"
                 >
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
             </div>
@@ -142,17 +142,17 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-white font-semibold py-3 rounded-xl transition-all duration-200 active:scale-[0.98] text-sm disabled:opacity-50 mt-1"
-              style={{ background: 'var(--scai-teal)', boxShadow: '0 6px 20px rgba(18,180,198,0.32)' }}
+              className="w-full text-white font-semibold py-2.5 rounded-lg transition-all duration-200 active:scale-[0.98] text-sm disabled:opacity-50"
+              style={{ background: 'var(--scai-teal)', boxShadow: '0 4px 14px rgba(18,180,198,0.28)' }}
             >
               {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </form>
 
-          <div className="px-6 py-4 border-t border-white/8 bg-[rgba(4,12,22,0.45)] text-center">
-            <p className="text-white/55 text-xs">
+          <div className="px-4 py-2.5 border-t border-white/8 text-center">
+            <p className="text-white/45 text-[10px]">
               ¿No tienes cuenta?{' '}
-              <Link href="/registro" className="text-[color:var(--scai-teal)] font-semibold hover:brightness-125">
+              <Link href="/registro" className="text-[color:var(--scai-teal)] font-medium hover:brightness-125">
                 Regístrate aquí
               </Link>
             </p>
