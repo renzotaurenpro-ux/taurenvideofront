@@ -1,6 +1,6 @@
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { auth } from './firebase'
-import { API_TIMEOUT_MS, SESSION_MS } from './session'
+import { API_TIMEOUT_MS, HEALTH_WARMUP_MS, SESSION_MS } from './session'
 
 const API_BASE = '/api/proxy'
 
@@ -51,11 +51,29 @@ export function setCachedPurchase(courseId: string, purchased: boolean) {
   lsSetPurchaseMap(map)
 }
 
-let warmupDone = false
-export function warmupBackend() {
-  if (warmupDone) return
-  warmupDone = true
-  fetch(`${API_BASE}/health`).catch(() => {})
+let warmupReady = false
+let warmupPromise: Promise<boolean> | null = null
+
+export function warmupBackend(force = false): Promise<boolean> {
+  if (warmupReady && !force) return Promise.resolve(true)
+  if (warmupPromise && !force) return warmupPromise
+  warmupPromise = fetch(`${API_BASE}/health`, {
+    signal: AbortSignal.timeout(HEALTH_WARMUP_MS),
+    cache: 'no-store',
+  })
+    .then(res => {
+      if (res.ok) {
+        warmupReady = true
+        return true
+      }
+      warmupPromise = null
+      return false
+    })
+    .catch(() => {
+      warmupPromise = null
+      return false
+    })
+  return warmupPromise
 }
 
 export async function fetchAuth(path: string, options: RequestInit = {}, user?: User | null): Promise<Response> {

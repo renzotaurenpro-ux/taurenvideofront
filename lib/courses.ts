@@ -30,6 +30,8 @@ export type CourseAccessResult =
   | { ok: false; timeout: true }
   | { ok: false; error: true }
 
+export const DEFAULT_COURSE_ID = 'scai-jornadas-2026'
+
 const COURSES_CACHE_KEY = '__scai_courses_v1'
 
 function episodePlaybackUrl(ep: CourseEpisode): string | undefined {

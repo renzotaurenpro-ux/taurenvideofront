@@ -94,7 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setLoading(false)
         if (cached && Date.now() - cached.ts < PROFILE_REFRESH_MS) return
-        fetchAuth('/auth/profile', {}, fbUser)
+        warmupBackend()
+          .then(() => fetchAuth('/auth/profile', {}, fbUser))
           .then(r => (r.ok ? r.json() : null))
           .then(data => {
             const p = parseProfile(data)

@@ -10,8 +10,8 @@ import Image from 'next/image'
 import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { auth } from '@/lib/firebase'
-import { getCachedPurchase, setCachedPurchase } from '@/lib/api'
-import { fetchPublishedCourse, resolveCourseAccess } from '@/lib/courses'
+import { getCachedPurchase, setCachedPurchase, warmupBackend } from '@/lib/api'
+import { DEFAULT_COURSE_ID, fetchPublishedCourse, resolveCourseAccess } from '@/lib/courses'
 import { waitForFirebaseUser } from '@/lib/auth'
 import { buildPlaceholderLessonMap } from '@/lib/placeholderVideo'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
@@ -156,19 +156,19 @@ export default function VerPage() {
     ;(async () => {
       const user = activeUser
       try {
+        setCourseId(DEFAULT_COURSE_ID)
+        setInCart(hasItem(DEFAULT_COURSE_ID))
+        await warmupBackend()
+        if (cancelled) return
+
         const course = await fetchPublishedCourse()
-        const id = course?.id
+        const id = course?.id ?? DEFAULT_COURSE_ID
         if (cancelled) return
 
         if (course) {
           setCourseId(course.id)
           setCoursePrice(course.priceClp ?? PRODUCT.priceNeto)
           setInCart(hasItem(course.id))
-        }
-
-        if (!id) {
-          setCheckingAccess(false)
-          return
         }
 
         const cached = getCachedPurchase(id)

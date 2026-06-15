@@ -11,7 +11,7 @@ import { auth, hasFirebaseConfig } from '@/lib/firebase'
 import { useAuth } from '@/lib/authContext'
 import { setSessionCookie, syncAuthLogin, profileFromFirebaseUser } from '@/lib/auth'
 import { warmupBackend, prefetchPurchase } from '@/lib/api'
-import { fetchPublishedCourse } from '@/lib/courses'
+import { DEFAULT_COURSE_ID } from '@/lib/courses'
 import PageBackground from '@/components/PageBackground'
 
 export default function LoginPage() {
@@ -52,13 +52,14 @@ export default function LoginPage() {
       cacheProfile(user.uid, profileFromFirebaseUser(user, email.trim()))
       router.replace('/ver')
 
-      user.getIdToken()
+      warmupBackend()
+        .then(() => user.getIdToken())
         .then(idToken => syncAuthLogin(idToken))
         .then(profile => { if (profile) cacheProfile(user.uid, profile) })
         .catch(() => {})
 
-      fetchPublishedCourse()
-        .then(course => { if (course) prefetchPurchase(course.id, user) })
+      warmupBackend()
+        .then(() => prefetchPurchase(DEFAULT_COURSE_ID, user))
         .catch(() => {})
     } catch (err: unknown) {
       document.cookie = '__tauren_session=; path=/; max-age=0; SameSite=Lax'
