@@ -16,7 +16,7 @@ import PageBackground from '@/components/PageBackground'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { cacheProfile } = useAuth()
+  const { cacheProfile, firebaseUser, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -26,6 +26,10 @@ export default function LoginPage() {
   useEffect(() => {
     warmupBackend()
   }, [])
+
+  useEffect(() => {
+    if (!authLoading && firebaseUser) router.replace('/ver')
+  }, [authLoading, firebaseUser, router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -39,20 +43,22 @@ export default function LoginPage() {
       return
     }
     setLoading(true)
+    let ok = false
     try {
       const credential = await signInWithEmailAndPassword(auth, email.trim(), password)
       const user = credential.user
+      ok = true
       setSessionCookie(user.uid)
       cacheProfile(user.uid, profileFromFirebaseUser(user, email.trim()))
-
-      const course = await fetchPublishedCourse()
-      if (course) await prefetchPurchase(course.id, user)
-
       router.replace('/ver')
 
-      const idToken = await user.getIdToken()
-      syncAuthLogin(idToken)
+      user.getIdToken()
+        .then(idToken => syncAuthLogin(idToken))
         .then(profile => { if (profile) cacheProfile(user.uid, profile) })
+        .catch(() => {})
+
+      fetchPublishedCourse()
+        .then(course => { if (course) prefetchPurchase(course.id, user) })
         .catch(() => {})
     } catch (err: unknown) {
       document.cookie = '__tauren_session=; path=/; max-age=0; SameSite=Lax'
@@ -67,9 +73,11 @@ export default function LoginPage() {
         setError((err as Error)?.message || 'Error al iniciar sesión')
       }
     } finally {
-      setLoading(false)
+      if (!ok) setLoading(false)
     }
   }
+
+  if (authLoading || firebaseUser) return null
 
   return (
     <div className="relative min-h-[100dvh] min-h-screen w-full flex items-start justify-center px-4 pt-[max(4.5rem,calc(env(safe-area-inset-top,0px)+3.5rem))] pb-8 sm:px-6">

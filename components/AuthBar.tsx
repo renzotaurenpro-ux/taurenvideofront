@@ -16,6 +16,7 @@ export default function AuthBar() {
   const [certUnlocked, setCertUnlocked] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const showVerActions = pathname?.startsWith('/ver')
+  const hideBar = pathname === '/login' || pathname === '/registro'
 
   useEffect(() => {
     if (!loading && firebaseUser) warmupBackend()
@@ -31,7 +32,7 @@ export default function AuthBar() {
     return () => window.removeEventListener('focus', sync)
   }, [loading, firebaseUser, showVerActions])
 
-  if (loading || !firebaseUser) return null
+  if (hideBar || loading || !firebaseUser) return null
 
   const displayName = profile
     ? `Dr. ${profile.firstName} ${profile.lastName}`

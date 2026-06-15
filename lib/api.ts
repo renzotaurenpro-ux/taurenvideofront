@@ -55,7 +55,7 @@ let warmupDone = false
 export function warmupBackend() {
   if (warmupDone) return
   warmupDone = true
-  fetch(`${API_BASE}/courses`).catch(() => {})
+  fetch(`${API_BASE}/health`).catch(() => {})
 }
 
 export async function fetchAuth(path: string, options: RequestInit = {}, user?: User | null): Promise<Response> {
