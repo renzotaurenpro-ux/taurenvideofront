@@ -501,11 +501,11 @@ export default function VerPage() {
                     return (
                     <div key={p.nombre} className="rounded-2xl border border-border p-3 flex flex-col items-center text-center gap-2 bg-card shadow-sm dark:bg-[rgba(14,32,53,0.7)] dark:backdrop-blur-sm">
                       {foto ? (
-                        <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-border dark:border-[rgba(18,180,198,0.3)] flex-shrink-0">
-                          <Image src={foto} alt={p.nombre} fill sizes="48px" className="object-cover object-top" />
+                        <div className="relative h-14 w-14 sm:h-16 sm:w-16 overflow-hidden rounded-full border border-border dark:border-[rgba(18,180,198,0.3)] flex-shrink-0">
+                          <Image src={foto} alt={p.nombre} fill sizes="128px" quality={100} className="object-cover object-top" />
                         </div>
                       ) : (
-                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border border-primary/30 flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0 bg-primary/10 text-[color:var(--scai-teal)]">
+                        <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border border-primary/30 flex items-center justify-center font-bold text-sm flex-shrink-0 bg-primary/10 text-[color:var(--scai-teal)]">
                           {ponenteIniciales(p.nombre)}
                         </div>
                       )}

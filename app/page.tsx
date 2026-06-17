@@ -46,16 +46,23 @@ const MODULOS = [
   },
 ]
 
-function PonenteAvatar({ nombre, size = 36 }: { nombre: string; size?: number }) {
+function PonenteAvatar({ nombre, size = 52 }: { nombre: string; size?: number }) {
   const foto = ponenteFoto(nombre)
-  const px = `${size}px`
+  const px = `${Math.round(size * 2)}px`
   if (foto) {
     return (
       <div
         className="relative flex-shrink-0 overflow-hidden rounded-full"
         style={{ width: size, height: size, border: '1px solid rgba(18,180,198,0.25)' }}
       >
-        <Image src={foto} alt={nombre} fill sizes={px} className="object-cover object-top" />
+        <Image
+          src={foto}
+          alt={nombre}
+          fill
+          sizes={px}
+          quality={100}
+          className="object-cover object-top"
+        />
       </div>
     )
   }
@@ -65,6 +72,7 @@ function PonenteAvatar({ nombre, size = 36 }: { nombre: string; size?: number })
       style={{
         width: size,
         height: size,
+        fontSize: size > 48 ? 12 : 11,
         background: 'rgba(18,180,198,0.12)',
         border: '1px solid rgba(18,180,198,0.25)',
         color: 'var(--scai-teal)',
@@ -75,15 +83,15 @@ function PonenteAvatar({ nombre, size = 36 }: { nombre: string; size?: number })
   )
 }
 
-function SpeakerCard({ nombre, cv, index }: { nombre: string; cv: string; index: number }) {
+function SpeakerCard({ nombre, cv, index }: { nombre: string; cargo: string; cv: string; index: number }) {
   const [hovered, setHovered] = useState(false)
   return (
     <div
       className="relative overflow-hidden rounded-xl border cursor-default"
       style={{
-        height: '80px',
+        height: hovered ? '168px' : '100px',
         borderColor: hovered ? 'rgba(18,180,198,0.4)' : 'var(--border)',
-        transition: 'border-color 0.3s',
+        transition: 'height 0.3s ease, border-color 0.3s',
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -96,7 +104,7 @@ function SpeakerCard({ nombre, cv, index }: { nombre: string; cv: string; index:
           transition: 'opacity 0.25s, transform 0.25s',
         }}
       >
-          <PonenteAvatar nombre={nombre} size={36} />
+          <PonenteAvatar nombre={nombre} size={52} />
         <div>
           <p className="text-sm font-medium leading-snug">{nombre}</p>
           <p className="text-[10px] text-muted-foreground tabular-nums mt-0.5">{String(index + 1).padStart(2, '0')}</p>
@@ -104,7 +112,7 @@ function SpeakerCard({ nombre, cv, index }: { nombre: string; cv: string; index:
       </div>
 
       <div
-        className="absolute inset-0 flex flex-col justify-center px-4 py-3"
+        className="absolute inset-0 flex flex-col justify-start px-4 pt-4 pb-3 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         style={{
           opacity: hovered ? 1 : 0,
           transform: hovered ? 'translateY(0)' : 'translateY(10px)',
@@ -112,10 +120,10 @@ function SpeakerCard({ nombre, cv, index }: { nombre: string; cv: string; index:
           background: 'rgba(18,180,198,0.07)',
         }}
       >
-        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--scai-teal)' }}>
+        <p className="text-[11px] font-semibold leading-snug line-clamp-2 mb-2 shrink-0" style={{ color: 'var(--scai-teal)' }}>
           {nombre}
         </p>
-        <p className="text-[11px] leading-relaxed text-foreground/65">{cv}</p>
+        <p className="text-[10px] leading-relaxed text-foreground/65">{cv}</p>
       </div>
     </div>
   )
@@ -415,7 +423,7 @@ export default function Home() {
                 {MODULOS[activeModulo].ponentes.map((p, i) => (
                   <div key={p} className="flex items-center gap-3 border-b border-border py-3.5 pr-6">
                     <span className="text-[10px] tabular-nums text-muted-foreground w-5">{String(i + 1).padStart(2, '0')}</span>
-                    <PonenteAvatar nombre={p} size={24} />
+                    <PonenteAvatar nombre={p} size={40} />
                     <span className="text-sm font-medium">{p}</span>
                   </div>
                 ))}
@@ -507,8 +515,8 @@ export default function Home() {
               <p className="text-sm text-muted-foreground mt-1">especialistas</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {PONENTES.map(({ nombre, cv }, i) => (
-                <SpeakerCard key={nombre} nombre={nombre} cv={cv} index={i} />
+              {PONENTES.map(({ nombre, cargo, cv }, i) => (
+                <SpeakerCard key={nombre} nombre={nombre} cargo={cargo} cv={cv} index={i} />
               ))}
             </div>
           </div>
