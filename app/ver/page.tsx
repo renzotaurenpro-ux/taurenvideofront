@@ -17,6 +17,7 @@ import { buildPlaceholderLessonMap } from '@/lib/placeholderVideo'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchMyCertificates } from '@/lib/exams'
+import { PONENTES, ponenteFoto, ponenteIniciales } from '@/lib/ponentes'
 
 const PRODUCT = {
   id: 'scai-jornadas-2026',
@@ -24,25 +25,6 @@ const PRODUCT = {
   subtitle: 'Cuando el Sistema Inmune Falla: Desafíos en Errores Innatos de la Inmunidad',
   priceNeto: 25000,
 }
-
-const PONENTES = [
-  { nombre: 'Dra. Ligia Rodríguez', especialidad: 'Inmunología Clínica', avatar: 'LR' },
-  { nombre: 'Dra. Soledad Pérez', especialidad: 'Alergología Pediátrica', avatar: 'SP' },
-  { nombre: 'Dra. Daniela Budinich', especialidad: 'Inmunología', avatar: 'DB' },
-  { nombre: 'Dr. Francisco Roa', especialidad: 'Medicina Interna', avatar: 'FR' },
-  { nombre: 'Dra. María de los Ángeles Morales', especialidad: 'Pediatría', avatar: 'MM' },
-  { nombre: 'Dra. Bárbara Cid Troncoso', especialidad: 'Inmunología', avatar: 'BC' },
-  { nombre: 'Dra. Evelyn Silva', especialidad: 'Alergología', avatar: 'ES' },
-  { nombre: 'Dra. Patricia Vergara', especialidad: 'Inmunología Clínica', avatar: 'PV' },
-  { nombre: 'Dr. Nicolás Faundes', especialidad: 'Medicina Familiar', avatar: 'NF' },
-  { nombre: 'Dra. Illene Díaz', especialidad: 'Pediatría', avatar: 'ID' },
-  { nombre: 'Dra. Lurimar Manrique', especialidad: 'Inmunología', avatar: 'LM' },
-  { nombre: 'Dra. Pamela Méndez', especialidad: 'Alergología', avatar: 'PM' },
-  { nombre: 'Dr. Francisco Cammarata', especialidad: 'Inmunología Clínica', avatar: 'FC' },
-  { nombre: 'Dra. Fabiola Fernández', especialidad: 'Inmunología Pediátrica', avatar: 'FF' },
-  { nombre: 'Dr. Alonso Hernández', especialidad: 'Medicina Interna', avatar: 'AH' },
-]
-
 
 const MODULOS_DATA = [
   {
@@ -514,23 +496,25 @@ export default function VerPage() {
 
               {activeTab === 'ponentes' && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-                  {PONENTES.map(p => (
+                  {PONENTES.map(p => {
+                    const foto = ponenteFoto(p.nombre)
+                    return (
                     <div key={p.nombre} className="rounded-2xl border border-border p-3 flex flex-col items-center text-center gap-2 bg-card shadow-sm dark:bg-[rgba(14,32,53,0.7)] dark:backdrop-blur-sm">
-                      {/daniela/i.test(p.nombre) && /budinich|buchini/i.test(p.nombre) ? (
+                      {foto ? (
                         <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-border dark:border-[rgba(18,180,198,0.3)] flex-shrink-0">
-                          <Image src="/doctora-perfil.jpg.jpeg" alt={p.nombre} fill sizes="48px" className="object-cover" />
+                          <Image src={foto} alt={p.nombre} fill sizes="48px" className="object-cover object-top" />
                         </div>
                       ) : (
                         <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border border-primary/30 flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0 bg-primary/10 text-[color:var(--scai-teal)]">
-                          {p.avatar}
+                          {ponenteIniciales(p.nombre)}
                         </div>
                       )}
                       <div>
                         <p className="font-semibold text-[11px] sm:text-xs text-foreground dark:text-white leading-tight">{p.nombre}</p>
-                        <p className="text-muted-foreground dark:text-white/40 text-[10px] sm:text-[11px] mt-0.5 leading-relaxed hidden sm:block">{p.especialidad}</p>
+                        <p className="text-muted-foreground dark:text-white/40 text-[10px] sm:text-[11px] mt-0.5 leading-relaxed hidden sm:block">{p.cargo}</p>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               )}
 

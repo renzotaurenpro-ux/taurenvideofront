@@ -17,61 +17,66 @@ import {
 } from '@/components/HomeDecor'
 import ScaiLogo from '../Logotipo-SCAI.png'
 import { fetchPublishedCourse } from '@/lib/courses'
-
-const PONENTES = [
-  { nombre: 'Dra. Ligia Rodríguez', cv: 'Especialista en Inmunodeficiencias Primarias. Docente universitaria y referente nacional en diagnóstico de errores innatos de la inmunidad.' },
-  { nombre: 'Dra. Soledad Pérez', cv: 'Inmunóloga clínica con enfoque en enfermedades autoinflamatorias. Investigadora activa en patologías complejas del sistema inmune.' },
-  { nombre: 'Dra. Daniela Budinich', cv: 'Pediatra inmunóloga. Especializada en inmunodeficiencias pediátricas y reconstitución inmune post-trasplante.' },
-  { nombre: 'Dr. Francisco Roa', cv: 'Internista e inmunólogo. Experto en manifestaciones sistémicas de disregulación inmune en el adulto.' },
-  { nombre: 'Dra. María de los Ángeles Morales', cv: 'Reumatóloga e inmunóloga. Especialista en solapamiento de enfermedades autoinmunes sistémicas.' },
-  { nombre: 'Dra. Bárbara Cid Troncoso', cv: 'Inmunóloga clínica y alergóloga. Docente de posgrado en Universidad de Chile, foco en hipersensibilidad e inmunodeficiencia.' },
-  { nombre: 'Dra. Evelyn Silva', cv: 'Médico internista con subespecialidad en inmunología. Investigadora en terapias biológicas para enfermedades autoinmunes.' },
-  { nombre: 'Dra. Patricia Vergara', cv: 'Pediatra con mención en inmunología. Especializada en alergia alimentaria y dermatitis atópica grave en pediatría.' },
-  { nombre: 'Dr. Nicolás Faundes', cv: 'Genetista clínico. Especialista en genómica de inmunodeficiencias primarias y asesoría genética familiar.' },
-  { nombre: 'Dra. Illene Díaz', cv: 'Inmunóloga de laboratorio. Experta en citometría de flujo aplicada al diagnóstico de inmunodeficiencias.' },
-  { nombre: 'Dra. Lurimar Manrique', cv: 'Médico inmunólogo con formación internacional. Especialista en errores innatos de la inmunidad en adultos.' },
-  { nombre: 'Dra. Pamela Méndez', cv: 'Alergóloga e inmunóloga. Referente en diagnóstico y manejo de angioedema hereditario y déficit de complemento.' },
-  { nombre: 'Dr. Francisco Cammarata', cv: 'Especialista en trasplante e inmunología. Experto en acondicionamiento y manejo post-trasplante de células madre.' },
-  { nombre: 'Dra. Fabiola Fernández', cv: 'Inmunóloga clínica con enfoque en terapia de reemplazo con inmunoglobulinas y protocolos de infusión.' },
-  { nombre: 'Dr. Alonso Hernández', cv: 'Médico inmunólogo e investigador clínico. Participante en ensayos de terapia génica para inmunodeficiencias severas.' },
-  { nombre: 'Dra. Expositor/a por confirmar', cv: 'Información del expositor próximamente disponible.' },
-]
+import { PONENTES, ponenteFoto, ponenteIniciales } from '@/lib/ponentes'
 
 const MODULOS = [
   {
     num: '01',
     title: 'Errores Innatos de la Inmunidad',
     desc: 'Bases moleculares y fenotípicas de las inmunodeficiencias primarias. Diagnóstico diferencial y abordaje clínico actualizado.',
-    ponentes: ['Dra. Ligia Rodríguez', 'Dra. Soledad Pérez', 'Dra. Daniela Budinich', 'Dr. Francisco Roa'],
+    ponentes: ['Dra. Ligia Rodríguez', 'Dra. Soledad Pérez Saldías', 'Dra. Daniela Budinich Almarza', 'Dr. Francisco Roa'],
   },
   {
     num: '02',
     title: 'Manifestaciones Clínicas Complejas',
     desc: 'Presentaciones atípicas, solapamiento con enfermedades autoinmunes y casos clínicos multidisciplinarios.',
-    ponentes: ['Dra. María de los Ángeles Morales', 'Dra. Bárbara Cid Troncoso', 'Dra. Evelyn Silva', 'Dra. Patricia Vergara'],
+    ponentes: ['Dra. María de los Ángeles Morales', 'Dra. Bárbara Cid', 'Dra. Evelyn Silva', 'Dra. Patricia Vergara'],
   },
   {
     num: '03',
     title: 'Diagnóstico y Laboratorio',
     desc: 'Interpretación de estudios inmunológicos avanzados, citometría de flujo y genética molecular en la práctica clínica.',
-    ponentes: ['Dr. Nicolás Faundes', 'Dra. Illene Díaz', 'Dra. Lurimar Manrique', 'Dra. Pamela Méndez'],
+    ponentes: ['Dr. Nicolás Faúndes Gandolfo', 'Dra. Ilennee Díaz Basualto', 'Dra. Lurimar Manrique Centeno', 'Dra. Pamela Méndez Barría'],
   },
   {
     num: '04',
     title: 'Tratamiento y Perspectivas',
     desc: 'Terapias de reemplazo, inmunomodulación, trasplante y terapia génica. Nuevas moléculas y ensayos clínicos.',
-    ponentes: ['Dr. Francisco Cammarata', 'Dra. Fabiola Fernández', 'Dr. Alonso Hernández', 'Dra. Expositor/a por confirmar'],
+    ponentes: ['Dr. Francisco Cammarata', 'Dra. Fabiola Fernández Quezada', 'Dr. Alfonso Hernández', 'Dr. Mervin Piñones'],
   },
 ]
 
+function PonenteAvatar({ nombre, size = 36 }: { nombre: string; size?: number }) {
+  const foto = ponenteFoto(nombre)
+  const px = `${size}px`
+  if (foto) {
+    return (
+      <div
+        className="relative flex-shrink-0 overflow-hidden rounded-full"
+        style={{ width: size, height: size, border: '1px solid rgba(18,180,198,0.25)' }}
+      >
+        <Image src={foto} alt={nombre} fill sizes={px} className="object-cover object-top" />
+      </div>
+    )
+  }
+  return (
+    <div
+      className="flex flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+      style={{
+        width: size,
+        height: size,
+        background: 'rgba(18,180,198,0.12)',
+        border: '1px solid rgba(18,180,198,0.25)',
+        color: 'var(--scai-teal)',
+      }}
+    >
+      {ponenteIniciales(nombre)}
+    </div>
+  )
+}
+
 function SpeakerCard({ nombre, cv, index }: { nombre: string; cv: string; index: number }) {
   const [hovered, setHovered] = useState(false)
-  const iniciales = nombre
-    .replace('Dra. ', '').replace('Dr. ', '')
-    .split(' ').slice(0, 2).map((n: string) => n[0]).join('')
-  const isDaniela =
-    /daniela/i.test(nombre) &&
-    (/(budinich|buchini)/i.test(nombre))
   return (
     <div
       className="relative overflow-hidden rounded-xl border cursor-default"
@@ -91,27 +96,7 @@ function SpeakerCard({ nombre, cv, index }: { nombre: string; cv: string; index:
           transition: 'opacity 0.25s, transform 0.25s',
         }}
       >
-          {isDaniela ? (
-            <div
-              className="relative h-9 w-9 flex-shrink-0 overflow-hidden rounded-full"
-              style={{ border: '1px solid rgba(18,180,198,0.25)' }}
-            >
-              <Image
-                src="/doctora-perfil.jpg.jpeg"
-                alt={nombre}
-                fill
-                sizes="36px"
-                className="object-cover"
-              />
-            </div>
-          ) : (
-            <div
-              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
-              style={{ background: 'rgba(18,180,198,0.12)', border: '1px solid rgba(18,180,198,0.25)', color: 'var(--scai-teal)' }}
-            >
-              {iniciales}
-            </div>
-          )}
+          <PonenteAvatar nombre={nombre} size={36} />
         <div>
           <p className="text-sm font-medium leading-snug">{nombre}</p>
           <p className="text-[10px] text-muted-foreground tabular-nums mt-0.5">{String(index + 1).padStart(2, '0')}</p>
@@ -430,11 +415,7 @@ export default function Home() {
                 {MODULOS[activeModulo].ponentes.map((p, i) => (
                   <div key={p} className="flex items-center gap-3 border-b border-border py-3.5 pr-6">
                     <span className="text-[10px] tabular-nums text-muted-foreground w-5">{String(i + 1).padStart(2, '0')}</span>
-                    {/daniela/i.test(p) && /budinich|buchini/i.test(p) ? (
-                      <div className="relative h-6 w-6 overflow-hidden rounded-full border flex-shrink-0" style={{ borderColor: 'rgba(18,180,198,0.25)' }}>
-                        <Image src="/doctora-perfil.jpg.jpeg" alt={p} fill sizes="24px" className="object-cover" />
-                      </div>
-                    ) : null}
+                    <PonenteAvatar nombre={p} size={24} />
                     <span className="text-sm font-medium">{p}</span>
                   </div>
                 ))}
