@@ -19,6 +19,9 @@ type MockAttendee = {
 
 type MockCertificate = {
   certificateCode: string
+  certificateType: 'LIVE_VIEWING' | 'EXAM'
+  certificateTitle: string
+  certificateLabel: string
   issuedAt: string
   recipient: {
     firstName: string
@@ -27,6 +30,12 @@ type MockCertificate = {
     email: string
   }
   event: typeof EVENT
+}
+
+type MockUserState = {
+  viewing?: MockCertificate
+  exam?: MockCertificate
+  examPassed?: boolean
 }
 
 const ATTENDEES: Record<string, MockAttendee> = {
@@ -113,21 +122,44 @@ const MOCK_CORRECT: Record<string, string> = {
   'mock-q5': 'mock-q5-a',
 }
 
-type MockStore = Map<string, MockCertificate>
+type MockStore = Map<string, MockUserState>
 
 function getStore(): MockStore {
-  const g = globalThis as typeof globalThis & { __attendanceMockStore?: MockStore }
-  if (!g.__attendanceMockStore) g.__attendanceMockStore = new Map()
-  return g.__attendanceMockStore
+  const g = globalThis as typeof globalThis & { __attendanceMockStoreV2?: MockStore }
+  if (!g.__attendanceMockStoreV2) g.__attendanceMockStoreV2 = new Map()
+  return g.__attendanceMockStoreV2
 }
 
 function getAttendee(email: string) {
   return ATTENDEES[email.trim().toLowerCase()]
 }
 
+function getUserState(email: string) {
+  const store = getStore()
+  const normalized = email.trim().toLowerCase()
+  if (!store.has(normalized)) store.set(normalized, {})
+  return store.get(normalized)!
+}
+
+function certMeta(certificateType: 'LIVE_VIEWING' | 'EXAM') {
+  if (certificateType === 'EXAM') {
+    return {
+      certificateTitle: 'Certificado de Examen del Evento',
+      certificateLabel: 'CERTIFICADO DE EXAMEN DEL EVENTO',
+    }
+  }
+  return {
+    certificateTitle: 'Certificado de Asistencia al Evento en Vivo',
+    certificateLabel: 'CERTIFICADO DE ASISTENCIA AL EVENTO EN VIVO',
+  }
+}
+
 function formatCertificate(attendee: MockAttendee, email: string, cert: MockCertificate) {
   return {
     certificateCode: cert.certificateCode,
+    certificateType: cert.certificateType,
+    certificateTitle: cert.certificateTitle,
+    certificateLabel: cert.certificateLabel,
     issuedAt: cert.issuedAt,
     recipient: {
       firstName: attendee.firstName,
@@ -145,65 +177,137 @@ function randomCode() {
   return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
 }
 
-function issueMockCertificate(email: string, attendee: MockAttendee) {
-  const store = getStore()
-  const existing = store.get(email)
-  if (existing) return formatCertificate(attendee, email, existing)
+function issueMockCertificate(
+  email: string,
+  attendee: MockAttendee,
+  certificateType: 'LIVE_VIEWING' | 'EXAM',
+) {
+  const normalized = email.trim().toLowerCase()
+  const state = getUserState(normalized)
+  const key = certificateType === 'LIVE_VIEWING' ? 'viewing' : 'exam'
+  const existing = state[key]
+  if (existing) return formatCertificate(attendee, normalized, existing)
+  const meta = certMeta(certificateType)
   const issued: MockCertificate = {
     certificateCode: randomCode(),
+    certificateType,
+    certificateTitle: meta.certificateTitle,
+    certificateLabel: meta.certificateLabel,
     issuedAt: new Date().toISOString(),
     recipient: {
       firstName: attendee.firstName,
       lastName: attendee.lastName,
       fullName: `${attendee.firstName} ${attendee.lastName}`.trim(),
-      email,
+      email: normalized,
     },
     event: EVENT,
   }
-  store.set(email, issued)
-  return formatCertificate(attendee, email, issued)
+  state[key] = issued
+  return formatCertificate(attendee, normalized, issued)
 }
 
-export function mockClaimAttendance(email: string) {
+export function mockAttendanceStatus(email: string) {
   const normalized = email.trim().toLowerCase()
   const attendee = getAttendee(normalized)
-
   if (!attendee) {
     return {
       status: 'NOT_FOUND',
       message: 'No encontramos tu correo en la lista de asistentes del evento.',
+      watchedOver80: false,
+      canClaimViewing: false,
       canTakeExam: false,
+      canOnlyTakeExam: false,
+      viewingCertificate: null,
+      examCertificate: null,
+    }
+  }
+  const state = getUserState(normalized)
+  const viewingCertificate = state.viewing
+    ? formatCertificate(attendee, normalized, state.viewing)
+    : null
+  const examCertificate = state.exam
+    ? formatCertificate(attendee, normalized, state.exam)
+    : null
+  return {
+    status: 'OK',
+    watchedOver80: attendee.watchedOver80,
+    canClaimViewing: attendee.watchedOver80 && !state.viewing,
+    canTakeExam: !state.exam,
+    canOnlyTakeExam: !attendee.watchedOver80,
+    viewingCertificate,
+    examCertificate,
+  }
+}
+
+export function mockClaimViewing(email: string) {
+  const normalized = email.trim().toLowerCase()
+  const attendee = getAttendee(normalized)
+  if (!attendee) {
+    return {
+      status: 'NOT_FOUND',
+      message: 'No encontramos tu correo en la lista de asistentes del evento.',
+      certificateType: 'LIVE_VIEWING',
       certificate: null,
     }
   }
-
-  const store = getStore()
-  const existing = store.get(normalized)
-
-  if (existing) {
+  const state = getUserState(normalized)
+  if (state.viewing) {
     return {
       status: 'ALREADY_ISSUED',
-      message: 'Ya obtuviste tu certificado de asistencia.',
-      canTakeExam: false,
-      certificate: formatCertificate(attendee, normalized, existing),
+      message: 'Ya obtuviste tu certificado por asistencia al evento en vivo.',
+      certificateType: 'LIVE_VIEWING',
+      certificate: formatCertificate(attendee, normalized, state.viewing),
     }
   }
-
   if (!attendee.watchedOver80) {
     return {
       status: 'NOT_ELIGIBLE',
-      message:
-        'No alcanzaste el 80% de visualización. Realiza el test con tu correo para obtener tu certificado de asistencia.',
-      canTakeExam: true,
+      message: 'No alcanzaste el 80% de visualización del evento en vivo.',
+      certificateType: 'LIVE_VIEWING',
       certificate: null,
     }
   }
-
   return {
     status: 'CERTIFICATE_ISSUED',
-    message: 'Obtuviste tu certificado de asistencia por haber visto más del 80% del evento.',
-    canTakeExam: false,
-    certificate: issueMockCertificate(normalized, attendee),
+    message: 'Obtuviste tu certificado por asistencia al evento en vivo (+80%).',
+    certificateType: 'LIVE_VIEWING',
+    certificate: issueMockCertificate(normalized, attendee, 'LIVE_VIEWING'),
+  }
+}
+
+export function mockClaimExam(email: string) {
+  const normalized = email.trim().toLowerCase()
+  const attendee = getAttendee(normalized)
+  if (!attendee) {
+    return {
+      status: 'NOT_FOUND',
+      message: 'No encontramos tu correo en la lista de asistentes del evento.',
+      certificateType: 'EXAM',
+      certificate: null,
+    }
+  }
+  const state = getUserState(normalized)
+  if (state.exam) {
+    return {
+      status: 'ALREADY_ISSUED',
+      message: 'Ya obtuviste tu certificado por examen de asistencia.',
+      certificateType: 'EXAM',
+      certificate: formatCertificate(attendee, normalized, state.exam),
+    }
+  }
+  if (!state.examPassed) {
+    return {
+      status: 'NOT_ELIGIBLE',
+      message: 'Aún no has aprobado el examen de asistencia.',
+      certificateType: 'EXAM',
+      certificate: null,
+    }
+  }
+  return {
+    status: 'CERTIFICATE_ISSUED',
+    message: 'Obtuviste tu certificado por examen de asistencia.',
+    certificateType: 'EXAM',
+    certificate: issueMockCertificate(normalized, attendee, 'EXAM'),
   }
 }
 
@@ -213,11 +317,9 @@ export function mockGetAttendanceExam(email: string) {
   if (!attendee) {
     throw new Error('No encontramos tu correo en la lista de asistentes del evento')
   }
-  if (attendee.watchedOver80) {
-    throw new Error('Calificas por asistencia directa. Usa /attendance/claim con tu correo')
-  }
-  if (getStore().has(normalized)) {
-    throw new Error('Ya obtuviste tu certificado de asistencia')
+  const state = getUserState(normalized)
+  if (state.exam) {
+    throw new Error('Ya obtuviste tu certificado por examen de asistencia')
   }
   return MOCK_EXAM
 }
@@ -231,11 +333,9 @@ export function mockSubmitAttendanceExam(
   if (!attendee) {
     throw new Error('No encontramos tu correo en la lista de asistentes del evento')
   }
-  if (attendee.watchedOver80) {
-    throw new Error('Calificas por asistencia directa. Usa /attendance/claim con tu correo')
-  }
-  if (getStore().has(normalized)) {
-    throw new Error('Ya obtuviste tu certificado de asistencia')
+  const state = getUserState(normalized)
+  if (state.exam) {
+    throw new Error('Ya obtuviste tu certificado por examen de asistencia')
   }
 
   const total = MOCK_EXAM.questions.length
@@ -263,36 +363,42 @@ export function mockSubmitAttendanceExam(
     }
   }
 
+  state.examPassed = true
+  const certificate = issueMockCertificate(normalized, attendee, 'EXAM')
   return {
     status: 'CERTIFICATE_ISSUED',
-    message: 'Aprobaste el test. Tu certificado de asistencia ha sido emitido.',
+    message: 'Aprobaste el examen. Tu certificado de asistencia ha sido emitido.',
     correctas: correct,
     total,
     nota,
     notaMaxima: 7,
     notaAprobacion: 5,
     passed: true,
-    certificate: issueMockCertificate(normalized, attendee),
+    certificate,
   }
 }
 
 export function mockVerifyAttendance(code: string) {
   const normalized = code.trim().toUpperCase()
-  if (!normalized) return { valid: false, type: 'ATTENDANCE' }
+  if (!normalized) return { valid: false }
 
   const store = getStore()
-  for (const cert of store.values()) {
-    if (cert.certificateCode === normalized) {
-      return {
-        valid: true,
-        type: 'ATTENDANCE',
-        certificateCode: cert.certificateCode,
-        issuedAt: cert.issuedAt,
-        recipient: cert.recipient,
-        event: cert.event,
+  for (const state of store.values()) {
+    for (const cert of [state.viewing, state.exam]) {
+      if (cert && cert.certificateCode === normalized) {
+        return {
+          valid: true,
+          certificateType: cert.certificateType,
+          certificateTitle: cert.certificateTitle,
+          certificateLabel: cert.certificateLabel,
+          certificateCode: cert.certificateCode,
+          issuedAt: cert.issuedAt,
+          recipient: cert.recipient,
+          event: cert.event,
+        }
       }
     }
   }
 
-  return { valid: false, type: 'ATTENDANCE' }
+  return { valid: false }
 }

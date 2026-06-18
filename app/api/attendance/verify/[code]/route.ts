@@ -11,7 +11,7 @@ export async function GET(
   const { code } = await ctx.params
   const normalized = code.trim().toUpperCase()
   if (!normalized) {
-    return NextResponse.json({ valid: false, type: 'ATTENDANCE' })
+    return NextResponse.json({ valid: false })
   }
 
   const res = await forwardAttendance(`verify/${encodeURIComponent(normalized)}`, {
@@ -22,7 +22,7 @@ export async function GET(
     if (process.env.NODE_ENV === 'development') {
       return NextResponse.json(mockVerifyAttendance(normalized))
     }
-    return NextResponse.json({ valid: false, type: 'ATTENDANCE' })
+    return NextResponse.json({ valid: false })
   }
 
   const text = await res.text()

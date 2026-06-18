@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { forwardAttendance } from '@/lib/attendance-proxy'
-import { mockClaimAttendance } from '@/lib/attendance-mock'
+import { mockClaimExam } from '@/lib/attendance-mock'
 
 export const runtime = 'nodejs'
 
@@ -18,16 +18,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'email es requerido' }, { status: 400 })
   }
 
-  const payload = JSON.stringify({ email })
-  const res = await forwardAttendance('claim', {
+  const res = await forwardAttendance('claim/exam', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: payload,
+    body: JSON.stringify({ email }),
   })
 
   if (!res) {
     if (process.env.NODE_ENV === 'development') {
-      return NextResponse.json(mockClaimAttendance(email))
+      return NextResponse.json(mockClaimExam(email))
     }
     return NextResponse.json({ message: 'Servicio no disponible' }, { status: 503 })
   }

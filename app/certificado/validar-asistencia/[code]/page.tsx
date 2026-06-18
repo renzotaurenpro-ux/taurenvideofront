@@ -17,7 +17,7 @@ export default function ValidarAsistenciaPage() {
     if (!code) { setLoading(false); return }
     verifyAttendanceCertificate(code as string)
       .then(r => setData(r))
-      .catch(() => setData({ valid: false, type: 'ATTENDANCE' }))
+      .catch(() => setData({ valid: false }))
       .finally(() => setLoading(false))
   }, [code])
 
@@ -55,8 +55,11 @@ export default function ValidarAsistenciaPage() {
             <div className="flex items-center gap-3 text-emerald-400">
               <CheckCircle size={28} />
               <div>
-                <p className="font-semibold">Certificado de asistencia válido</p>
-                <p className="text-sm text-white/50 mt-0.5">Código: {data.certificateCode}</p>
+                <p className="font-semibold">{data.certificateTitle ?? 'Certificado válido'}</p>
+                <p className="text-sm text-white/50 mt-0.5">
+                  {data.certificateLabel ?? data.certificateType}
+                  {' · '}Código: {data.certificateCode}
+                </p>
               </div>
             </div>
             <div className="mt-6 space-y-3 text-sm border-t border-white/10 pt-6">
