@@ -1,13 +1,19 @@
 'use client'
 
-import { forwardRef } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import type { AttendanceCertificateData } from '@/lib/attendance'
 import { ATTENDANCE_VERIFY_PATH } from '@/lib/attendance'
 import {
   ATTENDANCE_CERT_ASPECT,
   CERT_BG,
-  getCertificateOverlayContent,
+  CERT_LAYOUT,
+  certNameFontPercent,
+  certNameTopPercent,
+  certQrBottomPercent,
+  certQrRightPercent,
+  certQrSizePercent,
+  getCertificateTemplatePdf,
 } from '@/lib/attendance-certificate-layout'
 
 type Props = {
@@ -21,7 +27,40 @@ const AttendanceCertificateCard = forwardRef<HTMLDivElement, Props>(function Att
 ) {
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
   const verifyUrl = data.certificateCode ? `${origin}${verifyBasePath}/${data.certificateCode}` : null
-  const { heading, bodyText, replaceBody } = getCertificateOverlayContent(data)
+  const templateUrl = getCertificateTemplatePdf(data)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [ready, setReady] = useState(false)
+
+  const nameTop = certNameTopPercent()
+  const nameFont = certNameFontPercent()
+  const qrRight = certQrRightPercent()
+  const qrBottom = certQrBottomPercent()
+  const qrSize = certQrSizePercent()
+
+  useEffect(() => {
+    let cancelled = false
+    setReady(false)
+    ;(async () => {
+      try {
+        const pdfjs = await import('pdfjs-dist')
+        pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+        const pdf = await pdfjs.getDocument({ url: templateUrl }).promise
+        const page = await pdf.getPage(1)
+        const viewport = page.getViewport({ scale: 2 })
+        const canvas = canvasRef.current
+        if (!canvas || cancelled) return
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+        canvas.width = viewport.width
+        canvas.height = viewport.height
+        await page.render({ canvas, canvasContext: ctx, viewport }).promise
+        if (!cancelled) setReady(true)
+      } catch {
+        if (!cancelled) setReady(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [templateUrl])
 
   return (
     <div
@@ -34,90 +73,41 @@ const AttendanceCertificateCard = forwardRef<HTMLDivElement, Props>(function Att
         position: 'relative',
         overflow: 'hidden',
         boxShadow: '0 8px 48px rgba(0,0,0,0.2)',
-        fontFamily: "'Arial', 'Helvetica Neue', Helvetica, sans-serif",
+        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         background: CERT_BG,
+        containerType: 'inline-size',
       }}
     >
-      <img
-        src="/certificados/plantilla-asistencia-3x.png"
-        alt={heading}
-        draggable={false}
+      <canvas
+        ref={canvasRef}
         style={{
           position: 'absolute',
           inset: 0,
           width: '100%',
           height: '100%',
-          objectFit: 'fill',
           display: 'block',
+          opacity: ready ? 1 : 0,
         }}
       />
 
-      <div
-        style={{
-          position: 'absolute',
-          top: '23.5%',
-          left: '5%',
-          width: '90%',
-          height: '13.5%',
-          background: CERT_BG,
-          zIndex: 1,
-        }}
-      />
+      {!ready && (
+        <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-500" style={{ background: CERT_BG }}>
+          Cargando certificado...
+        </div>
+      )}
 
       <p
         style={{
           position: 'absolute',
-          top: '27.5%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          margin: 0,
-          width: '88%',
-          textAlign: 'center',
-          color: '#4b5563',
-          fontStyle: 'italic',
-          fontWeight: 400,
-          fontSize: 'clamp(10px, 1.65vw, 13px)',
-          lineHeight: 1.2,
-          zIndex: 2,
-        }}
-      >
-        Otorga el presente
-      </p>
-
-      <p
-        style={{
-          position: 'absolute',
-          top: '31.2%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          margin: 0,
-          padding: '0 4%',
-          width: '92%',
-          textAlign: 'center',
-          color: '#111827',
-          fontWeight: 700,
-          fontSize: 'clamp(12px, 2.35vw, 20px)',
-          letterSpacing: '0.025em',
-          lineHeight: 1.15,
-          zIndex: 2,
-        }}
-      >
-        {heading}
-      </p>
-
-      <p
-        style={{
-          position: 'absolute',
-          top: '46.5%',
+          top: `${nameTop}%`,
           left: '50%',
           transform: 'translate(-50%, -50%)',
           margin: 0,
-          padding: '0 6%',
-          width: '88%',
+          width: `${(CERT_LAYOUT.nameMaxWidth / 810) * 100}%`,
           textAlign: 'center',
           color: '#111827',
           fontWeight: 700,
-          fontSize: 'clamp(18px, 3.7vw, 30px)',
+          fontSize: `${nameFont}cqw`,
           lineHeight: 1.1,
           wordBreak: 'break-word',
           zIndex: 2,
@@ -126,63 +116,30 @@ const AttendanceCertificateCard = forwardRef<HTMLDivElement, Props>(function Att
         {data.recipient.fullName}
       </p>
 
-      {replaceBody && bodyText && (
-        <>
-          <div
-            style={{
-              position: 'absolute',
-              top: '50.2%',
-              left: '7%',
-              width: '86%',
-              height: '16%',
-              background: CERT_BG,
-              zIndex: 1,
-            }}
-          />
-          <p
-            style={{
-              position: 'absolute',
-              top: '50.8%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              margin: 0,
-              padding: '0 8%',
-              width: '84%',
-              textAlign: 'center',
-              color: '#1f2937',
-              fontWeight: 400,
-              fontSize: 'clamp(9px, 1.42vw, 12px)',
-              lineHeight: 1.45,
-              zIndex: 2,
-            }}
-          >
-            {bodyText}
-          </p>
-        </>
-      )}
-
       {verifyUrl && (
         <div
           style={{
             position: 'absolute',
-            right: '4.7%',
-            bottom: '4.8%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '2px',
+            right: `${qrRight}%`,
+            bottom: `${qrBottom}%`,
+            width: `${qrSize}%`,
             zIndex: 2,
           }}
         >
-          <QRCodeSVG value={verifyUrl} size={54} bgColor={CERT_BG} fgColor="#1e3a5f" level="M" />
+          <QRCodeSVG
+            value={verifyUrl}
+            size={512}
+            bgColor="#ffffff"
+            fgColor="#1e3a5f"
+            level="M"
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+          />
           <p
             style={{
-              fontSize: 'clamp(6px, 1vw, 8px)',
+              marginTop: '2px',
+              fontSize: 'clamp(5px, 0.68cqw, 8px)',
               fontFamily: 'monospace',
               color: '#64748b',
-              margin: 0,
-              letterSpacing: '0.02em',
-              maxWidth: '54px',
               textAlign: 'center',
               wordBreak: 'break-all',
               lineHeight: 1.2,

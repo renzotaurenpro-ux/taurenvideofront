@@ -132,6 +132,16 @@ function OpcionesContent() {
             <p className="text-xs text-white/50">Consultando tu estado...</p>
           )}
 
+          {!statusLoading && canOnlyTakeExam && status?.status === 'OK' && (
+            <div className="flex items-start gap-2.5 rounded-xl border border-red-500/35 bg-red-500/12 px-4 py-3">
+              <AlertCircle size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="text-xs leading-relaxed text-red-200">
+                <p className="font-semibold text-red-100">No alcanzaste el 80% de visualización del evento en vivo.</p>
+                <p className="mt-1">Solo puedes optar a 1 certificado, obtenido al aprobar el examen de asistencia.</p>
+              </div>
+            </div>
+          )}
+
           {!statusLoading && (hasViewing || hasExam) && (
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/8 px-4 py-3 space-y-2">
               <div className="flex items-start gap-2.5">
