@@ -1,0 +1,44 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { forwardAttendance } from '@/lib/attendance-proxy'
+import { mockGetAttendanceExam } from '@/lib/attendance-mock'
+
+export const runtime = 'nodejs'
+
+export async function POST(req: NextRequest) {
+  const body = await req.text()
+  let parsed: { email?: string }
+  try {
+    parsed = JSON.parse(body) as { email?: string }
+  } catch {
+    return NextResponse.json({ message: 'JSON inválido' }, { status: 400 })
+  }
+
+  const email = typeof parsed.email === 'string' ? parsed.email.trim().toLowerCase() : ''
+  if (!email) {
+    return NextResponse.json({ message: 'email es requerido' }, { status: 400 })
+  }
+
+  const res = await forwardAttendance('exam', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+
+  if (!res) {
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        return NextResponse.json(mockGetAttendanceExam(email))
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'No se pudo cargar el examen'
+        return NextResponse.json({ message: msg }, { status: 404 })
+      }
+    }
+    return NextResponse.json({ message: 'Servicio no disponible' }, { status: 503 })
+  }
+
+  const text = await res.text()
+  return new NextResponse(text, {
+    status: res.status,
+    headers: { 'Content-Type': res.headers.get('content-type') ?? 'application/json' },
+  })
+}

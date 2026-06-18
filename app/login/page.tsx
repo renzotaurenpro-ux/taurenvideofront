@@ -16,6 +16,12 @@ import PageBackground from '@/components/PageBackground'
 
 export default function LoginPage() {
   const router = useRouter()
+  const [redirectTo, setRedirectTo] = useState('/ver')
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get('redirect')
+    if (p?.startsWith('/')) setRedirectTo(p)
+  }, [])
   const { cacheProfile, firebaseUser, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,8 +34,8 @@ export default function LoginPage() {
   }, [])
 
   useEffect(() => {
-    if (!authLoading && firebaseUser) router.replace('/ver')
-  }, [authLoading, firebaseUser, router])
+    if (!authLoading && firebaseUser) router.replace(redirectTo.startsWith('/') ? redirectTo : '/ver')
+  }, [authLoading, firebaseUser, router, redirectTo])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -50,7 +56,7 @@ export default function LoginPage() {
       ok = true
       setSessionCookie(user.uid)
       cacheProfile(user.uid, profileFromFirebaseUser(user, email.trim()))
-      router.replace('/ver')
+      router.replace(redirectTo.startsWith('/') ? redirectTo : '/ver')
 
       warmupBackend()
         .then(() => user.getIdToken())
