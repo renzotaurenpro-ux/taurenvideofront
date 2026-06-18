@@ -43,7 +43,7 @@ function StepLink({
     (id === 'examen' && current === 'examen') ||
     (id === 'resultado' && current === 'resultado')
 
-  if (!done && id !== 'correo') {
+  if (!done) {
     return <span className="text-white/25">{label}</span>
   }
 
