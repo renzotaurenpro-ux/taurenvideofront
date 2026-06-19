@@ -405,6 +405,7 @@ export async function fetchAttendanceStatus(email: string): Promise<AttendanceSt
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: normalized }),
+    cache: 'no-store',
   })
   const data = await res.json().catch(() => null)
   const parsed = parseStatusResult(data)

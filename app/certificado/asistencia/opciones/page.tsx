@@ -13,11 +13,10 @@ import {
   type AttendanceStatusResult,
 } from '@/lib/attendance'
 import {
+  bindAttendanceSessionToEmail,
   clearAttendanceCertificate,
-  getAttendanceSessionEmail,
   loadAllAttendanceCertificates,
   saveAttendanceCertificate,
-  setAttendanceSessionEmail,
 } from '@/lib/attendance-session'
 import {
   ATTENDANCE_EXAM_MAX_WRONG,
@@ -39,7 +38,7 @@ function OpcionesContent({ email }: { email: string }) {
       router.replace('/certificado/asistencia')
       return
     }
-    setAttendanceSessionEmail(email)
+    bindAttendanceSessionToEmail(email)
     setStatus(null)
     setClaimResult(null)
     let cancelled = false
@@ -138,7 +137,7 @@ function OpcionesContent({ email }: { email: string }) {
 
         <div className="px-6 py-5 space-y-3">
           {statusLoading && (
-            <p className="text-xs text-white/50">Consultando tu estado...</p>
+            <p className="text-xs text-white/50">Consultando estado de <span className="text-[var(--scai-teal)] font-medium">{email}</span>...</p>
           )}
 
           {!statusLoading && canOnlyTakeExam && status?.status === 'OK' && (
@@ -273,28 +272,15 @@ function OpcionesContent({ email }: { email: string }) {
 function OpcionesPageInner() {
   const params = useSearchParams()
   const router = useRouter()
-  const urlEmail = (params.get('email') ?? '').trim().toLowerCase()
-  const sessionEmail = getAttendanceSessionEmail()
-  const email = sessionEmail && urlEmail && sessionEmail !== urlEmail ? sessionEmail : urlEmail
+  const email = (params.get('email') ?? '').trim().toLowerCase()
 
   useEffect(() => {
-    if (!urlEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(urlEmail)) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       router.replace('/certificado/asistencia')
-      return
     }
-    if (sessionEmail && sessionEmail !== urlEmail) {
-      router.replace(`/certificado/asistencia/opciones?email=${encodeURIComponent(sessionEmail)}`)
-    }
-  }, [urlEmail, sessionEmail, router])
+  }, [email, router])
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null
-  if (sessionEmail && sessionEmail !== urlEmail) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <div className="h-8 w-8 rounded-full border-2 border-white/20 border-t-[color:var(--scai-teal)] animate-spin" />
-      </div>
-    )
-  }
 
   return <OpcionesContent key={email} email={email} />
 }

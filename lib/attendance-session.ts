@@ -13,6 +13,7 @@ type AttendanceSessionRoot = {
 }
 
 const CERT_KEY = '__attendance_certs_v3'
+const LEGACY_KEYS = ['__attendance_certs_v1', '__attendance_certs_v2', '__attendance_certs_v3']
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase()
@@ -50,10 +51,22 @@ export function getAttendanceSessionEmail(): string | null {
 }
 
 export function resetAttendanceSession() {
-  clearAttendanceCertificate()
+  if (typeof window === 'undefined') return
+  for (const key of LEGACY_KEYS) {
+    try {
+      sessionStorage.removeItem(key)
+    } catch {}
+  }
 }
 
 export function setAttendanceSessionEmail(email: string) {
+  const normalized = normalizeEmail(email)
+  const root = readRoot()
+  if (root?.email === normalized) return
+  writeRoot({ email: normalized, certs: {} })
+}
+
+export function bindAttendanceSessionToEmail(email: string) {
   const normalized = normalizeEmail(email)
   const root = readRoot()
   if (root?.email === normalized) return
@@ -91,9 +104,7 @@ export function loadAllAttendanceCertificates(email: string): EmailCerts {
 export function clearAttendanceCertificate(email?: string, type?: AttendanceCertificateType) {
   if (typeof window === 'undefined') return
   if (!email) {
-    try {
-      sessionStorage.removeItem(CERT_KEY)
-    } catch {}
+    resetAttendanceSession()
     return
   }
   const normalized = normalizeEmail(email)

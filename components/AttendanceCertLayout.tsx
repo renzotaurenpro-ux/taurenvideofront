@@ -73,7 +73,7 @@ export default function AttendanceCertLayout({ step, email, backHref, backLabel,
   function handleChangeEmailBack(e: React.MouseEvent<HTMLAnchorElement>) {
     e.preventDefault()
     resetAttendanceSession()
-    window.location.href = '/certificado/asistencia'
+    window.location.replace(`/certificado/asistencia?_=${Date.now()}`)
   }
 
   return (
@@ -103,7 +103,7 @@ export default function AttendanceCertLayout({ step, email, backHref, backLabel,
               type="button"
               onClick={() => {
                 resetAttendanceSession()
-                window.location.href = '/certificado/asistencia'
+                window.location.replace(`/certificado/asistencia?_=${Date.now()}`)
               }}
               className="text-white/50 hover:text-white/80 transition-colors"
             >

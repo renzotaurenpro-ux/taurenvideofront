@@ -22,7 +22,7 @@ import {
   ATTENDANCE_EXAM_TOTAL,
   formatAttendanceExamGrade,
 } from '@/lib/attendance-exam'
-import { saveAttendanceCertificate, setAttendanceSessionEmail } from '@/lib/attendance-session'
+import { bindAttendanceSessionToEmail, saveAttendanceCertificate } from '@/lib/attendance-session'
 
 function ExamenContent() {
   const router = useRouter()
@@ -41,7 +41,7 @@ function ExamenContent() {
       router.replace('/certificado/asistencia')
       return
     }
-    setAttendanceSessionEmail(email)
+    bindAttendanceSessionToEmail(email)
     setExam(null)
     setSelected({})
     setSubmitResult(null)
