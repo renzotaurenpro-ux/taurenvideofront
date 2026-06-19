@@ -1,3 +1,5 @@
+import { normalizeSpanishText } from './text-encoding'
+
 const ATTENDANCE_API = '/api/attendance'
 
 export const ATTENDANCE_VERIFY_PATH = '/certificado/validar-asistencia'
@@ -182,9 +184,9 @@ function parseCertificate(raw: unknown): AttendanceCertificateData | null {
     certificateLabel: typeof o.certificateLabel === 'string' ? o.certificateLabel : undefined,
     issuedAt: typeof o.issuedAt === 'string' ? o.issuedAt : new Date().toISOString(),
     recipient: {
-      firstName: String(r.firstName ?? ''),
-      lastName: String(r.lastName ?? ''),
-      fullName: String(r.fullName ?? `${r.firstName ?? ''} ${r.lastName ?? ''}`).trim(),
+      firstName: normalizeSpanishText(String(r.firstName ?? '')),
+      lastName: normalizeSpanishText(String(r.lastName ?? '')),
+      fullName: normalizeSpanishText(String(r.fullName ?? `${r.firstName ?? ''} ${r.lastName ?? ''}`)),
       email: String(r.email ?? ''),
     },
     event: {
@@ -209,14 +211,18 @@ function parseCertificate(raw: unknown): AttendanceCertificateData | null {
   return parsed
 }
 
+import { normalizeSpanishText } from './text-encoding'
+
 function parseRecipient(raw: unknown): AttendanceCertificateData['recipient'] | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
-  const fullName = String(r.fullName ?? `${r.firstName ?? ''} ${r.lastName ?? ''}`).trim()
+  const firstName = normalizeSpanishText(String(r.firstName ?? ''))
+  const lastName = normalizeSpanishText(String(r.lastName ?? ''))
+  const fullName = normalizeSpanishText(String(r.fullName ?? `${firstName} ${lastName}`))
   if (!fullName) return null
   return {
-    firstName: String(r.firstName ?? ''),
-    lastName: String(r.lastName ?? ''),
+    firstName,
+    lastName,
     fullName,
     email: String(r.email ?? ''),
   }
