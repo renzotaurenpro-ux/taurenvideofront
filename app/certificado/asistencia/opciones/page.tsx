@@ -223,7 +223,7 @@ function OpcionesContent() {
               {canTakeExam ? (
                 <AttendanceOptionButton
                   variant={canOnlyTakeExam ? 'primary' : 'secondary'}
-                  title="Realizar examen de asistencia"
+                  title="Realizar examen"
                   description={
                     canOnlyTakeExam
                       ? 'Aprueba el test para obtener tu certificado de asistencia.'
