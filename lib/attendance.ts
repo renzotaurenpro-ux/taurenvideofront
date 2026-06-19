@@ -92,6 +92,7 @@ export type AttendanceStatusResult = {
   canClaimViewing: boolean
   canTakeExam: boolean
   canOnlyTakeExam: boolean
+  recipient?: AttendanceCertificateData['recipient']
   viewingCertificate: AttendanceCertificateData | null
   examCertificate: AttendanceCertificateData | null
 }
@@ -207,11 +208,30 @@ function parseCertificate(raw: unknown): AttendanceCertificateData | null {
   return parsed
 }
 
+function parseRecipient(raw: unknown): AttendanceCertificateData['recipient'] | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Record<string, unknown>
+  const fullName = String(r.fullName ?? `${r.firstName ?? ''} ${r.lastName ?? ''}`).trim()
+  if (!fullName) return null
+  return {
+    firstName: String(r.firstName ?? ''),
+    lastName: String(r.lastName ?? ''),
+    fullName,
+    email: String(r.email ?? ''),
+  }
+}
+
 function parseStatusResult(data: unknown): AttendanceStatusResult | null {
   if (!data || typeof data !== 'object') return null
   const o = data as Record<string, unknown>
   const status = o.status
   if (status !== 'OK' && status !== 'NOT_FOUND') return null
+  const viewingCertificate = parseCertificate(o.viewingCertificate)
+  const examCertificate = parseCertificate(o.examCertificate)
+  const recipient = parseRecipient(o.recipient)
+    ?? viewingCertificate?.recipient
+    ?? examCertificate?.recipient
+    ?? undefined
   return {
     status,
     message: typeof o.message === 'string' ? o.message : undefined,
@@ -219,8 +239,9 @@ function parseStatusResult(data: unknown): AttendanceStatusResult | null {
     canClaimViewing: o.canClaimViewing === true,
     canTakeExam: o.canTakeExam === true,
     canOnlyTakeExam: o.canOnlyTakeExam === true,
-    viewingCertificate: parseCertificate(o.viewingCertificate),
-    examCertificate: parseCertificate(o.examCertificate),
+    recipient,
+    viewingCertificate,
+    examCertificate,
   }
 }
 

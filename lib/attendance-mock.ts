@@ -234,6 +234,12 @@ export function mockAttendanceStatus(email: string) {
     canClaimViewing: attendee.watchedOver80 && !state.viewing,
     canTakeExam: !state.exam,
     canOnlyTakeExam: !attendee.watchedOver80,
+    recipient: {
+      firstName: attendee.firstName,
+      lastName: attendee.lastName,
+      fullName: `${attendee.firstName} ${attendee.lastName}`.trim(),
+      email: normalized,
+    },
     viewingCertificate,
     examCertificate,
   }

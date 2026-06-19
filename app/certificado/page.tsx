@@ -56,7 +56,7 @@ export default function CertificadoPage() {
     ? new Date(issuedAt).toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' })
     : new Date().toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' })
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://scai.cl'
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.scairegionales.cl'
   const code = cert?.certificateCode ?? verify?.certificateCode
   const verifyUrl = code
     ? `${origin}/certificado/verificar/${code}`

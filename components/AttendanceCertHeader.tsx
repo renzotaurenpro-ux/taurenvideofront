@@ -6,9 +6,10 @@ import ScaiLogo from '../Logotipo-SCAI.png'
 type Props = {
   subtitle?: string
   email?: string
+  name?: string
 }
 
-export default function AttendanceCertHeader({ subtitle, email }: Props) {
+export default function AttendanceCertHeader({ subtitle, email, name }: Props) {
   return (
     <div className="px-6 pt-5 pb-2 text-center">
       <Image src={ScaiLogo} alt="SCAI" priority className="h-7 w-auto mx-auto mb-4" />
@@ -19,8 +20,15 @@ export default function AttendanceCertHeader({ subtitle, email }: Props) {
         <Award size={28} style={{ color: 'var(--scai-teal)' }} />
       </div>
       <h1 className="text-xl font-bold text-white tracking-[0.12em]">CERTIFICADOS</h1>
-      {email && (
-        <p className="text-[var(--scai-teal)] text-xs mt-2 font-medium truncate px-2">{email}</p>
+      {(name || email) && (
+        <div className="mt-2 px-2">
+          {name && (
+            <p className="text-sm font-semibold text-white truncate">{name}</p>
+          )}
+          {email && (
+            <p className="text-[var(--scai-teal)] text-xs mt-0.5 font-medium truncate">{email}</p>
+          )}
+        </div>
       )}
       {subtitle && (
         <p className="text-white/50 text-xs mt-2 leading-relaxed max-w-sm mx-auto">{subtitle}</p>

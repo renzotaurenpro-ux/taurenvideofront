@@ -114,12 +114,14 @@ function OpcionesContent() {
   const hasExam = !!(status?.examCertificate || stored.EXAM)
   const canClaimViewing = status?.canClaimViewing === true
   const canTakeExam = status?.canTakeExam === true
+  const recipientName = status?.recipient?.fullName
 
   return (
     <AttendanceCertLayout step="opciones" email={email} backHref="/certificado/asistencia" backLabel="Cambiar correo">
       <AttendanceCertCard>
         <AttendanceCertHeader
           email={email}
+          name={recipientName}
           subtitle={
             canOnlyTakeExam
               ? 'Aprueba el examen para obtener tu certificado de asistencia'

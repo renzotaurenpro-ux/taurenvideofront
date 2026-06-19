@@ -89,17 +89,33 @@ export async function buildAttendanceCertificatePdf(params: BuildParams): Promis
   return pdfDoc.save()
 }
 
-export async function downloadAttendanceCertificatePdf(
+export async function buildAttendanceCertificatePdfBytes(
   certificate: AttendanceCertificateData,
   origin: string,
-) {
+): Promise<Uint8Array> {
   const verifyUrl = buildAttendanceVerifyUrl(certificate.certificateCode, origin)
-  const bytes = await buildAttendanceCertificatePdf({
+  return buildAttendanceCertificatePdf({
     fullName: certificate.recipient.fullName,
     certificateCode: certificate.certificateCode,
     templateUrl: getCertificateTemplatePdf(certificate),
     verifyUrl,
   })
+}
+
+export async function createAttendanceCertificatePreviewUrl(
+  certificate: AttendanceCertificateData,
+  origin: string,
+): Promise<string> {
+  const bytes = await buildAttendanceCertificatePdfBytes(certificate, origin)
+  const blob = new Blob([Uint8Array.from(bytes)], { type: 'application/pdf' })
+  return URL.createObjectURL(blob)
+}
+
+export async function downloadAttendanceCertificatePdf(
+  certificate: AttendanceCertificateData,
+  origin: string,
+) {
+  const bytes = await buildAttendanceCertificatePdfBytes(certificate, origin)
   const blob = new Blob([Uint8Array.from(bytes)], { type: 'application/pdf' })
   const url = URL.createObjectURL(blob)
   const safeName = certificate.recipient.fullName.replace(/[\\/:*?"<>|]+/g, '').trim() || 'asistencia'
