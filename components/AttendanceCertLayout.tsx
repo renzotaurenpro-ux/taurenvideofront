@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { Home, ArrowLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Award, ChevronRight } from 'lucide-react'
 import PageBackground from '@/components/PageBackground'
 import { resetAttendanceSession } from '@/lib/attendance-session'
+
+const CERT_ASISTENCIA_PATH = '/certificado/asistencia'
 
 export type AttendanceNavStep = 'correo' | 'opciones' | 'examen' | 'resultado'
 
@@ -20,7 +22,7 @@ type Props = {
 function stepHref(step: AttendanceNavStep, email?: string) {
   const q = email ? `?email=${encodeURIComponent(email)}` : ''
   switch (step) {
-    case 'correo': return '/certificado/asistencia'
+    case 'correo': return CERT_ASISTENCIA_PATH
     case 'opciones': return `/certificado/asistencia/opciones${q}`
     case 'examen': return `/certificado/asistencia/examen${q}`
     case 'resultado': return `/certificado/asistencia/resultado${q}`
@@ -62,29 +64,40 @@ function StepLink({
 
 export default function AttendanceCertLayout({ step, email, backHref, backLabel, wide, xl, children }: Props) {
   const defaultBack =
-    step === 'opciones' ? '/certificado/asistencia'
+    step === 'opciones' ? CERT_ASISTENCIA_PATH
     : step === 'examen' || step === 'resultado' ? stepHref('opciones', email)
     : undefined
 
   const widthClass = xl ? 'max-w-4xl' : wide ? 'max-w-[840px]' : 'max-w-lg'
   const resolvedBack = backHref ?? defaultBack
-  const isChangeEmailBack = step === 'opciones' && resolvedBack === '/certificado/asistencia'
+  const isChangeEmailBack = step === 'opciones' && resolvedBack === CERT_ASISTENCIA_PATH
+
+  function goToCertAsistencia() {
+    resetAttendanceSession()
+    window.location.replace(`${CERT_ASISTENCIA_PATH}?_=${Date.now()}`)
+  }
 
   function handleChangeEmailBack(e: React.MouseEvent<HTMLAnchorElement>) {
     e.preventDefault()
-    resetAttendanceSession()
-    window.location.replace(`/certificado/asistencia?_=${Date.now()}`)
+    goToCertAsistencia()
+  }
+
+  function handleCertNavClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (step === 'correo') return
+    e.preventDefault()
+    goToCertAsistencia()
   }
 
   return (
     <div className="relative min-h-[100dvh] min-h-screen w-full">
       <PageBackground scene="login" />
       <Link
-        href="/"
+        href={CERT_ASISTENCIA_PATH}
+        onClick={handleCertNavClick}
         className="fixed top-[max(1rem,env(safe-area-inset-top,0px)+0.75rem)] left-[max(1rem,env(safe-area-inset-left,0px)+0.75rem)] z-20 inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium text-white/80 hover:text-white border border-white/15 bg-[rgba(8,18,32,0.75)] hover:bg-[rgba(8,18,32,0.9)] backdrop-blur-md transition-colors"
       >
-        <Home size={14} style={{ color: 'var(--scai-teal)' }} />
-        Inicio
+        <Award size={14} style={{ color: 'var(--scai-teal)' }} />
+        Certificados
       </Link>
       <div className={`relative z-10 mx-auto px-4 sm:px-6 pt-[max(4.5rem,calc(env(safe-area-inset-top,0px)+3.5rem))] pb-8 ${widthClass}`}>
         {(backHref ?? defaultBack) && (
@@ -101,10 +114,7 @@ export default function AttendanceCertLayout({ step, email, backHref, backLabel,
           {isChangeEmailBack ? (
             <button
               type="button"
-              onClick={() => {
-                resetAttendanceSession()
-                window.location.replace(`/certificado/asistencia?_=${Date.now()}`)
-              }}
+              onClick={goToCertAsistencia}
               className="text-white/50 hover:text-white/80 transition-colors"
             >
               Correo
