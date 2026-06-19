@@ -5,14 +5,9 @@ export const PAGE_H = 630
 export const ATTENDANCE_CERT_ASPECT = PAGE_W / PAGE_H
 
 export const CERT_LAYOUT = {
-  nameBaselineY: 252,
+  nameBaselineY: 233,
   nameMaxSize: 30,
   nameMaxWidth: 712,
-  qrSize: 54,
-  qrRight: 38,
-  qrBottom: 34,
-  codeSize: 5.5,
-  codeGap: 9,
 }
 
 const TEMPLATE_PDF: Record<AttendanceCertificateType, string> = {

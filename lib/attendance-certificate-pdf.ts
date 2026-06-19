@@ -1,5 +1,4 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
-import QRCode from 'qrcode'
 import {
   ATTENDANCE_VERIFY_PATH,
   type AttendanceCertificateData,
@@ -11,9 +10,7 @@ import {
 
 type BuildParams = {
   fullName: string
-  certificateCode: string
   templateUrl: string
-  verifyUrl: string
 }
 
 export function buildAttendanceVerifyUrl(certificateCode: string, origin: string) {
@@ -43,7 +40,6 @@ export async function buildAttendanceCertificatePdf(params: BuildParams): Promis
   const page = pdfDoc.getPages()[0]
   const { width } = page.getSize()
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
-  const mono = await pdfDoc.embedFont(StandardFonts.Helvetica)
 
   const name = params.fullName.trim()
   const nameSize = fitFontSize(name, fontBold, CERT_LAYOUT.nameMaxSize, CERT_LAYOUT.nameMaxWidth)
@@ -57,65 +53,32 @@ export async function buildAttendanceCertificatePdf(params: BuildParams): Promis
     color: rgb(0.07, 0.09, 0.15),
   })
 
-  const qrDataUrl = await QRCode.toDataURL(params.verifyUrl, {
-    margin: 0,
-    width: 180,
-    color: { dark: '#1e3a5f', light: '#ffffff' },
-  })
-  const qrBase64 = qrDataUrl.split(',')[1] ?? ''
-  const qrBytes = Uint8Array.from(atob(qrBase64), c => c.charCodeAt(0))
-  const qrImage = await pdfDoc.embedPng(qrBytes)
-
-  const qrX = width - CERT_LAYOUT.qrSize - CERT_LAYOUT.qrRight
-  const qrY = CERT_LAYOUT.qrBottom
-
-  page.drawImage(qrImage, {
-    x: qrX,
-    y: qrY,
-    width: CERT_LAYOUT.qrSize,
-    height: CERT_LAYOUT.qrSize,
-  })
-
-  const code = params.certificateCode
-  const codeWidth = mono.widthOfTextAtSize(code, CERT_LAYOUT.codeSize)
-  page.drawText(code, {
-    x: qrX + (CERT_LAYOUT.qrSize - codeWidth) / 2,
-    y: qrY - CERT_LAYOUT.codeGap,
-    size: CERT_LAYOUT.codeSize,
-    font: mono,
-    color: rgb(0.45, 0.5, 0.58),
-  })
-
   return pdfDoc.save()
 }
 
 export async function buildAttendanceCertificatePdfBytes(
   certificate: AttendanceCertificateData,
-  origin: string,
 ): Promise<Uint8Array> {
-  const verifyUrl = buildAttendanceVerifyUrl(certificate.certificateCode, origin)
   return buildAttendanceCertificatePdf({
     fullName: certificate.recipient.fullName,
-    certificateCode: certificate.certificateCode,
     templateUrl: getCertificateTemplatePdf(certificate),
-    verifyUrl,
   })
 }
 
 export async function createAttendanceCertificatePreviewUrl(
   certificate: AttendanceCertificateData,
-  origin: string,
+  _origin: string,
 ): Promise<string> {
-  const bytes = await buildAttendanceCertificatePdfBytes(certificate, origin)
+  const bytes = await buildAttendanceCertificatePdfBytes(certificate)
   const blob = new Blob([Uint8Array.from(bytes)], { type: 'application/pdf' })
   return URL.createObjectURL(blob)
 }
 
 export async function downloadAttendanceCertificatePdf(
   certificate: AttendanceCertificateData,
-  origin: string,
+  _origin: string,
 ) {
-  const bytes = await buildAttendanceCertificatePdfBytes(certificate, origin)
+  const bytes = await buildAttendanceCertificatePdfBytes(certificate)
   const blob = new Blob([Uint8Array.from(bytes)], { type: 'application/pdf' })
   const url = URL.createObjectURL(blob)
   const safeName = certificate.recipient.fullName.replace(/[\\/:*?"<>|]+/g, '').trim() || 'asistencia'
