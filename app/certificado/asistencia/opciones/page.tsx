@@ -18,6 +18,11 @@ import {
   saveAttendanceCertificate,
   setAttendanceSessionEmail,
 } from '@/lib/attendance-session'
+import {
+  ATTENDANCE_EXAM_MAX_WRONG,
+  ATTENDANCE_EXAM_PASS_GRADE,
+  formatAttendanceExamGrade,
+} from '@/lib/attendance-exam'
 
 function OpcionesContent() {
   const router = useRouter()
@@ -115,6 +120,7 @@ function OpcionesContent() {
   const canClaimViewing = status?.canClaimViewing === true
   const canTakeExam = status?.canTakeExam === true
   const recipientName = status?.recipient?.fullName
+  const examHint = `Nota mínima ${formatAttendanceExamGrade(ATTENDANCE_EXAM_PASS_GRADE)} · máx. ${ATTENDANCE_EXAM_MAX_WRONG} errores`
 
   return (
     <AttendanceCertLayout step="opciones" email={email} backHref="/certificado/asistencia" backLabel="Cambiar correo">
@@ -226,8 +232,8 @@ function OpcionesContent() {
                   title="Realizar examen"
                   description={
                     canOnlyTakeExam
-                      ? 'Aprueba el test para obtener tu certificado de asistencia.'
-                      : 'Aprueba el test para obtener tu certificado por examen.'
+                      ? `Aprueba el test para obtener tu certificado. ${examHint}.`
+                      : `Aprueba el test para tu certificado por examen. ${examHint}.`
                   }
                   href={examenUrl}
                 />
@@ -242,7 +248,7 @@ function OpcionesContent() {
                 <AttendanceOptionButton
                   variant="secondary"
                   title="Reclamar certificado de examen"
-                  description="Si ya aprobaste el examen, reclámalo aquí."
+                  description="Aprobaste el examen. Reclámalo aquí para descargarlo."
                   onClick={handleClaimExam}
                   loading={claimLoading === 'exam'}
                 />

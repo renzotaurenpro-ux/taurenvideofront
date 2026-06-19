@@ -12,6 +12,7 @@ type Props = {
   backHref?: string
   backLabel?: string
   wide?: boolean
+  xl?: boolean
   children: React.ReactNode
 }
 
@@ -58,11 +59,13 @@ function StepLink({
   )
 }
 
-export default function AttendanceCertLayout({ step, email, backHref, backLabel, wide, children }: Props) {
+export default function AttendanceCertLayout({ step, email, backHref, backLabel, wide, xl, children }: Props) {
   const defaultBack =
     step === 'opciones' ? '/certificado/asistencia'
     : step === 'examen' || step === 'resultado' ? stepHref('opciones', email)
     : undefined
+
+  const widthClass = xl ? 'max-w-4xl' : wide ? 'max-w-[840px]' : 'max-w-lg'
 
   return (
     <div className="relative min-h-[100dvh] min-h-screen w-full">
@@ -74,7 +77,7 @@ export default function AttendanceCertLayout({ step, email, backHref, backLabel,
         <Home size={14} style={{ color: 'var(--scai-teal)' }} />
         Inicio
       </Link>
-      <div className={`relative z-10 mx-auto px-4 pt-[max(4.5rem,calc(env(safe-area-inset-top,0px)+3.5rem))] pb-8 ${wide ? 'max-w-[840px]' : 'max-w-lg'}`}>
+      <div className={`relative z-10 mx-auto px-4 sm:px-6 pt-[max(4.5rem,calc(env(safe-area-inset-top,0px)+3.5rem))] pb-8 ${widthClass}`}>
         {(backHref ?? defaultBack) && (
           <Link
             href={backHref ?? defaultBack!}

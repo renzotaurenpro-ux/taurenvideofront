@@ -155,6 +155,7 @@ export type AttendanceExamSubmitResult = {
   notaMaxima?: number
   notaAprobacion?: number
   passed: boolean
+  canTakeExam?: boolean
   certificate: AttendanceCertificateData | null
 }
 
@@ -312,6 +313,7 @@ function parseSubmitResult(data: unknown): AttendanceExamSubmitResult | null {
   const o = data as Record<string, unknown>
   const status = o.status
   if (status !== 'FAILED' && status !== 'CERTIFICATE_ISSUED') return null
+  const passed = o.passed === true || status === 'CERTIFICATE_ISSUED'
   return {
     status,
     message: typeof o.message === 'string' ? o.message : '',
@@ -320,7 +322,8 @@ function parseSubmitResult(data: unknown): AttendanceExamSubmitResult | null {
     nota: typeof o.nota === 'number' ? o.nota : undefined,
     notaMaxima: typeof o.notaMaxima === 'number' ? o.notaMaxima : undefined,
     notaAprobacion: typeof o.notaAprobacion === 'number' ? o.notaAprobacion : undefined,
-    passed: o.passed === true,
+    passed,
+    canTakeExam: typeof o.canTakeExam === 'boolean' ? o.canTakeExam : undefined,
     certificate: parseCertificate(o.certificate) ?? parseCertificate(o.examCertificate),
   }
 }

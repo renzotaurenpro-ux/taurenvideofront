@@ -1,3 +1,10 @@
+import {
+  ATTENDANCE_EXAM_MAX_GRADE,
+  ATTENDANCE_EXAM_PASS_GRADE,
+  calcAttendanceExamGrade,
+  passesAttendanceExamGrade,
+} from './attendance-exam'
+
 const EVENT = {
   organization: 'SOCIEDAD CHILENA DE ALERGIA E INMUNOLOGÍA',
   type: 'CERTIFICADO DE ASISTENCIA',
@@ -232,7 +239,7 @@ export function mockAttendanceStatus(email: string) {
     status: 'OK',
     watchedOver80: attendee.watchedOver80,
     canClaimViewing: attendee.watchedOver80 && !state.viewing,
-    canTakeExam: !state.exam,
+    canTakeExam: !state.exam && !state.examPassed,
     canOnlyTakeExam: !attendee.watchedOver80,
     recipient: {
       firstName: attendee.firstName,
@@ -351,20 +358,20 @@ export function mockSubmitAttendanceExam(
     if (answer && answer.optionId === MOCK_CORRECT[q.id]) correct++
   }
 
-  const notaExacta = 1 + (correct / total) * 6
-  const nota = Math.round(notaExacta * 10) / 10
-  const passed = nota >= 5.0
+  const nota = calcAttendanceExamGrade(correct, total)
+  const passed = passesAttendanceExamGrade(nota)
 
   if (!passed) {
     return {
       status: 'FAILED',
-      message: 'No alcanzaste la nota mínima. Puedes intentar nuevamente.',
+      message: 'No alcanzaste la nota mínima de 5,0. Puedes intentar nuevamente.',
       correctas: correct,
       total,
       nota,
-      notaMaxima: 7,
-      notaAprobacion: 5,
+      notaMaxima: ATTENDANCE_EXAM_MAX_GRADE,
+      notaAprobacion: ATTENDANCE_EXAM_PASS_GRADE,
       passed: false,
+      canTakeExam: true,
       certificate: null,
     }
   }
@@ -373,13 +380,14 @@ export function mockSubmitAttendanceExam(
   const certificate = issueMockCertificate(normalized, attendee, 'EXAM')
   return {
     status: 'CERTIFICATE_ISSUED',
-    message: 'Aprobaste el examen. Tu certificado de asistencia ha sido emitido.',
+    message: 'Aprobaste el examen. Tu certificado ha sido emitido.',
     correctas: correct,
     total,
     nota,
-    notaMaxima: 7,
-    notaAprobacion: 5,
+    notaMaxima: ATTENDANCE_EXAM_MAX_GRADE,
+    notaAprobacion: ATTENDANCE_EXAM_PASS_GRADE,
     passed: true,
+    canTakeExam: false,
     certificate,
   }
 }
