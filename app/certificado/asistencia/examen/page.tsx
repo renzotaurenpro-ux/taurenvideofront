@@ -22,7 +22,7 @@ import {
   ATTENDANCE_EXAM_TOTAL,
   formatAttendanceExamGrade,
 } from '@/lib/attendance-exam'
-import { saveAttendanceCertificate } from '@/lib/attendance-session'
+import { saveAttendanceCertificate, setAttendanceSessionEmail } from '@/lib/attendance-session'
 
 function ExamenContent() {
   const router = useRouter()
@@ -41,6 +41,11 @@ function ExamenContent() {
       router.replace('/certificado/asistencia')
       return
     }
+    setAttendanceSessionEmail(email)
+    setExam(null)
+    setSelected({})
+    setSubmitResult(null)
+    setError('')
     let cancelled = false
     setLoading(true)
     fetchAttendanceExam(email)
@@ -209,10 +214,16 @@ function ExamenContent() {
   )
 }
 
+function ExamenPageInner() {
+  const params = useSearchParams()
+  const email = (params.get('email') ?? '').trim().toLowerCase()
+  return <ExamenContent key={email} />
+}
+
 export default function ExamenPage() {
   return (
     <Suspense fallback={null}>
-      <ExamenContent />
+      <ExamenPageInner />
     </Suspense>
   )
 }

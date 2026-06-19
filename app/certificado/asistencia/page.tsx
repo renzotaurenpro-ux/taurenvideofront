@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Mail, AlertCircle } from 'lucide-react'
 import AttendanceCertLayout from '@/components/AttendanceCertLayout'
 import AttendanceCertHeader, { AttendanceCertCard } from '@/components/AttendanceCertHeader'
+import { resetAttendanceSession, setAttendanceSessionEmail } from '@/lib/attendance-session'
 import { warmupBackend } from '@/lib/api'
 
 export default function CertificadoAsistenciaPage() {
@@ -13,6 +14,7 @@ export default function CertificadoAsistenciaPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    resetAttendanceSession()
     warmupBackend()
   }, [])
 
@@ -23,6 +25,7 @@ export default function CertificadoAsistenciaPage() {
       setError('Ingresa un correo válido')
       return
     }
+    setAttendanceSessionEmail(trimmed)
     router.push(`/certificado/asistencia/opciones?email=${encodeURIComponent(trimmed)}`)
   }
 

@@ -7,7 +7,7 @@ import { CheckCircle2, Download, LayoutGrid } from 'lucide-react'
 import AttendanceCertLayout from '@/components/AttendanceCertLayout'
 import AttendanceCertificateCard from '@/components/AttendanceCertificateCard'
 import { downloadAttendanceCertificatePdf } from '@/lib/attendance-certificate-pdf'
-import { clearAttendanceCertificate, loadAttendanceCertificate } from '@/lib/attendance-session'
+import { loadAttendanceCertificate, resetAttendanceSession, setAttendanceSessionEmail } from '@/lib/attendance-session'
 import type { AttendanceCertificateData, AttendanceCertificateType } from '@/lib/attendance'
 import { resolveCertificateTitle } from '@/lib/attendance'
 
@@ -31,6 +31,7 @@ function ResultadoContent() {
       router.replace('/certificado/asistencia')
       return
     }
+    setAttendanceSessionEmail(email)
     const saved = loadAttendanceCertificate(email, certType)
     if (!saved?.certificate || saved.certificate.recipient.email.toLowerCase() !== email) {
       router.replace(`/certificado/asistencia/opciones?email=${encodeURIComponent(email)}`)
@@ -51,7 +52,7 @@ function ResultadoContent() {
   }
 
   function handleReset() {
-    clearAttendanceCertificate()
+    resetAttendanceSession()
     router.push('/certificado/asistencia')
   }
 

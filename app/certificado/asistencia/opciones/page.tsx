@@ -41,6 +41,8 @@ function OpcionesContent() {
       return
     }
     setAttendanceSessionEmail(email)
+    setStatus(null)
+    setClaimResult(null)
     let cancelled = false
     setStatusLoading(true)
     setError('')
@@ -112,7 +114,7 @@ function OpcionesContent() {
 
   const examenUrl = `/certificado/asistencia/examen?email=${encodeURIComponent(email)}`
   const canOnlyTakeExam = status?.canOnlyTakeExam === true
-  const stored = loadAllAttendanceCertificates(email)
+  const stored = statusLoading ? {} : loadAllAttendanceCertificates(email)
   const hasViewing = canOnlyTakeExam
     ? !!status?.viewingCertificate
     : !!(status?.viewingCertificate || stored.LIVE_VIEWING)
@@ -269,10 +271,16 @@ function OpcionesContent() {
   )
 }
 
+function OpcionesPageInner() {
+  const params = useSearchParams()
+  const email = (params.get('email') ?? '').trim().toLowerCase()
+  return <OpcionesContent key={email} />
+}
+
 export default function OpcionesPage() {
   return (
     <Suspense fallback={null}>
-      <OpcionesContent />
+      <OpcionesPageInner />
     </Suspense>
   )
 }

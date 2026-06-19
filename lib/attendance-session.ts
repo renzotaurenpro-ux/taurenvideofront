@@ -45,10 +45,18 @@ function getCertsForEmail(email: string): EmailCerts {
   return root.certs
 }
 
+export function getAttendanceSessionEmail(): string | null {
+  return readRoot()?.email ?? null
+}
+
+export function resetAttendanceSession() {
+  clearAttendanceCertificate()
+}
+
 export function setAttendanceSessionEmail(email: string) {
   const normalized = normalizeEmail(email)
   const root = readRoot()
-  if (!root || root.email === normalized) return
+  if (root?.email === normalized) return
   writeRoot({ email: normalized, certs: {} })
 }
 
@@ -59,6 +67,8 @@ export function saveAttendanceCertificate(
   type: AttendanceCertificateType = certificate.certificateType ?? 'LIVE_VIEWING',
 ) {
   const normalized = normalizeEmail(email)
+  const certEmail = certificate.recipient.email.trim().toLowerCase()
+  if (certEmail && certEmail !== normalized) return
   const root = readRoot()
   const certs = root?.email === normalized ? { ...root.certs } : {}
   certs[type] = { certificate: { ...certificate, certificateType: type }, message }
