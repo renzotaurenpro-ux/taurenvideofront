@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Mail, AlertCircle } from 'lucide-react'
 import AttendanceCertLayout from '@/components/AttendanceCertLayout'
 import AttendanceCertHeader, { AttendanceCertCard } from '@/components/AttendanceCertHeader'
@@ -9,7 +8,6 @@ import { resetAttendanceSession, setAttendanceSessionEmail } from '@/lib/attenda
 import { warmupBackend } from '@/lib/api'
 
 export default function CertificadoAsistenciaPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
 
@@ -26,7 +24,7 @@ export default function CertificadoAsistenciaPage() {
       return
     }
     setAttendanceSessionEmail(trimmed)
-    router.push(`/certificado/asistencia/opciones?email=${encodeURIComponent(trimmed)}`)
+    window.location.assign(`/certificado/asistencia/opciones?email=${encodeURIComponent(trimmed)}`)
   }
 
   return (
@@ -46,10 +44,14 @@ export default function CertificadoAsistenciaPage() {
               <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
               <input
                 type="email"
+                name="attendance-email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setError('') }}
                 required
-                autoComplete="email"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
                 placeholder="doctor@hospital.com"
                 className="w-full rounded-xl pl-10 pr-4 py-3 text-white placeholder:text-white/25 focus:outline-none border border-white/12 focus:border-[rgba(18,180,198,0.55)] bg-[rgba(4,12,22,0.9)] transition-colors text-sm"
               />

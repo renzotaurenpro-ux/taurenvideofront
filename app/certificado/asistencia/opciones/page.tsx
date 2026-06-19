@@ -14,6 +14,7 @@ import {
 } from '@/lib/attendance'
 import {
   clearAttendanceCertificate,
+  getAttendanceSessionEmail,
   loadAllAttendanceCertificates,
   saveAttendanceCertificate,
   setAttendanceSessionEmail,
@@ -24,10 +25,8 @@ import {
   formatAttendanceExamGrade,
 } from '@/lib/attendance-exam'
 
-function OpcionesContent() {
+function OpcionesContent({ email }: { email: string }) {
   const router = useRouter()
-  const params = useSearchParams()
-  const email = (params.get('email') ?? '').trim().toLowerCase()
 
   const [statusLoading, setStatusLoading] = useState(true)
   const [claimLoading, setClaimLoading] = useState<'viewing' | 'exam' | null>(null)
@@ -273,8 +272,31 @@ function OpcionesContent() {
 
 function OpcionesPageInner() {
   const params = useSearchParams()
-  const email = (params.get('email') ?? '').trim().toLowerCase()
-  return <OpcionesContent key={email} />
+  const router = useRouter()
+  const urlEmail = (params.get('email') ?? '').trim().toLowerCase()
+  const sessionEmail = getAttendanceSessionEmail()
+  const email = sessionEmail && urlEmail && sessionEmail !== urlEmail ? sessionEmail : urlEmail
+
+  useEffect(() => {
+    if (!urlEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(urlEmail)) {
+      router.replace('/certificado/asistencia')
+      return
+    }
+    if (sessionEmail && sessionEmail !== urlEmail) {
+      router.replace(`/certificado/asistencia/opciones?email=${encodeURIComponent(sessionEmail)}`)
+    }
+  }, [urlEmail, sessionEmail, router])
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null
+  if (sessionEmail && sessionEmail !== urlEmail) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="h-8 w-8 rounded-full border-2 border-white/20 border-t-[color:var(--scai-teal)] animate-spin" />
+      </div>
+    )
+  }
+
+  return <OpcionesContent key={email} email={email} />
 }
 
 export default function OpcionesPage() {

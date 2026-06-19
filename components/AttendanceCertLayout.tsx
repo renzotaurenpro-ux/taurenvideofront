@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Home, ArrowLeft, ChevronRight } from 'lucide-react'
 import PageBackground from '@/components/PageBackground'
+import { resetAttendanceSession } from '@/lib/attendance-session'
 
 export type AttendanceNavStep = 'correo' | 'opciones' | 'examen' | 'resultado'
 
@@ -66,6 +67,14 @@ export default function AttendanceCertLayout({ step, email, backHref, backLabel,
     : undefined
 
   const widthClass = xl ? 'max-w-4xl' : wide ? 'max-w-[840px]' : 'max-w-lg'
+  const resolvedBack = backHref ?? defaultBack
+  const isChangeEmailBack = step === 'opciones' && resolvedBack === '/certificado/asistencia'
+
+  function handleChangeEmailBack(e: React.MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault()
+    resetAttendanceSession()
+    window.location.href = '/certificado/asistencia'
+  }
 
   return (
     <div className="relative min-h-[100dvh] min-h-screen w-full">
@@ -80,7 +89,8 @@ export default function AttendanceCertLayout({ step, email, backHref, backLabel,
       <div className={`relative z-10 mx-auto px-4 sm:px-6 pt-[max(4.5rem,calc(env(safe-area-inset-top,0px)+3.5rem))] pb-8 ${widthClass}`}>
         {(backHref ?? defaultBack) && (
           <Link
-            href={backHref ?? defaultBack!}
+            href={resolvedBack!}
+            onClick={isChangeEmailBack ? handleChangeEmailBack : undefined}
             className="inline-flex items-center gap-1.5 text-xs text-white/55 hover:text-white/85 mb-3 transition-colors"
           >
             <ArrowLeft size={14} />
@@ -88,7 +98,20 @@ export default function AttendanceCertLayout({ step, email, backHref, backLabel,
           </Link>
         )}
         <nav className="flex flex-wrap items-center gap-1 text-[10px] uppercase tracking-wider mb-4 px-1">
-          <StepLink id="correo" current={step} email={email} label="Correo" />
+          {isChangeEmailBack ? (
+            <button
+              type="button"
+              onClick={() => {
+                resetAttendanceSession()
+                window.location.href = '/certificado/asistencia'
+              }}
+              className="text-white/50 hover:text-white/80 transition-colors"
+            >
+              Correo
+            </button>
+          ) : (
+            <StepLink id="correo" current={step} email={email} label="Correo" />
+          )}
           <ChevronRight size={12} className="text-white/20 flex-shrink-0" />
           <StepLink id="opciones" current={step} email={email} label="Opciones" />
           {step === 'examen' && (
