@@ -211,8 +211,6 @@ function parseCertificate(raw: unknown): AttendanceCertificateData | null {
   return parsed
 }
 
-import { normalizeSpanishText } from './text-encoding'
-
 function parseRecipient(raw: unknown): AttendanceCertificateData['recipient'] | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
