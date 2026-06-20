@@ -19,11 +19,6 @@ import {
   loadAllAttendanceCertificates,
   saveAttendanceCertificate,
 } from '@/lib/attendance-session'
-import {
-  ATTENDANCE_EXAM_MAX_WRONG,
-  ATTENDANCE_EXAM_PASS_GRADE,
-  formatAttendanceExamGrade,
-} from '@/lib/attendance-exam'
 
 function OpcionesContent({ email }: { email: string }) {
   const router = useRouter()
@@ -121,7 +116,6 @@ function OpcionesContent({ email }: { email: string }) {
   const canClaimViewing = status?.canClaimViewing === true
   const canTakeExam = status?.canTakeExam === true
   const recipientName = status?.recipient?.fullName
-  const examHint = `Nota mínima ${formatAttendanceExamGrade(ATTENDANCE_EXAM_PASS_GRADE)} · máx. ${ATTENDANCE_EXAM_MAX_WRONG} errores`
   const viewingThreshold =
     status?.viewingThresholdPercent ?? ATTENDANCE_VIEWING_THRESHOLD_PERCENT
 
@@ -232,12 +226,8 @@ function OpcionesContent({ email }: { email: string }) {
               {canTakeExam ? (
                 <AttendanceOptionButton
                   variant={canOnlyTakeExam ? 'primary' : 'secondary'}
-                  title="Realizar examen"
-                  description={
-                    canOnlyTakeExam
-                      ? `Aprueba el test para obtener tu certificado. ${examHint}.`
-                      : `Aprueba el test para tu certificado por examen. ${examHint}.`
-                  }
+                  title="Realiza el examen"
+                  description="Pon a prueba tus conocimientos"
                   href={examenUrl}
                 />
               ) : hasExam ? (
