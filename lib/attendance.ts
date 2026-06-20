@@ -87,10 +87,13 @@ export type AttendanceCertificateData = {
   event: AttendanceEventInfo
 }
 
+export const ATTENDANCE_VIEWING_THRESHOLD_PERCENT = 50
+
 export type AttendanceStatusResult = {
   status: 'OK' | 'NOT_FOUND'
   message?: string
-  watchedOver80: boolean
+  viewingThresholdPercent: number
+  watchedOver50: boolean
   canClaimViewing: boolean
   canTakeExam: boolean
   canOnlyTakeExam: boolean
@@ -237,10 +240,15 @@ function parseStatusResult(data: unknown): AttendanceStatusResult | null {
     ?? viewingCertificate?.recipient
     ?? examCertificate?.recipient
     ?? undefined
+  const viewingThresholdPercent =
+    typeof o.viewingThresholdPercent === 'number'
+      ? o.viewingThresholdPercent
+      : ATTENDANCE_VIEWING_THRESHOLD_PERCENT
   return {
     status,
     message: typeof o.message === 'string' ? o.message : undefined,
-    watchedOver80: o.watchedOver80 === true,
+    viewingThresholdPercent,
+    watchedOver50: o.watchedOver50 === true,
     canClaimViewing: o.canClaimViewing === true,
     canTakeExam: o.canTakeExam === true,
     canOnlyTakeExam: o.canOnlyTakeExam === true,

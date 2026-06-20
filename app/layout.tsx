@@ -76,8 +76,13 @@ export const metadata: Metadata = {
     creator: '@scai.cl',
   },
   icons: {
-    icon: [{ url: '/icon', type: 'image/png', sizes: '32x32' }],
-    apple: [{ url: '/apple-icon', type: 'image/png', sizes: '180x180' }],
+    icon: [
+      { url: '/favicon.ico?v=scai', sizes: '48x48', type: 'image/x-icon' },
+      { url: '/icon-16.png?v=scai', type: 'image/png', sizes: '16x16' },
+      { url: '/icon.png?v=scai', type: 'image/png', sizes: '32x32' },
+    ],
+    shortcut: [{ url: '/favicon.ico?v=scai' }],
+    apple: [{ url: '/apple-icon.png?v=scai', type: 'image/png', sizes: '180x180' }],
   },
   manifest: '/manifest.webmanifest',
   formatDetection: {

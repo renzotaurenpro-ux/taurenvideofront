@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import AttendanceCertLayout from '@/components/AttendanceCertLayout'
 import AttendanceCertHeader, { AttendanceCertCard, AttendanceOptionButton } from '@/components/AttendanceCertHeader'
 import {
+  ATTENDANCE_VIEWING_THRESHOLD_PERCENT,
   claimExamCertificate,
   claimViewingCertificate,
   fetchAttendanceStatus,
@@ -121,6 +122,8 @@ function OpcionesContent({ email }: { email: string }) {
   const canTakeExam = status?.canTakeExam === true
   const recipientName = status?.recipient?.fullName
   const examHint = `Nota mínima ${formatAttendanceExamGrade(ATTENDANCE_EXAM_PASS_GRADE)} · máx. ${ATTENDANCE_EXAM_MAX_WRONG} errores`
+  const viewingThreshold =
+    status?.viewingThresholdPercent ?? ATTENDANCE_VIEWING_THRESHOLD_PERCENT
 
   return (
     <AttendanceCertLayout step="opciones" email={email} backHref="/certificado/asistencia" backLabel="Cambiar correo">
@@ -144,7 +147,7 @@ function OpcionesContent({ email }: { email: string }) {
             <div className="flex items-start gap-2.5 rounded-xl border border-red-500/35 bg-red-500/12 px-4 py-3">
               <AlertCircle size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
               <div className="text-xs leading-relaxed text-red-200">
-                <p className="font-semibold text-red-100">No alcanzaste el 80% de visualización del evento en vivo.</p>
+                <p className="font-semibold text-red-100">No alcanzaste el {viewingThreshold}% de visualización del evento en vivo.</p>
                 <p className="mt-1">Solo puedes optar a 1 certificado, obtenido al aprobar el examen de asistencia.</p>
               </div>
             </div>
@@ -205,7 +208,7 @@ function OpcionesContent({ email }: { email: string }) {
                   <AttendanceOptionButton
                     variant="primary"
                     title="Certificado por asistencia al vivo"
-                    description="Viste más del 80% del evento en vivo."
+                    description={`Viste más del ${viewingThreshold}% del evento en vivo.`}
                     onClick={handleClaimViewing}
                     loading={claimLoading === 'viewing'}
                   />
@@ -220,7 +223,7 @@ function OpcionesContent({ email }: { email: string }) {
                   <AttendanceOptionButton
                     variant="primary"
                     title="Certificado por asistencia al vivo"
-                    description="No alcanzaste el 80% de visualización del evento."
+                    description={`No alcanzaste el ${viewingThreshold}% de visualización del evento.`}
                     disabled
                   />
                 )
@@ -261,7 +264,7 @@ function OpcionesContent({ email }: { email: string }) {
           <p className="text-[10px] text-white/40 text-center leading-relaxed">
             {canOnlyTakeExam
               ? 'Tu certificado está disponible únicamente por examen de asistencia.'
-              : 'Quien vio más del 80% puede obtener ambos certificados.'}
+              : `Quien vio más del ${viewingThreshold}% puede obtener ambos certificados.`}
           </p>
         </div>
       </AttendanceCertCard>

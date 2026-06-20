@@ -21,7 +21,7 @@ const EVENT = {
 type MockAttendee = {
   firstName: string
   lastName: string
-  watchedOver80: boolean
+  watchedOver50: boolean
 }
 
 type MockCertificate = {
@@ -49,12 +49,12 @@ const ATTENDEES: Record<string, MockAttendee> = {
   'asistio-con-80@test-scai.cl': {
     firstName: 'Ana',
     lastName: 'ConOchenta',
-    watchedOver80: true,
+    watchedOver50: true,
   },
   'asistio-sin-80@test-scai.cl': {
     firstName: 'Pedro',
     lastName: 'SinOchenta',
-    watchedOver80: false,
+    watchedOver50: false,
   },
 }
 
@@ -220,7 +220,8 @@ export function mockAttendanceStatus(email: string) {
     return {
       status: 'NOT_FOUND',
       message: 'No encontramos tu correo en la lista de asistentes del evento.',
-      watchedOver80: false,
+      viewingThresholdPercent: 50,
+      watchedOver50: false,
       canClaimViewing: false,
       canTakeExam: false,
       canOnlyTakeExam: false,
@@ -237,10 +238,11 @@ export function mockAttendanceStatus(email: string) {
     : null
   return {
     status: 'OK',
-    watchedOver80: attendee.watchedOver80,
-    canClaimViewing: attendee.watchedOver80 && !state.viewing,
+    viewingThresholdPercent: 50,
+    watchedOver50: attendee.watchedOver50,
+    canClaimViewing: attendee.watchedOver50 && !state.viewing,
     canTakeExam: !state.exam && !state.examPassed,
-    canOnlyTakeExam: !attendee.watchedOver80,
+    canOnlyTakeExam: !attendee.watchedOver50,
     recipient: {
       firstName: attendee.firstName,
       lastName: attendee.lastName,
@@ -272,17 +274,17 @@ export function mockClaimViewing(email: string) {
       certificate: formatCertificate(attendee, normalized, state.viewing),
     }
   }
-  if (!attendee.watchedOver80) {
+  if (!attendee.watchedOver50) {
     return {
       status: 'NOT_ELIGIBLE',
-      message: 'No alcanzaste el 80% de visualización del evento en vivo.',
+      message: 'No alcanzaste el 50% de visualización del evento en vivo.',
       certificateType: 'LIVE_VIEWING',
       certificate: null,
     }
   }
   return {
     status: 'CERTIFICATE_ISSUED',
-    message: 'Obtuviste tu certificado por asistencia al evento en vivo (+80%).',
+    message: 'Obtuviste tu certificado por asistencia al evento en vivo (+50%).',
     certificateType: 'LIVE_VIEWING',
     certificate: issueMockCertificate(normalized, attendee, 'LIVE_VIEWING'),
   }
