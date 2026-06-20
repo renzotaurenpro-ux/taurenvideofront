@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import Providers from '@/components/Providers'
 import AuthBar from '@/components/AuthBar'
 import SeoJsonLd from '@/components/SeoJsonLd'
+import SiteDeveloperCredit from '@/components/SiteDeveloperCredit'
 import {
   SITE_DESCRIPTION,
   SITE_LOCALE,
@@ -95,11 +96,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" suppressHydrationWarning className={cn('dark font-sans', inter.variable)}>
-      <body suppressHydrationWarning className="min-h-screen bg-background text-foreground antialiased">
+      <body suppressHydrationWarning className="min-h-screen bg-background text-foreground antialiased flex flex-col">
         <SeoJsonLd />
         <Providers>
           <AuthBar />
-          {children}
+          <div className="flex-1 flex flex-col">{children}</div>
+          <SiteDeveloperCredit />
         </Providers>
       </body>
     </html>
