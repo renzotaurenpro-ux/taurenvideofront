@@ -100,7 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SeoJsonLd />
         <Providers>
           <AuthBar />
-          <div className="flex-1 flex flex-col">{children}</div>
+          <div className="flex-1 flex flex-col pb-14">{children}</div>
           <SiteDeveloperCredit />
         </Providers>
       </body>
