@@ -158,10 +158,10 @@ export default function CarritoPage() {
                     Episodios incluidos ({episodes.length})
                   </p>
                   <ul className="space-y-2">
-                    {episodes.map((ep, i) => (
+                    {episodes.map((ep) => (
                       <li key={ep.id} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
                         <span className="tabular-nums font-bold w-5 flex-shrink-0" style={{ color: 'var(--scai-teal)' }}>
-                          {String(i + 1).padStart(2, '0')}
+                          {String(ep.order).padStart(2, '0')}
                         </span>
                         <span className="leading-snug">{ep.title}</span>
                       </li>

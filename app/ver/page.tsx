@@ -11,61 +11,34 @@ import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { auth } from '@/lib/firebase'
 import { getCachedPurchase, setCachedPurchase, warmupBackend } from '@/lib/api'
-import { DEFAULT_COURSE_ID, fetchPublishedCourse, resolveCourseAccess } from '@/lib/courses'
+import { DEFAULT_COURSE_ID, fetchPublishedCourse, resolveCourseAccess, type Course } from '@/lib/courses'
 import { waitForFirebaseUser } from '@/lib/auth'
-import { buildPlaceholderLessonMap } from '@/lib/placeholderVideo'
+import { buildCourseLessons, type LessonModulo } from '@/lib/bunnyLessons'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
 import { fetchMyCertificates } from '@/lib/exams'
 import { PONENTES, ponenteFoto, ponenteIniciales } from '@/lib/ponentes'
 
 const PRODUCT = {
-  id: 'scai-jornadas-2026',
+  id: DEFAULT_COURSE_ID,
   title: 'III Jornadas Regionales de Inmunología Clínica',
   subtitle: 'Cuando el Sistema Inmune Falla: Desafíos en Errores Innatos de la Inmunidad',
   priceNeto: 25000,
 }
 
-const MODULOS_DATA = [
-  {
-    titulo: 'Módulo 1 · Errores Innatos de la Inmunidad',
-    videos: [
-      { titulo: 'Apertura y marco conceptual', duracion: '14 seg' },
-      { titulo: 'Bases moleculares y fenotípicas', duracion: '2 min' },
-      { titulo: 'Enfoque clínico inicial', duracion: '1 min' },
-      { titulo: 'Mesa de preguntas — bloque 1', duracion: 'Próximamente', soon: true },
-    ],
-  },
-  {
-    titulo: 'Módulo 2 · Diagnóstico y laboratorio',
-    videos: [
-      { titulo: 'Inmunodeficiencias primarias: enfoque temprano', duracion: 'Próximamente', soon: true },
-      { titulo: 'Citometría de flujo en práctica clínica', duracion: 'Próximamente', soon: true },
-      { titulo: 'Genética molecular y utilidad práctica', duracion: 'Próximamente', soon: true },
-      { titulo: 'Correlación clínico-laboratorio', duracion: 'Próximamente', soon: true },
-    ],
-  },
-  {
-    titulo: 'Módulo 3 · Manifestaciones y abordaje',
-    videos: [
-      { titulo: 'Manifestaciones sistémicas complejas', duracion: 'Próximamente', soon: true },
-      { titulo: 'Solapamiento autoinmune y autoinflamación', duracion: 'Próximamente', soon: true },
-      { titulo: 'Casos clínicos transversales', duracion: 'Próximamente', soon: true },
-      { titulo: 'Estrategias de derivación y seguimiento', duracion: 'Próximamente', soon: true },
-    ],
-  },
-  {
-    titulo: 'Módulo 4 · Tratamiento y perspectivas',
-    videos: [
-      { titulo: 'Terapias de reemplazo e inmunomodulación', duracion: 'Próximamente', soon: true },
-      { titulo: 'Trasplante y cuidados perioperatorios', duracion: 'Próximamente', soon: true },
-      { titulo: 'Terapia génica e innovación', duracion: 'Próximamente', soon: true },
-      { titulo: 'Panel de cierre y Q&A final', duracion: 'Próximamente', soon: true },
-    ],
-  },
-]
+const FALLBACK_MODULOS: LessonModulo[] = buildCourseLessons([]).modulos
 
-const PLACEHOLDER_MAP = buildPlaceholderLessonMap()
+function applyCourseLessons(
+  course: Course | null | undefined,
+  setModulos: (m: LessonModulo[]) => void,
+  setLessonMap: (m: Record<string, string>) => void,
+  withPlayback: boolean,
+) {
+  const built = buildCourseLessons(course?.videos ?? [])
+  if (!built.modulos.length) return
+  setModulos(built.modulos)
+  setLessonMap(withPlayback ? built.lessonMap : {})
+}
 
 export default function VerPage() {
   const router = useRouter()
@@ -80,6 +53,8 @@ export default function VerPage() {
   const [courseId, setCourseId] = useState<string | null>(null)
   const [coursePrice, setCoursePrice] = useState(PRODUCT.priceNeto)
   const [certUnlocked, setCertUnlocked] = useState(false)
+  const [modulos, setModulos] = useState<LessonModulo[]>(FALLBACK_MODULOS)
+  const [lessonMap, setLessonMap] = useState<Record<string, string>>({})
 
   const getLessonFile = useCallback(() => undefined, [])
 
@@ -96,7 +71,9 @@ export default function VerPage() {
     onVideoError,
     buffering,
     onPlayerReady,
-  } = useLessonPlayer(paid, PLACEHOLDER_MAP, getLessonFile)
+  } = useLessonPlayer(paid, lessonMap, getLessonFile)
+
+  const totalVideos = modulos.reduce((n, m) => n + m.videos.length, 0)
 
   useEffect(() => {
     const sync = () => {
@@ -151,6 +128,9 @@ export default function VerPage() {
           setCourseId(course.id)
           setCoursePrice(course.priceClp ?? PRODUCT.priceNeto)
           setInCart(hasItem(course.id))
+          applyCourseLessons(course, setModulos, setLessonMap, false)
+        } else {
+          applyCourseLessons(null, setModulos, setLessonMap, false)
         }
 
         const cached = getCachedPurchase(id)
@@ -164,6 +144,11 @@ export default function VerPage() {
               else if (r.ok) {
                 setCachedPurchase(id, r.paid)
                 setPaid(r.paid)
+                if (r.paid && 'course' in r) {
+                  applyCourseLessons(r.course, setModulos, setLessonMap, true)
+                } else if (!r.paid) {
+                  setLessonMap({})
+                }
               }
             })
             .catch(() => {})
@@ -179,6 +164,11 @@ export default function VerPage() {
         }
         setCachedPurchase(id, access.paid)
         setPaid(access.paid)
+        if (access.paid && 'course' in access) {
+          applyCourseLessons(access.course, setModulos, setLessonMap, true)
+        } else {
+          setLessonMap({})
+        }
         setCheckingAccess(false)
       } catch {
         if (!cancelled) setCheckingAccess(false)
@@ -202,7 +192,7 @@ export default function VerPage() {
   }
 
   const displayEmail = profile?.email ?? activeUser?.email ?? ''
-  const clipActual = MODULOS_DATA[activeModulo]?.videos[activeVideoIdx]
+  const clipActual = modulos[activeModulo]?.videos[activeVideoIdx]
 
   if (loading || (!activeUser && !authLoading)) {
     return (
@@ -346,23 +336,23 @@ export default function VerPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-[10px] text-muted-foreground dark:text-white/30">{MODULOS_DATA[activeModulo]?.titulo?.split(' · ')[0] ?? ''}</span>
+                    <span className="text-[10px] text-muted-foreground dark:text-white/30">{modulos[activeModulo]?.titulo?.split(' · ')[0] ?? ''}</span>
                     {mobileListOpen ? <ChevronUp size={15} className="text-muted-foreground" /> : <ChevronDown size={15} className="text-muted-foreground" />}
                   </div>
                 </button>
                 {mobileListOpen && (
                   <div className="border-t border-border max-h-64 overflow-y-auto overscroll-contain">
-                    {MODULOS_DATA.map((mod, mi) => (
+                    {modulos.map((mod, mi) => (
                       <div key={mi}>
                         <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider bg-secondary/60 dark:bg-white/[0.03] text-muted-foreground dark:text-white/30">
                           {mod.titulo}
                         </p>
                         {mod.videos.map((v, vi) => {
                           const sel = activeModulo === mi && activeVideoIdx === vi
-                          const canPlay = hasPlayback(mi, vi) && !(v as { soon?: boolean }).soon
+                          const canPlay = hasPlayback(mi, vi) && !v.soon
                           return (
                             <button
-                              key={vi}
+                              key={v.id ?? vi}
                               type="button"
                               disabled={!canPlay}
                               onClick={() => { selectLesson(mi, vi); setMobileListOpen(false) }}
@@ -375,14 +365,14 @@ export default function VerPage() {
                               }`}>
                                 {sel
                                   ? <Play size={9} fill="currentColor" className="ml-0.5" />
-                                  : `${mi + 1}.${vi + 1}`}
+                                  : String(v.numero)}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className={`text-xs font-medium leading-snug truncate ${sel ? 'text-foreground dark:text-white' : 'text-foreground/75 dark:text-white/55'}`}>
                                   {v.titulo}
                                 </p>
-                                <p className="text-[10px] text-muted-foreground dark:text-white/25 flex items-center gap-1 mt-0.5">
-                                  <Clock size={8} />{v.duracion}
+                                <p className="text-[10px] text-muted-foreground dark:text-white/25 truncate mt-0.5">
+                                  {v.ponente ? `${v.ponente} · ` : ''}<span className="inline-flex items-center gap-1"><Clock size={8} />{v.duracion}</span>
                                 </p>
                               </div>
                               {sel && <div className="h-1.5 w-1.5 rounded-full bg-[color:var(--scai-teal)] animate-pulse flex-shrink-0" />}
@@ -402,7 +392,8 @@ export default function VerPage() {
               </h1>
               {clipActual && paid && (
                 <p className="mt-2 text-xs sm:text-sm font-medium" style={{ color: 'var(--scai-teal)' }}>
-                  {MODULOS_DATA[activeModulo]?.titulo?.split(' · ')[1] ?? ''} · {clipActual.titulo}
+                  {String(clipActual.numero).padStart(2, '0')} · {clipActual.titulo}
+                  {clipActual.ponente ? <span className="text-muted-foreground dark:text-white/35 font-normal"> · {clipActual.ponente}</span> : null}
                   <span className="text-muted-foreground dark:text-white/35 font-normal"> · {clipActual.duracion}</span>
                 </p>
               )}
@@ -520,7 +511,7 @@ export default function VerPage() {
 
               {activeTab === 'programa' && (
                 <div className="space-y-4">
-                  {MODULOS_DATA.map((mod, mi) => (
+                  {modulos.map((mod, mi) => (
                     <div key={mi} className="rounded-xl border border-border overflow-hidden bg-card shadow-sm dark:bg-[rgba(14,32,53,0.7)] dark:backdrop-blur-sm">
                       <p className="text-[11px] font-bold uppercase tracking-wider px-3.5 py-2.5 bg-secondary dark:bg-[rgba(18,180,198,0.1)] text-[color:var(--scai-teal)]">
                         {mod.titulo}
@@ -528,10 +519,10 @@ export default function VerPage() {
                       <div className="divide-y divide-border dark:divide-[rgba(18,180,198,0.08)]">
                         {mod.videos.map((v, vi) => {
                           const sel = activeModulo === mi && activeVideoIdx === vi && paid
-                          const canPlay = paid && hasPlayback(mi, vi) && !(v as { soon?: boolean }).soon
+                          const canPlay = paid && hasPlayback(mi, vi) && !v.soon
                           return (
                             <button
-                              key={vi}
+                              key={v.id ?? vi}
                               type="button"
                               disabled={!canPlay}
                               onClick={() => selectLesson(mi, vi)}
@@ -544,12 +535,17 @@ export default function VerPage() {
                                   sel ? 'bg-[color:var(--scai-teal)] text-white' : 'bg-secondary dark:bg-white/10 text-muted-foreground dark:text-white/30'
                                 }`}
                               >
-                                {mi + 1}.{vi + 1}
+                                {String(v.numero).padStart(2, '0')}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className={`text-xs sm:text-sm font-medium leading-snug ${sel ? 'text-foreground dark:text-white' : 'text-muted-foreground dark:text-white/60'}`}>
                                   {v.titulo}
                                 </p>
+                                {v.ponente && (
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground/80 dark:text-white/35 mt-0.5 truncate">
+                                    {v.ponente}
+                                  </p>
+                                )}
                               </div>
                               <span className="text-xs flex-shrink-0 flex items-center gap-1 text-muted-foreground/70 dark:text-white/25">
                                 <Clock size={10} />{v.duracion}
@@ -599,11 +595,11 @@ export default function VerPage() {
             <div className="rounded-2xl border border-border overflow-hidden bg-card shadow-sm dark:bg-[rgba(14,32,53,0.75)] dark:backdrop-blur-md">
               <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
                 <h3 className="text-xs font-semibold text-muted-foreground dark:text-white/50 uppercase tracking-wide">Contenido</h3>
-                <span className="text-xs text-muted-foreground/70 dark:text-white/25">4 módulos · 16 videos</span>
+                <span className="text-xs text-muted-foreground/70 dark:text-white/25">{modulos.length} módulos · {totalVideos} videos</span>
               </div>
               <div className="divide-y divide-border dark:divide-[rgba(18,180,198,0.08)]">
-                {MODULOS_DATA.map((mod, mi) => (
-                  <div key={mi}>
+                {modulos.map((mod, mi) => (
+                  <div key={mod.numero}>
                     <button
                       type="button"
                       onClick={() => setOpenModuloIdx(o => o === mi ? -1 : mi)}
@@ -612,7 +608,7 @@ export default function VerPage() {
                       <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                         paid ? 'bg-secondary dark:bg-white/10 text-[color:var(--scai-teal)]' : 'bg-muted dark:bg-white/5 text-muted-foreground dark:text-white/20'
                       }`}>
-                        {mi + 1}
+                        {mod.numero}
                       </div>
                       <span className={`flex-1 text-xs font-semibold leading-snug line-clamp-2 ${paid ? 'text-foreground/90 dark:text-white/85' : 'text-muted-foreground/50 dark:text-white/25'}`}>
                         {mod.titulo}
@@ -623,10 +619,10 @@ export default function VerPage() {
                       <div className="pb-2 px-2 space-y-0.5">
                         {mod.videos.map((v, vi) => {
                           const sel = paid && activeModulo === mi && activeVideoIdx === vi
-                          const canPlay = paid && hasPlayback(mi, vi) && !(v as { soon?: boolean }).soon
+                          const canPlay = paid && hasPlayback(mi, vi) && !v.soon
                           return (
                             <button
-                              key={vi}
+                              key={v.id ?? vi}
                               type="button"
                               disabled={!canPlay}
                               onClick={() => selectLesson(mi, vi)}
@@ -635,10 +631,15 @@ export default function VerPage() {
                               } ${sel ? 'bg-primary/15 dark:bg-[rgba(18,180,198,0.14)]' : ''}`}
                             >
                               <span className={`text-[10px] font-bold tabular-nums mt-0.5 w-7 flex-shrink-0 ${sel ? 'text-[color:var(--scai-teal)]' : 'text-muted-foreground dark:text-white/25'}`}>
-                                {mi + 1}.{vi + 1}
+                                {String(v.numero).padStart(2, '0')}
                               </span>
                               <div className="flex-1 min-w-0">
                                 <p className={`text-[11px] leading-snug ${sel ? 'text-foreground dark:text-white font-medium' : paid ? 'text-foreground/80 dark:text-white/65' : 'text-muted-foreground/50 dark:text-white/20'}`}>{v.titulo}</p>
+                                {v.ponente && (
+                                  <p className={`text-[10px] mt-0.5 truncate ${sel ? 'text-[color:var(--scai-teal)]' : 'text-muted-foreground/70 dark:text-white/22'}`}>
+                                    {v.ponente}
+                                  </p>
+                                )}
                                 <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${sel ? 'text-[color:var(--scai-teal)]' : 'text-muted-foreground/70 dark:text-white/22'}`}>
                                   <Clock size={9} />{v.duracion}
                                 </p>

@@ -6,6 +6,26 @@ import { resolveLessonPlayback } from './lessonPlayback'
 
 type GetFile = (mi: number, vi: number) => string | undefined
 
+function firstPlaybackIndex(bunnyMap: Record<string, string>, getFile: GetFile): { mi: number; vi: number } {
+  const keys = Object.keys(bunnyMap)
+  if (keys.length > 0) {
+    const parsed = keys
+      .map(k => {
+        const [mi, vi] = k.split('-').map(Number)
+        return { mi, vi }
+      })
+      .filter(x => Number.isFinite(x.mi) && Number.isFinite(x.vi))
+      .sort((a, b) => a.mi - b.mi || a.vi - b.vi)
+    if (parsed[0]) return parsed[0]
+  }
+  for (let mi = 0; mi < 8; mi++) {
+    for (let vi = 0; vi < 8; vi++) {
+      if (getFile(mi, vi)) return { mi, vi }
+    }
+  }
+  return { mi: 0, vi: 0 }
+}
+
 export function useLessonPlayer(
   paid: boolean,
   bunnyMap: Record<string, string>,
@@ -20,6 +40,7 @@ export function useLessonPlayer(
   const [buffering, setBuffering] = useState(false)
   const [isPending, startTransition] = useTransition()
   const readyRef = useRef(false)
+  const mapSig = Object.keys(bunnyMap).sort().join('|')
 
   const hasPlayback = useCallback((mi: number, vi: number) => {
     const key = lessonPlaybackKey(mi, vi)
@@ -43,12 +64,15 @@ export function useLessonPlayer(
     }
     if (!readyRef.current) {
       readyRef.current = true
-      setOpenModuloIdx(0)
-      setActiveModulo(0)
-      setActiveVideoIdx(0)
+      const first = firstPlaybackIndex(bunnyMap, getFile)
+      setOpenModuloIdx(first.mi)
+      setActiveModulo(first.mi)
+      setActiveVideoIdx(first.vi)
+      applyLesson(first.mi, first.vi)
+      return
     }
     applyLesson(activeModulo, activeVideoIdx)
-  }, [paid, bunnyMap, activeModulo, activeVideoIdx, applyLesson])
+  }, [paid, mapSig, activeModulo, activeVideoIdx, applyLesson, bunnyMap, getFile])
 
   const selectLesson = useCallback((mi: number, vi: number) => {
     if (!paid || !hasPlayback(mi, vi)) return
