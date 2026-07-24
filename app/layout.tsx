@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils'
 import Providers from '@/components/Providers'
 import AuthBar from '@/components/AuthBar'
 import SeoJsonLd from '@/components/SeoJsonLd'
-import SiteDeveloperCredit from '@/components/SiteDeveloperCredit'
 import {
   SITE_DESCRIPTION,
   SITE_LOCALE,
@@ -100,8 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SeoJsonLd />
         <Providers>
           <AuthBar />
-          <div className="flex-1 flex flex-col pb-14">{children}</div>
-          <SiteDeveloperCredit />
+          <div className="flex-1 flex flex-col">{children}</div>
         </Providers>
       </body>
     </html>

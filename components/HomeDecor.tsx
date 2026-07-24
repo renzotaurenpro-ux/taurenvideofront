@@ -90,8 +90,8 @@ export function HeroVisual() {
           className="absolute inset-0 dark:hidden"
           style={{
             background: `
-              linear-gradient(105deg, var(--background) 0%, color-mix(in srgb, var(--background) 55%, transparent) 42%, transparent 58%),
-              linear-gradient(to top, var(--background) 0%, color-mix(in srgb, var(--background) 70%, transparent) 38%, transparent 58%)
+              linear-gradient(105deg, var(--background) 0%, color-mix(in srgb, var(--background) 40%, transparent) 38%, transparent 55%),
+              linear-gradient(to top, color-mix(in srgb, var(--background) 88%, transparent) 0%, color-mix(in srgb, var(--background) 35%, transparent) 22%, transparent 42%)
             `,
           }}
         />
@@ -99,12 +99,17 @@ export function HeroVisual() {
           className="absolute inset-0 hidden dark:block"
           style={{
             background: `
-              linear-gradient(105deg, #0E2035 0%, transparent 48%),
-              linear-gradient(to top, #0B1928 0%, transparent 52%)
+              linear-gradient(105deg, rgba(14,32,53,0.55) 0%, transparent 45%),
+              linear-gradient(to top, rgba(11,25,40,0.82) 0%, rgba(11,25,40,0.28) 24%, transparent 44%)
             `,
           }}
         />
-        <Vignette />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-[4] h-[38%]"
+          style={{
+            background: 'linear-gradient(to top, rgba(11,25,40,0.55) 0%, transparent 100%)',
+          }}
+        />
         <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
           <div
             className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full border border-white/25 backdrop-blur-md"
@@ -137,7 +142,12 @@ export function HeroMobileVisual() {
     <div className={`relative mt-8 md:hidden w-full max-w-sm mx-auto ${featherLg}`}>
       <div className="relative aspect-[16/10] w-full">
         <Image src={IMG.adherida} alt="" fill className="object-cover object-center brightness-[0.9] saturate-[0.85] dark:brightness-100 dark:saturate-100" sizes="100vw" quality={80} />
-        <Vignette />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(to top, rgba(11,25,40,0.75) 0%, rgba(11,25,40,0.2) 30%, transparent 50%)',
+          }}
+        />
         <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
           <div
             className="flex h-12 w-12 items-center justify-center rounded-full border border-white/25 backdrop-blur-md"
