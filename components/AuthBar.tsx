@@ -7,7 +7,6 @@ import { LogOut, Settings, Award, Play, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import ThemeToggle from '@/components/ThemeToggle'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
-import { warmupBackend } from '@/lib/api'
 
 export default function AuthBar() {
   const { firebaseUser, profile, loading, logout } = useAuth()
@@ -17,10 +16,6 @@ export default function AuthBar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const showVerActions = pathname?.startsWith('/ver')
   const hideBar = pathname === '/login' || pathname === '/registro'
-
-  useEffect(() => {
-    if (!loading && firebaseUser) warmupBackend()
-  }, [loading, firebaseUser])
 
   useEffect(() => {
     if (loading || !firebaseUser || !showVerActions) return
@@ -72,6 +67,7 @@ export default function AuthBar() {
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           <Link
             href="/ver"
+            prefetch={false}
             className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
               pathname === '/ver' || pathname?.startsWith('/ver/')
                 ? 'border-[rgba(18,180,198,0.45)] bg-[rgba(18,180,198,0.12)] text-foreground'
@@ -88,6 +84,7 @@ export default function AuthBar() {
             <div className="hidden md:flex items-center gap-1.5">
               <Link
                 href="/ver/test"
+                prefetch={false}
                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold text-white transition-opacity hover:opacity-90"
                 style={{ background: 'var(--scai-teal)' }}
               >
@@ -96,6 +93,7 @@ export default function AuthBar() {
               </Link>
               <Link
                 href={certUnlocked ? '/certificado' : '/ver/test'}
+                prefetch={false}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold border transition-colors ${
                   certUnlocked
                     ? 'border-[rgba(18,180,198,0.4)] bg-[rgba(18,180,198,0.1)] text-foreground hover:bg-[rgba(18,180,198,0.18)]'
@@ -120,6 +118,7 @@ export default function AuthBar() {
           <div className="hidden sm:flex items-center gap-2">
             <Link
               href="/ajustes"
+              prefetch={false}
               className={`flex items-center gap-1 text-xs transition-colors ${
                 pathname === '/ajustes' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
@@ -180,6 +179,7 @@ export default function AuthBar() {
               <div className="grid grid-cols-2 gap-2">
                 <Link
                   href="/ver/test"
+                  prefetch={false}
                   onClick={() => setMenuOpen(false)}
                   className="inline-flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold text-white"
                   style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 24px rgba(18,180,198,0.18)' }}
@@ -189,6 +189,7 @@ export default function AuthBar() {
                 </Link>
                 <Link
                   href={certUnlocked ? '/certificado' : '/ver/test'}
+                  prefetch={false}
                   onClick={() => setMenuOpen(false)}
                   className={`inline-flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold border ${
                     certUnlocked
@@ -205,6 +206,7 @@ export default function AuthBar() {
             <div className="grid grid-cols-2 gap-2">
               <Link
                 href="/ajustes"
+                prefetch={false}
                 onClick={() => setMenuOpen(false)}
                 className="inline-flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold border border-border bg-secondary/60 text-foreground"
               >

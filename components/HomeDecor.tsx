@@ -19,35 +19,6 @@ const featherLg =
 const featherSide =
   '[mask-image:radial-gradient(ellipse_90%_100%_at_100%_45%,#000_8%,transparent_72%)] [-webkit-mask-image:radial-gradient(ellipse_90%_100%_at_100%_45%,#000_8%,transparent_72%)]'
 
-function Vignette() {
-  return (
-    <>
-      <div
-        className="pointer-events-none absolute inset-0 z-[3] dark:hidden"
-        style={{
-          background: `
-            radial-gradient(ellipse 140% 95% at 50% 115%, var(--background) 14%, transparent 68%),
-            radial-gradient(ellipse 110% 85% at -5% 50%, var(--background) 10%, transparent 62%),
-            radial-gradient(ellipse 110% 85% at 105% 50%, var(--background) 10%, transparent 62%),
-            radial-gradient(ellipse 100% 75% at 50% -5%, var(--background) 10%, transparent 58%)
-          `,
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0 z-[3] hidden dark:block"
-        style={{
-          background: `
-            radial-gradient(ellipse 140% 95% at 50% 115%, #0B1928 8%, transparent 72%),
-            radial-gradient(ellipse 110% 85% at -5% 50%, #0B1928 5%, transparent 68%),
-            radial-gradient(ellipse 110% 85% at 105% 50%, #0B1928 5%, transparent 68%),
-            radial-gradient(ellipse 100% 75% at 50% -5%, #0E2035 5%, transparent 65%)
-          `,
-        }}
-      />
-    </>
-  )
-}
-
 export function HeroDecor() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>

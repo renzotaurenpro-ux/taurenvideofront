@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Clock, Award, ChevronRight, FlaskConical, ShoppingCart, Lock, User, ChevronDown, Play, ChevronUp } from 'lucide-react'
@@ -10,13 +10,12 @@ import Image from 'next/image'
 import { addToCart, hasItem } from '@/lib/cart'
 import { useAuth } from '@/lib/authContext'
 import { auth } from '@/lib/firebase'
-import { getCachedPurchase, setCachedPurchase, warmupBackend } from '@/lib/api'
-import { DEFAULT_COURSE_ID, fetchPublishedCourse, resolveCourseAccess, type Course } from '@/lib/courses'
+import { getCachedPurchase, setCachedPurchase } from '@/lib/api'
+import { DEFAULT_COURSE_ID, resolveCourseAccess, type Course } from '@/lib/courses'
 import { waitForFirebaseUser } from '@/lib/auth'
 import { buildCourseLessons, type LessonModulo } from '@/lib/bunnyLessons'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
 import { CERT_PASSED_KEY } from '@/lib/certTest'
-import { fetchMyCertificates } from '@/lib/exams'
 import { PONENTES, ponenteFoto, ponenteIniciales } from '@/lib/ponentes'
 
 const PRODUCT = {
@@ -28,7 +27,7 @@ const PRODUCT = {
 
 const FALLBACK_MODULOS: LessonModulo[] = buildCourseLessons([]).modulos
 
-function applyCourseLessons(
+function applyLessons(
   course: Course | null | undefined,
   setModulos: (m: LessonModulo[]) => void,
   setLessonMap: (m: Record<string, string>) => void,
@@ -50,13 +49,11 @@ export default function VerPage() {
   const [checkingAccess, setCheckingAccess] = useState(true)
   const [mobileListOpen, setMobileListOpen] = useState(false)
   const [inCart, setInCart] = useState(false)
-  const [courseId, setCourseId] = useState<string | null>(null)
-  const [coursePrice, setCoursePrice] = useState(PRODUCT.priceNeto)
+  const [courseId, setCourseId] = useState<string | null>(DEFAULT_COURSE_ID)
+  const coursePrice = PRODUCT.priceNeto
   const [certUnlocked, setCertUnlocked] = useState(false)
   const [modulos, setModulos] = useState<LessonModulo[]>(FALLBACK_MODULOS)
   const [lessonMap, setLessonMap] = useState<Record<string, string>>({})
-
-  const getLessonFile = useCallback(() => undefined, [])
 
   const {
     activeModulo,
@@ -71,26 +68,18 @@ export default function VerPage() {
     onVideoError,
     buffering,
     onPlayerReady,
-  } = useLessonPlayer(paid, lessonMap, getLessonFile)
+  } = useLessonPlayer(paid, lessonMap)
 
   const totalVideos = modulos.reduce((n, m) => n + m.videos.length, 0)
 
   useEffect(() => {
     const sync = () => {
-      try { setCertUnlocked(typeof window !== 'undefined' && sessionStorage.getItem(CERT_PASSED_KEY) === '1') } catch { setCertUnlocked(false) }
+      try { setCertUnlocked(sessionStorage.getItem(CERT_PASSED_KEY) === '1') } catch { setCertUnlocked(false) }
     }
     sync()
     window.addEventListener('focus', sync)
     return () => window.removeEventListener('focus', sync)
   }, [])
-
-  useEffect(() => {
-    if (authLoading) return
-    if (!firebaseUser) return
-    fetchMyCertificates()
-      .then(list => { if (Array.isArray(list) && list.length > 0) setCertUnlocked(true) })
-      .catch(() => {})
-  }, [authLoading, activeUser])
 
   useEffect(() => {
     if (authLoading) return
@@ -110,54 +99,20 @@ export default function VerPage() {
     }
 
     setLoading(false)
+    const id = DEFAULT_COURSE_ID
+    setCourseId(id)
+    setInCart(hasItem(id))
     let cancelled = false
 
-    ;(async () => {
-      const user = activeUser
-      try {
-        setCourseId(DEFAULT_COURSE_ID)
-        setInCart(hasItem(DEFAULT_COURSE_ID))
-        await warmupBackend()
+    if (getCachedPurchase(id) === true) {
+      setPaid(true)
+      setCheckingAccess(false)
+    }
+
+    resolveCourseAccess(id, activeUser)
+      .then(access => {
         if (cancelled) return
-
-        const course = await fetchPublishedCourse()
-        const id = course?.id ?? DEFAULT_COURSE_ID
-        if (cancelled) return
-
-        if (course) {
-          setCourseId(course.id)
-          setCoursePrice(course.priceClp ?? PRODUCT.priceNeto)
-          setInCart(hasItem(course.id))
-          applyCourseLessons(course, setModulos, setLessonMap, false)
-        } else {
-          applyCourseLessons(null, setModulos, setLessonMap, false)
-        }
-
-        const cached = getCachedPurchase(id)
-        if (cached === true) {
-          setPaid(true)
-          setCheckingAccess(false)
-          resolveCourseAccess(id, user)
-            .then(r => {
-              if (cancelled) return
-              if (r.ok === false && 'unauthorized' in r) router.replace('/login')
-              else if (r.ok) {
-                setCachedPurchase(id, r.paid)
-                setPaid(r.paid)
-                if (r.paid && 'course' in r) {
-                  applyCourseLessons(r.course, setModulos, setLessonMap, true)
-                } else if (!r.paid) {
-                  setLessonMap({})
-                }
-              }
-            })
-            .catch(() => {})
-          return
-        }
-
-        const access = await resolveCourseAccess(id, user)
-        if (cancelled) return
-        if (access.ok === false) {
+        if (!access.ok) {
           setCheckingAccess(false)
           if ('unauthorized' in access) router.replace('/login')
           return
@@ -165,15 +120,13 @@ export default function VerPage() {
         setCachedPurchase(id, access.paid)
         setPaid(access.paid)
         if (access.paid && 'course' in access) {
-          applyCourseLessons(access.course, setModulos, setLessonMap, true)
+          applyLessons(access.course, setModulos, setLessonMap, true)
         } else {
           setLessonMap({})
         }
         setCheckingAccess(false)
-      } catch {
-        if (!cancelled) setCheckingAccess(false)
-      }
-    })()
+      })
+      .catch(() => { if (!cancelled) setCheckingAccess(false) })
 
     return () => { cancelled = true }
   }, [authLoading, activeUser, router])
@@ -220,30 +173,6 @@ export default function VerPage() {
             </div>
 
             <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-black/10 dark:shadow-black/50 border border-border bg-card dark:bg-[rgba(8,15,26,0.55)]">
-
-              {!paid && (
-                <>
-                  <Image
-                    src="/sin%20fondo/Inmunoglobulina.png"
-                    alt=""
-                    width={220}
-                    height={220}
-                    className="absolute -right-6 top-1/2 -translate-y-1/2 w-40 sm:w-52 opacity-[0.09] pointer-events-none select-none hidden sm:block"
-                    aria-hidden
-                    unoptimized
-                  />
-                  <Image
-                    src="/sin%20fondo/Inmunoglobulina-IgG.png"
-                    alt=""
-                    width={180}
-                    height={180}
-                    className="absolute -left-8 bottom-2 w-28 sm:w-40 opacity-[0.08] pointer-events-none select-none hidden sm:block"
-                    aria-hidden
-                    unoptimized
-                  />
-                </>
-              )}
-
               <div className="relative z-10 p-2 sm:p-3">
                 {buffering && paid && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-background/70 dark:bg-black/40 pointer-events-none">
@@ -410,6 +339,7 @@ export default function VerPage() {
               <div className="mt-3 flex flex-col sm:flex-row gap-2">
                 <Link
                   href="/ver/test"
+                  prefetch={false}
                   className="inline-flex items-center justify-center gap-2 rounded-xl py-3 px-4 text-sm font-bold text-white active:scale-[0.98] transition-transform"
                   style={{ background: 'var(--scai-teal)', boxShadow: '0 8px 24px rgba(18,180,198,0.18)' }}
                 >
@@ -661,7 +591,7 @@ export default function VerPage() {
               <p className="text-xs mt-1 text-[color:var(--scai-teal)]">www.scai.cl · @scai.cl</p>
             </div>
 
-            <Link href="/ver/test" className="w-full flex items-center justify-center gap-2 border border-primary/35 bg-card text-foreground hover:bg-primary/10 dark:bg-primary/10 dark:text-white/70 dark:hover:bg-primary/15 dark:hover:text-white text-sm font-medium py-3 rounded-xl transition-all active:scale-95 shadow-sm">
+            <Link href="/ver/test" prefetch={false} className="w-full flex items-center justify-center gap-2 border border-primary/35 bg-card text-foreground hover:bg-primary/10 dark:bg-primary/10 dark:text-white/70 dark:hover:bg-primary/15 dark:hover:text-white text-sm font-medium py-3 rounded-xl transition-all active:scale-95 shadow-sm">
               <Award size={15} style={{ color: 'var(--scai-teal)' }} />
               Realizar examen
             </Link>

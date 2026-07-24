@@ -42,8 +42,8 @@ export default function PageBackground({ scene }: Props) {
             src={cfg.src}
             alt=""
             fill
-            priority
-            quality={isLogin ? 95 : 92}
+            priority={isAuth}
+            quality={isLogin ? 85 : 70}
             sizes="100vw"
             className={`object-cover ${
               isLogin

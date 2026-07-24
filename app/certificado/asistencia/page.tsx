@@ -5,7 +5,6 @@ import { Mail, AlertCircle } from 'lucide-react'
 import AttendanceCertLayout from '@/components/AttendanceCertLayout'
 import AttendanceCertHeader, { AttendanceCertCard } from '@/components/AttendanceCertHeader'
 import { bindAttendanceSessionToEmail, resetAttendanceSession } from '@/lib/attendance-session'
-import { warmupBackend } from '@/lib/api'
 
 export default function CertificadoAsistenciaPage() {
   const [email, setEmail] = useState('')
@@ -14,7 +13,6 @@ export default function CertificadoAsistenciaPage() {
 
   useEffect(() => {
     resetAttendanceSession()
-    warmupBackend()
     setInputReady(true)
   }, [])
 

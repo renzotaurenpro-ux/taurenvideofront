@@ -13,7 +13,12 @@ import {
   SITE_URL,
 } from '@/lib/site-config'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+  preload: false,
+})
 
 export const viewport: Viewport = {
   themeColor: SITE_THEME_COLOR,
@@ -94,7 +99,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" suppressHydrationWarning className={cn('dark font-sans', inter.variable)}>
+    <html lang="es" suppressHydrationWarning className={cn('dark font-sans', inter.variable, inter.className)}>
       <body suppressHydrationWarning className="min-h-screen bg-background text-foreground antialiased flex flex-col">
         <SeoJsonLd />
         <Providers>

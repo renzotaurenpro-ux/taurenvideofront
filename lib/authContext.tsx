@@ -34,7 +34,6 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 const CACHE_KEY = '__tauren_profile_v1'
 const CACHE_TTL = SESSION_MS
-const PROFILE_REFRESH_MS = SESSION_MS
 
 export function cacheProfileToStorage(uid: string, profile: UserProfile) {
   try {
@@ -50,7 +49,9 @@ function loadProfileFromStorage(uid: string): { profile: UserProfile; ts: number
     if (parsed.uid !== uid) return null
     if (Date.now() - parsed.ts > CACHE_TTL) return null
     return { profile: parsed.profile, ts: parsed.ts }
-  } catch { return null }
+  } catch {
+    return null
+  }
 }
 
 function clearProfileStorage() {
@@ -63,9 +64,13 @@ function cookieFlags() {
 }
 
 function clearSessionCookies() {
-  const flags = `path=/; max-age=0; SameSite=Lax`
+  const flags = 'path=/; max-age=0; SameSite=Lax'
   document.cookie = `__tauren_session=; ${flags}`
   document.cookie = `__tauren_name=; ${flags}`
+}
+
+function setNameCookie(firstName: string, lastName: string) {
+  document.cookie = `__tauren_name=${encodeURIComponent(`${firstName} ${lastName}`)}; ${cookieFlags()}`
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -85,32 +90,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const applyUser = (fbUser: User | null) => {
       setFirebaseUser(fbUser)
-      if (fbUser) {
-        document.cookie = `__tauren_session=${fbUser.uid}; ${cookieFlags()}`
-        const cached = loadProfileFromStorage(fbUser.uid)
-        if (cached) {
-          setProfile(cached.profile)
-          document.cookie = `__tauren_name=${encodeURIComponent(`${cached.profile.firstName} ${cached.profile.lastName}`)}; ${cookieFlags()}`
-        }
-        setLoading(false)
-        if (cached && Date.now() - cached.ts < PROFILE_REFRESH_MS) return
-        warmupBackend()
-          .then(() => fetchAuth('/auth/profile', {}, fbUser))
-          .then(r => (r.ok ? r.json() : null))
-          .then(data => {
-            const p = parseProfile(data)
-            if (!p) return
-            setProfile(p)
-            cacheProfileToStorage(fbUser.uid, p)
-            document.cookie = `__tauren_name=${encodeURIComponent(`${p.firstName} ${p.lastName}`)}; ${cookieFlags()}`
-          })
-          .catch(() => {})
-      } else {
+      if (!fbUser) {
         setProfile(null)
         clearSessionCookies()
         clearProfileStorage()
         setLoading(false)
+        return
       }
+
+      document.cookie = `__tauren_session=${fbUser.uid}; ${cookieFlags()}`
+      const cached = loadProfileFromStorage(fbUser.uid)
+      if (cached) {
+        setProfile(cached.profile)
+        setNameCookie(cached.profile.firstName, cached.profile.lastName)
+      }
+      setLoading(false)
+
+      if (cached && Date.now() - cached.ts < CACHE_TTL) return
+
+      fetchAuth('/auth/profile', {}, fbUser)
+        .then(r => (r.ok ? r.json() : null))
+        .then(data => {
+          const p = parseProfile(data)
+          if (!p) return
+          setProfile(p)
+          cacheProfileToStorage(fbUser.uid, p)
+          setNameCookie(p.firstName, p.lastName)
+        })
+        .catch(() => {})
     }
 
     if (auth.currentUser) applyUser(auth.currentUser)
@@ -127,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function cacheProfile(uid: string, p: UserProfile) {
     setProfile(p)
     cacheProfileToStorage(uid, p)
-    document.cookie = `__tauren_name=${encodeURIComponent(`${p.firstName} ${p.lastName}`)}; ${cookieFlags()}`
+    setNameCookie(p.firstName, p.lastName)
   }
 
   return (

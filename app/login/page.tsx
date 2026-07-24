@@ -10,7 +10,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, hasFirebaseConfig } from '@/lib/firebase'
 import { useAuth } from '@/lib/authContext'
 import { setSessionCookie, syncAuthLogin, profileFromFirebaseUser } from '@/lib/auth'
-import { warmupBackend, prefetchPurchase } from '@/lib/api'
+import { prefetchPurchase } from '@/lib/api'
 import { DEFAULT_COURSE_ID } from '@/lib/courses'
 import PageBackground from '@/components/PageBackground'
 
@@ -28,10 +28,6 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    warmupBackend()
-  }, [])
 
   useEffect(() => {
     if (!authLoading && firebaseUser) router.replace(redirectTo.startsWith('/') ? redirectTo : '/ver')
@@ -58,13 +54,9 @@ export default function LoginPage() {
       cacheProfile(user.uid, profileFromFirebaseUser(user, email.trim()))
       router.replace(redirectTo.startsWith('/') ? redirectTo : '/ver')
 
-      warmupBackend()
-        .then(() => user.getIdToken())
+      user.getIdToken()
         .then(idToken => syncAuthLogin(idToken))
         .then(profile => { if (profile) cacheProfile(user.uid, profile) })
-        .catch(() => {})
-
-      warmupBackend()
         .then(() => prefetchPurchase(DEFAULT_COURSE_ID, user))
         .catch(() => {})
     } catch (err: unknown) {
