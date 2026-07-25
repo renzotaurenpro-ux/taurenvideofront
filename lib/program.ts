@@ -10,7 +10,6 @@ export type ProgramSlot = {
 export const PROGRAM_EXPOSITORES = 15
 
 export const PROGRAM_MODULO_TITLES: Record<number, string> = {
-  0: 'Apertura · Bienvenida',
   1: 'Módulo 1 · Sospecha clínica y anticuerpos',
   2: 'Módulo 2 · Neutrófilos, dismorfias y autoinflamatorios',
   3: 'Módulo 3 · Manifestaciones y desregulación',
@@ -18,14 +17,6 @@ export const PROGRAM_MODULO_TITLES: Record<number, string> = {
 }
 
 export const PROGRAM_SLOTS: ProgramSlot[] = [
-  {
-    numero: 0,
-    modulo: 0,
-    ponente: 'Dra. Carla Bastias · Dra. Ligia Rodríguez',
-    cargo: 'Vicepresidenta SCAI · Directora RRSS / Regional SCAI',
-    titulo: 'Bienvenida a las Jornadas Regionales',
-    match: [/bienvenida/i, /carla\s*bastias/i],
-  },
   {
     numero: 1,
     modulo: 1,
