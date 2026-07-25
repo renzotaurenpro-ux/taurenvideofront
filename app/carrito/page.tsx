@@ -1,20 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, CreditCard, Shield, ShoppingCart, CalendarDays, Award, Users, Clock, CheckCircle2, Loader2, BookOpen } from 'lucide-react'
+import { ArrowLeft, CreditCard, Shield, ShoppingCart, CalendarDays, Award, Users, Clock, CheckCircle2, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
-import { fetchPublishedCourse, checkCoursePurchase, sortEpisodes, type Course } from '@/lib/courses'
+import { fetchPublishedCourse, checkCoursePurchase, type Course } from '@/lib/courses'
+import { coursePriceClp, formatCLP } from '@/lib/pricing'
 
 const IS_SANDBOX = process.env.NEXT_PUBLIC_MP_MODE !== 'production'
-
-function formatCLP(n: number) {
-  return '$' + n.toLocaleString('es-CL')
-}
 
 export default function CarritoPage() {
   const router = useRouter()
@@ -24,10 +21,7 @@ export default function CarritoPage() {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState('')
 
-  const priceNeto = course?.priceClp ?? 25000
-  const priceIva = useMemo(() => Math.round(priceNeto * 0.19), [priceNeto])
-  const priceTotal = priceNeto + priceIva
-  const episodes = useMemo(() => (course ? sortEpisodes(course.videos) : []), [course])
+  const priceTotal = coursePriceClp(course?.priceClp)
 
   useEffect(() => {
     if (authLoading) return
@@ -119,56 +113,29 @@ export default function CarritoPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="rounded-xl sm:rounded-2xl border p-4 sm:p-5"
-                style={{ borderColor: 'rgba(18,180,198,0.35)', background: 'rgba(18,180,198,0.08)' }}>
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="flex h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 items-center justify-center rounded-xl border"
-                    style={{ background: 'rgba(18,180,198,0.12)', borderColor: 'rgba(18,180,198,0.3)' }}>
-                    <Image src={ScaiLogo} alt="SCAI" className="h-8 w-auto" />
+            <div className="rounded-xl sm:rounded-2xl border p-4 sm:p-5"
+              style={{ borderColor: 'rgba(18,180,198,0.35)', background: 'rgba(18,180,198,0.08)' }}>
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="flex h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 items-center justify-center rounded-xl border"
+                  style={{ background: 'rgba(18,180,198,0.12)', borderColor: 'rgba(18,180,198,0.3)' }}>
+                  <Image src={ScaiLogo} alt="SCAI" className="h-8 w-auto" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--scai-teal)' }}>
+                    Sociedad Chilena de Alergia e Inmunología
+                  </p>
+                  <h2 className="font-bold text-sm sm:text-base leading-snug mb-1.5">{course!.title}</h2>
+                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1"><CalendarDays size={11} style={{ color: 'var(--scai-teal)' }} />19 Junio 2026</div>
+                    <div className="flex items-center gap-1"><Users size={11} style={{ color: 'var(--scai-teal)' }} />15 expositores</div>
+                    <div className="flex items-center gap-1"><Award size={11} style={{ color: 'var(--scai-teal)' }} />CONACEM</div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--scai-teal)' }}>
-                      Sociedad Chilena de Alergia e Inmunología
-                    </p>
-                    <h2 className="font-bold text-sm sm:text-base leading-snug mb-1.5">{course!.title}</h2>
-                    {course!.description && (
-                      <p className="text-xs sm:text-sm text-muted-foreground mb-3 leading-relaxed line-clamp-3">
-                        {course!.description}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1"><CalendarDays size={11} style={{ color: 'var(--scai-teal)' }} />19 Junio 2026</div>
-                      <div className="flex items-center gap-1"><Users size={11} style={{ color: 'var(--scai-teal)' }} />15 expositores</div>
-                      <div className="flex items-center gap-1"><Award size={11} style={{ color: 'var(--scai-teal)' }} />CONACEM</div>
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0 text-right">
-                    <p className="text-xl sm:text-2xl font-black">{formatCLP(priceNeto)}</p>
-                    <p className="text-xs text-muted-foreground">+ IVA</p>
-                  </div>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-xl sm:text-2xl font-black">{formatCLP(priceTotal)}</p>
+                  <p className="text-xs text-muted-foreground">IVA incluido</p>
                 </div>
               </div>
-
-              {episodes.length > 0 && (
-                <div className="rounded-xl border border-border p-4"
-                  style={{ background: 'rgba(18,180,198,0.04)' }}>
-                  <p className="text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5" style={{ color: 'var(--scai-teal)' }}>
-                    <BookOpen size={12} />
-                    Episodios incluidos ({episodes.length})
-                  </p>
-                  <ul className="space-y-2">
-                    {episodes.map((ep) => (
-                      <li key={ep.id} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
-                        <span className="tabular-nums font-bold w-5 flex-shrink-0" style={{ color: 'var(--scai-teal)' }}>
-                          {String(ep.order).padStart(2, '0')}
-                        </span>
-                        <span className="leading-snug">{ep.title}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
           )}
 
@@ -190,18 +157,11 @@ export default function CarritoPage() {
         <aside className="h-fit rounded-2xl sm:rounded-3xl border border-border bg-card p-5 sm:p-6">
           <h2 className="mb-5 font-bold text-base sm:text-lg">Resumen del pedido</h2>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between text-muted-foreground text-xs sm:text-sm">
-              <span>Subtotal</span>
-              <span>{isEmpty ? '$0' : formatCLP(priceNeto)}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground text-xs sm:text-sm">
-              <span>IVA (19%)</span>
-              <span>{isEmpty ? '$0' : formatCLP(priceIva)}</span>
-            </div>
             <div className="border-t border-border pt-3 flex justify-between font-bold text-sm sm:text-base">
-              <span>Total</span>
+              <span>Total a pagar</span>
               <span style={{ color: 'var(--scai-teal)' }}>{isEmpty ? '$0' : formatCLP(priceTotal)}</span>
             </div>
+            <p className="text-xs text-muted-foreground">Mismo monto que verás en Mercado Pago · IVA incluido</p>
           </div>
 
           {checkoutError && (
@@ -218,7 +178,7 @@ export default function CarritoPage() {
           >
             {checkoutLoading
               ? <><Loader2 size={17} className="animate-spin" /> Redirigiendo a Mercado Pago...</>
-              : <><CreditCard size={17} /> Pagar con Mercado Pago</>
+              : <><CreditCard size={17} /> Pagar {isEmpty ? '' : formatCLP(priceTotal)}</>
             }
           </button>
 
