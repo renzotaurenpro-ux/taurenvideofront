@@ -184,6 +184,7 @@ export default function VerPage() {
                     key={playerKey}
                     videoUrl={videoUrl}
                     mimeType={videoMime}
+                    poster={clipActual?.thumbnail}
                     onError={onVideoError}
                     onReady={onPlayerReady}
                   />
@@ -289,12 +290,19 @@ export default function VerPage() {
                                 canPlay ? 'active:bg-accent/40' : 'opacity-40'
                               } ${sel ? 'bg-primary/10 dark:bg-[rgba(18,180,198,0.1)]' : ''}`}
                             >
-                              <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 tabular-nums ${
-                                sel ? 'bg-[color:var(--scai-teal)] text-white' : 'bg-secondary dark:bg-white/10 text-muted-foreground dark:text-white/30'
-                              }`}>
-                                {sel
-                                  ? <Play size={9} fill="currentColor" className="ml-0.5" />
-                                  : String(v.numero)}
+                              <div className="relative h-10 w-16 rounded-md overflow-hidden flex-shrink-0 bg-secondary dark:bg-white/10">
+                                {v.thumbnail ? (
+                                  <Image src={v.thumbnail} alt="" fill sizes="64px" className="object-cover" />
+                                ) : (
+                                  <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                                    {String(v.numero).padStart(2, '0')}
+                                  </div>
+                                )}
+                                {sel && (
+                                  <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                                    <Play size={12} className="text-white fill-white ml-0.5" />
+                                  </div>
+                                )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className={`text-xs font-medium leading-snug truncate ${sel ? 'text-foreground dark:text-white' : 'text-foreground/75 dark:text-white/55'}`}>
@@ -332,7 +340,7 @@ export default function VerPage() {
                 <span>·</span>
                 <span className="flex items-center gap-1"><Clock size={11} /> 19 Jun 2026</span>
                 <span>·</span>
-                <span>4 módulos · 16 ponentes</span>
+                <span>4 módulos · 15 ponentes</span>
                 <span>·</span>
                 <span>Acreditado CONACEM</span>
               </div>
@@ -390,7 +398,7 @@ export default function VerPage() {
                     conocidos como Inmunodeficiencias Primarias.
                   </p>
                   <p>
-                    Esta grabación reúne a 16 especialistas que presentan la fisiopatología, el
+                    Esta grabación reúne a 15 especialistas que presentan la fisiopatología, el
                     diagnóstico clínico y de laboratorio, y las estrategias terapéuticas más actualizadas
                     para el manejo de estas condiciones en distintos grupos etarios.
                   </p>
@@ -398,7 +406,7 @@ export default function VerPage() {
                     {[
                       { label: 'Fecha', value: '19 Jun 2026' },
                       { label: 'Módulos', value: '4' },
-                      { label: 'Expositores', value: '16' },
+                      { label: 'Expositores', value: '15' },
                       { label: 'Idioma', value: 'Español' },
                       { label: 'Modalidad', value: 'Online' },
                       { label: 'Acreditación', value: 'CONACEM' },
@@ -460,12 +468,14 @@ export default function VerPage() {
                                 canPlay ? 'hover:bg-accent/40 dark:hover:bg-white/[0.04] cursor-pointer' : 'cursor-default opacity-45'
                               } ${sel ? 'bg-primary/10 dark:bg-[rgba(18,180,198,0.08)] border-l-[3px] border-l-[color:var(--scai-teal)]' : ''}`}
                             >
-                              <div
-                                className={`h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 tabular-nums ${
-                                  sel ? 'bg-[color:var(--scai-teal)] text-white' : 'bg-secondary dark:bg-white/10 text-muted-foreground dark:text-white/30'
-                                }`}
-                              >
-                                {String(v.numero).padStart(2, '0')}
+                              <div className="relative h-11 w-[4.5rem] rounded-lg overflow-hidden flex-shrink-0 bg-secondary dark:bg-white/10">
+                                {v.thumbnail ? (
+                                  <Image src={v.thumbnail} alt="" fill sizes="72px" className="object-cover" />
+                                ) : (
+                                  <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                                    {String(v.numero).padStart(2, '0')}
+                                  </div>
+                                )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className={`text-xs sm:text-sm font-medium leading-snug ${sel ? 'text-foreground dark:text-white' : 'text-muted-foreground dark:text-white/60'}`}>
@@ -560,9 +570,20 @@ export default function VerPage() {
                                 canPlay ? 'hover:bg-accent/40 dark:hover:bg-white/[0.04] cursor-pointer' : 'cursor-default opacity-45'
                               } ${sel ? 'bg-primary/15 dark:bg-[rgba(18,180,198,0.14)]' : ''}`}
                             >
-                              <span className={`text-[10px] font-bold tabular-nums mt-0.5 w-7 flex-shrink-0 ${sel ? 'text-[color:var(--scai-teal)]' : 'text-muted-foreground dark:text-white/25'}`}>
-                                {String(v.numero).padStart(2, '0')}
-                              </span>
+                              <div className="relative h-10 w-[3.75rem] rounded-md overflow-hidden flex-shrink-0 bg-secondary dark:bg-white/10">
+                                {v.thumbnail ? (
+                                  <Image src={v.thumbnail} alt="" fill sizes="60px" className="object-cover" />
+                                ) : (
+                                  <div className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-muted-foreground">
+                                    {String(v.numero).padStart(2, '0')}
+                                  </div>
+                                )}
+                                {sel && (
+                                  <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                                    <Play size={11} className="text-white fill-white ml-0.5" />
+                                  </div>
+                                )}
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <p className={`text-[11px] leading-snug ${sel ? 'text-foreground dark:text-white font-medium' : paid ? 'text-foreground/80 dark:text-white/65' : 'text-muted-foreground/50 dark:text-white/20'}`}>{v.titulo}</p>
                                 {v.ponente && (

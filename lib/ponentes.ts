@@ -43,12 +43,6 @@ export const PONENTES: Ponente[] = [
     foto: '/doctores/barbara-cid.png',
   },
   {
-    nombre: 'Dra. Evelyn Silva',
-    cargo: 'Inmunóloga · U. de Chile',
-    cv: 'Inmunóloga Universidad de Chile. Docente de la Facultad de Medicina de la Universidad Católica del Maule. Inmunóloga del Servicio de Pediatría y CRMQ Infantil del Hospital Regional de Talca.',
-    foto: '/doctores/evelyn-silva.png',
-  },
-  {
     nombre: 'Dr. Mervin Piñones',
     cargo: 'Inmunología infantil · HGGB Concepción',
     cv: 'Pediatra UdeC, inmunólogo y reumatólogo PUC. Docente Universidad de Concepción. Jefe inmunología infantil del Hospital Regional de Concepción (HGGB).',

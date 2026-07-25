@@ -101,7 +101,7 @@ export function HeroVisual() {
           <h3 className="text-lg sm:text-xl font-black text-white leading-snug">
             Cuando el Sistema Inmune Falla
           </h3>
-          <p className="text-xs text-white/50 mt-1.5">16 expositores · 4 módulos · CONACEM</p>
+          <p className="text-xs text-white/50 mt-1.5">15 expositores · 4 módulos · CONACEM</p>
         </div>
       </div>
     </div>

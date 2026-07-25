@@ -139,7 +139,7 @@ export default function CarritoPage() {
                     )}
                     <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1"><CalendarDays size={11} style={{ color: 'var(--scai-teal)' }} />19 Junio 2026</div>
-                      <div className="flex items-center gap-1"><Users size={11} style={{ color: 'var(--scai-teal)' }} />16 expositores</div>
+                      <div className="flex items-center gap-1"><Users size={11} style={{ color: 'var(--scai-teal)' }} />15 expositores</div>
                       <div className="flex items-center gap-1"><Award size={11} style={{ color: 'var(--scai-teal)' }} />CONACEM</div>
                     </div>
                   </div>

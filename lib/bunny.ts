@@ -1,16 +1,21 @@
 export const BUNNY_LIBRARY_ID = '712047'
 
-export function bunnyEmbedNoAutoplay(url: string): string {
+export function bunnyEmbedUrl(url: string, autoplay = false): string {
   if (!url.includes('mediadelivery.net')) return url
   try {
     const u = new URL(url)
-    u.searchParams.set('autoplay', 'false')
+    u.searchParams.set('autoplay', autoplay ? 'true' : 'false')
     return u.toString()
   } catch {
-    const base = url.replace(/([?&])autoplay=(true|1)/gi, '$1autoplay=false')
+    const flag = autoplay ? 'true' : 'false'
+    const base = url.replace(/([?&])autoplay=(true|false|1|0)/gi, `$1autoplay=${flag}`)
     if (/[?&]autoplay=/i.test(base)) return base
-    return `${base}${base.includes('?') ? '&' : '?'}autoplay=false`
+    return `${base}${base.includes('?') ? '&' : '?'}autoplay=${flag}`
   }
+}
+
+export function bunnyEmbedNoAutoplay(url: string): string {
+  return bunnyEmbedUrl(url, false)
 }
 
 export function buildBunnyEmbedUrl(libraryId: string | number, videoId: string, query?: string): string {

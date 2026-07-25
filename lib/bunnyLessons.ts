@@ -7,6 +7,7 @@ import {
   matchProgramSlot,
   type ProgramSlot,
 } from './program'
+import { videoThumbnail } from './videoThumbnails'
 
 export type LessonClip = {
   titulo: string
@@ -17,6 +18,7 @@ export type LessonClip = {
   ponente?: string
   cargo?: string
   numero: number
+  thumbnail?: string
 }
 
 export type LessonModulo = {
@@ -89,6 +91,7 @@ export function buildCourseLessons(episodes: CourseEpisode[]): {
       cargo: slot.cargo,
       duracion: ep ? formatDuration(ep.duration) : 'Próximamente',
       soon: !url,
+      thumbnail: videoThumbnail(slot.numero),
     }
     const list = clipsByModulo.get(slot.modulo) ?? []
     list.push(clip)

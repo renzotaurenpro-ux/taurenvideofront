@@ -22,27 +22,27 @@ import { PONENTES, ponenteFoto, ponenteIniciales } from '@/lib/ponentes'
 const MODULOS = [
   {
     num: '01',
-    title: 'Errores Innatos de la Inmunidad',
-    desc: 'Bases moleculares y fenotípicas de las inmunodeficiencias primarias. Diagnóstico diferencial y abordaje clínico actualizado.',
-    ponentes: ['Dra. Ligia Rodríguez', 'Dra. Soledad Pérez Saldías', 'Dra. Daniela Budinich Almarza', 'Dr. Francisco Roa'],
+    title: 'Sospecha clínica y anticuerpos',
+    desc: 'Derivación a especialidad, infecciones recurrentes, inmunodeficiencias de anticuerpos y vacunas en EII.',
+    ponentes: ['Dra. Soledad Pérez Saldías', 'Dra. Daniela Budinich Almarza', 'Dr. Francisco Roa', 'Dra. María de los Ángeles Morales'],
   },
   {
     num: '02',
-    title: 'Manifestaciones Clínicas Complejas',
-    desc: 'Presentaciones atípicas, solapamiento con enfermedades autoinmunes y casos clínicos multidisciplinarios.',
-    ponentes: ['Dra. María de los Ángeles Morales', 'Dra. Bárbara Cid', 'Dra. Evelyn Silva', 'Dra. Patricia Vergara'],
+    title: 'Neutrófilos, dismorfias y autoinflamatorios',
+    desc: 'Defectos del neutrófilo, dismorfias faciales 22q11.2 y síndromes autoinflamatorios.',
+    ponentes: ['Dra. Bárbara Cid', 'Dra. Ligia Rodríguez', 'Dr. Mervin Piñones'],
   },
   {
     num: '03',
-    title: 'Diagnóstico y Laboratorio',
-    desc: 'Interpretación de estudios inmunológicos avanzados, citometría de flujo y genética molecular en la práctica clínica.',
-    ponentes: ['Dr. Nicolás Faúndes Gandolfo', 'Dra. Ilennee Díaz Basualto', 'Dra. Lurimar Manrique Centeno', 'Dra. Pamela Méndez Barría'],
+    title: 'Manifestaciones y desregulación',
+    desc: 'Manifestaciones cutáneas, hiper IgE, desregulación inmune y angioedema hereditario.',
+    ponentes: ['Dra. Patricia Vergara', 'Dr. Nicolás Faúndes Gandolfo', 'Dra. Ilennee Díaz Basualto', 'Dra. Lurimar Manrique Centeno'],
   },
   {
     num: '04',
-    title: 'Tratamiento y Perspectivas',
-    desc: 'Terapias de reemplazo, inmunomodulación, trasplante y terapia génica. Nuevas moléculas y ensayos clínicos.',
-    ponentes: ['Dr. Francisco Cammarata', 'Dra. Fabiola Fernández Quezada', 'Dr. Alfonso Hernández', 'Dr. Mervin Piñones'],
+    title: 'Laboratorio, genética e inmunoglobulina',
+    desc: 'Laboratorio en EII, asesoramiento genético, uso de inmunoglobulina y manifestaciones no infecciosas.',
+    ponentes: ['Dra. Pamela Méndez Barría', 'Dr. Francisco Cammarata', 'Dra. Fabiola Fernández Quezada', 'Dr. Alfonso Hernández'],
   },
 ]
 
@@ -152,7 +152,7 @@ export default function Home() {
   const statsRef = useRef<HTMLDivElement>(null)
   const [priceClp, setPriceClp] = useState<number | null>(null)
 
-  const cntSpeakers = useCountUp(16, 1800, statsVisible)
+  const cntSpeakers = useCountUp(15, 1800, statsVisible)
   const cntPercent = useCountUp(100, 2200, statsVisible)
 
   useEffect(() => { setMounted(true) }, [])
@@ -362,7 +362,7 @@ export default function Home() {
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Descripción</p>
           </div>
           <p className="text-lg sm:text-xl leading-relaxed text-foreground/60 max-w-2xl">
-            Las III Jornadas Regionales de Inmunología Clínica reúnen a 16 especialistas de Chile y el mundo para abordar los desafíos más complejos en Errores Innatos de la Inmunidad — actualización médica continua acreditada por CONACEM, disponible en formato online con acceso completo a la grabación.
+            Las III Jornadas Regionales de Inmunología Clínica reúnen a 15 especialistas de Chile y el mundo para abordar los desafíos más complejos en Errores Innatos de la Inmunidad — actualización médica continua acreditada por CONACEM, disponible en formato online con acceso completo a la grabación.
           </p>
         </div>
       </section>
@@ -465,7 +465,7 @@ export default function Home() {
               <div className="relative z-10">
               <p className="text-xs uppercase tracking-widest mb-6" style={{ color: 'var(--scai-teal)' }}>La forma nueva</p>
               <p className="text-foreground/70 dark:text-white/70 text-sm leading-relaxed mb-8 max-w-sm">
-                Accede a los 16 mejores especialistas en inmunología clínica desde donde estés, con grabación HD disponible en el momento y acreditación CONACEM incluida.
+                Accede a los 15 mejores especialistas en inmunología clínica desde donde estés, con grabación HD disponible en el momento y acreditación CONACEM incluida.
               </p>
               <div className="flex flex-col gap-3">
                 {[
@@ -510,7 +510,7 @@ export default function Home() {
             <div>
               <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Expositores</p>
               <p className="mt-5 font-black leading-none" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', color: 'var(--scai-teal)' }}>
-                16
+                15
               </p>
               <p className="text-sm text-muted-foreground mt-1">especialistas</p>
             </div>
@@ -535,7 +535,7 @@ export default function Home() {
                 { num: '02', title: 'Acceso Seguro', desc: 'Sistema anticopia. Una cuenta personal, un dispositivo.' },
                 { num: '03', title: 'Acreditación CONACEM', desc: 'Jornada con acreditación oficial para educación médica continua.' },
                 { num: '04', title: 'Acceso Inmediato', desc: 'Disponible tras el pago, sin esperas ni procesos adicionales.' },
-                { num: '05', title: '16 Expositores · 4 Módulos', desc: 'Especialistas organizados en 4 módulos temáticos de inmunología.' },
+                { num: '05', title: '15 Expositores · 4 Módulos', desc: 'Especialistas organizados en 4 módulos temáticos de inmunología.' },
                 { num: '06', title: 'Contenido Protegido', desc: 'Tecnología anticopia. Distribución no autorizada prohibida.' },
               ].map(({ num, title, desc }) => (
                 <div key={title} className="border-t border-border pt-5 pb-8">
