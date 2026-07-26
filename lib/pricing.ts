@@ -1,21 +1,20 @@
-export const DEFAULT_PRICE_NETO = 25000
-export const IVA_RATE = 0.19
+export const PRICE_NETO = 25000
+export const PRICE_IVA = 4750
+export const PRICE_TOTAL = 29750
 
 export function formatCLP(n: number) {
   return '$' + n.toLocaleString('es-CL')
 }
 
-export function coursePriceNeto(priceClp?: number | null) {
-  return typeof priceClp === 'number' && Number.isFinite(priceClp) && priceClp > 0
+export function resolvePricing(priceClp?: number | null) {
+  const raw = typeof priceClp === 'number' && Number.isFinite(priceClp) && priceClp > 0
     ? Math.round(priceClp)
-    : DEFAULT_PRICE_NETO
-}
+    : PRICE_NETO
 
-export function coursePriceIva(neto: number) {
-  return Math.round(neto * IVA_RATE)
-}
+  if (raw === PRICE_TOTAL || raw > PRICE_NETO) {
+    return { neto: PRICE_NETO, iva: PRICE_IVA, total: PRICE_TOTAL }
+  }
 
-export function coursePriceTotal(priceClp?: number | null) {
-  const neto = coursePriceNeto(priceClp)
-  return neto + coursePriceIva(neto)
+  const iva = Math.round(raw * 0.19)
+  return { neto: raw, iva, total: raw + iva }
 }

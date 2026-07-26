@@ -9,7 +9,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
 import { fetchPublishedCourse, checkCoursePurchase, type Course } from '@/lib/courses'
-import { coursePriceIva, coursePriceNeto, coursePriceTotal, formatCLP } from '@/lib/pricing'
+import { formatCLP, resolvePricing } from '@/lib/pricing'
 
 const IS_SANDBOX = process.env.NEXT_PUBLIC_MP_MODE !== 'production'
 
@@ -21,9 +21,7 @@ export default function CarritoPage() {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState('')
 
-  const priceNeto = coursePriceNeto(course?.priceClp)
-  const priceIva = coursePriceIva(priceNeto)
-  const priceTotal = coursePriceTotal(course?.priceClp)
+  const { neto: priceNeto, iva: priceIva, total: priceTotal } = resolvePricing(course?.priceClp)
 
   useEffect(() => {
     if (authLoading) return
@@ -134,8 +132,8 @@ export default function CarritoPage() {
                   </div>
                 </div>
                 <div className="flex-shrink-0 text-right">
-                  <p className="text-xl sm:text-2xl font-black">{formatCLP(priceNeto)}</p>
-                  <p className="text-xs text-muted-foreground">+ IVA</p>
+                  <p className="text-xl sm:text-2xl font-black">{formatCLP(priceTotal)}</p>
+                  <p className="text-xs text-muted-foreground">{formatCLP(priceNeto)} + IVA</p>
                 </div>
               </div>
             </div>
