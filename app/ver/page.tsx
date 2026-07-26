@@ -227,7 +227,7 @@ export default function VerPage() {
                           Agrega el acceso al carrito para ver la grabación completa
                         </p>
                         <p className="mt-2 text-xs sm:text-sm leading-relaxed text-muted-foreground dark:text-white/45">
-                          Pago único de $25.000 · IVA incluido · Acceso inmediato
+                          Pago único de $25.000 + IVA ($29.750) · Acceso inmediato
                         </p>
                         <div className="mt-5">
                           <button

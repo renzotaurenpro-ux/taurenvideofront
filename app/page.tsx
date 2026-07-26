@@ -18,7 +18,7 @@ import {
 import ScaiLogo from '../Logotipo-SCAI.png'
 import { fetchPublishedCourse } from '@/lib/courses'
 import { PONENTES, ponenteFoto, ponenteIniciales } from '@/lib/ponentes'
-import { coursePriceClp } from '@/lib/pricing'
+import { coursePriceNeto } from '@/lib/pricing'
 
 const MODULOS = [
   {
@@ -171,7 +171,7 @@ export default function Home() {
     return () => { cancelled = true }
   }, [mounted])
 
-  const priceText = coursePriceClp(priceClp).toLocaleString('es-CL')
+  const priceText = coursePriceNeto(priceClp).toLocaleString('es-CL')
 
   useEffect(() => {
     if (!mounted || !statsRef.current) return
@@ -228,7 +228,7 @@ export default function Home() {
               style={{ background: 'var(--scai-teal)' }}
             >
               <ShoppingCart size={13} className="flex-shrink-0" />
-              <span className="hidden sm:inline">{`Comprar — $${priceText}`}</span>
+              <span className="hidden sm:inline">{`Comprar — $${priceText} + IVA`}</span>
               <span className="sm:hidden tabular-nums">{`$${priceText}`}</span>
             </Link>
           </div>
@@ -293,7 +293,7 @@ export default function Home() {
                 style={{ background: 'var(--scai-teal)' }}
               >
                 <ShoppingCart size={15} />
-                {`$${priceText} — Obtener acceso`}
+                {`$${priceText} + IVA — Obtener acceso`}
               </Link>
               <Link href="/registro" className="text-xs text-muted-foreground hover:text-foreground dark:text-white/30 dark:hover:text-white/60 pl-1 transition-colors">
                 Soy nuevo/a · Registrarme →
@@ -375,7 +375,7 @@ export default function Home() {
               { label: 'Fecha', value: '19 Junio 2026' },
               { label: 'Modalidad', value: 'Online · Cupos limitados' },
               { label: 'Acreditación', value: 'CONACEM' },
-                { label: 'Inversión', value: `$${priceText} · Pago único` },
+                { label: 'Inversión', value: `$${priceText} + IVA · Pago único` },
             ].map(({ label, value }) => (
               <div key={label} className="pr-6">
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">{label}</p>
@@ -473,7 +473,7 @@ export default function Home() {
                   '100% online — sin desplazamiento',
                   'Grabación HD disponible de inmediato',
                   'Acreditación CONACEM oficial',
-                  `$${priceText} · IVA incluido`,
+                  `$${priceText} + IVA · Pago único`,
                 ].map(item => (
                   <div key={item} className="flex items-center gap-3">
                     <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full"
@@ -570,7 +570,7 @@ export default function Home() {
               style={{ background: 'var(--scai-teal)' }}
             >
               <ShoppingCart size={16} />
-              {`Comprar acceso — $${priceText}`}
+              {`Comprar acceso — $${priceText} + IVA`}
             </Link>
             <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground dark:text-white/35 dark:hover:text-white/60 pl-1 transition-colors">
               Ya tengo acceso →
