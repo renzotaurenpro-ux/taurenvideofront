@@ -7,9 +7,11 @@ import AuthBar from '@/components/AuthBar'
 import SeoJsonLd from '@/components/SeoJsonLd'
 import {
   SITE_DESCRIPTION,
+  SITE_EVENT_NAME,
   SITE_LOCALE,
   SITE_NAME,
   SITE_THEME_COLOR,
+  SITE_TITLE,
   SITE_URL,
 } from '@/lib/site-config'
 
@@ -19,6 +21,8 @@ const inter = Inter({
   display: 'swap',
   preload: false,
 })
+
+const ICON_V = 'scai3'
 
 export const viewport: Viewport = {
   themeColor: SITE_THEME_COLOR,
@@ -30,19 +34,21 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: SITE_NAME,
+    default: SITE_TITLE,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
-  applicationName: SITE_NAME,
+  applicationName: SITE_EVENT_NAME,
   keywords: [
     'SCAI',
     'scai regionales',
+    'III Jornadas Regionales',
+    'inmunología clínica',
+    'errores innatos de la inmunidad',
     'alergia',
     'inmunología',
     'certificado asistencia',
-    'jornadas médicas',
-    'formación médica',
+    'CONACEM',
     'Sociedad Chilena de Alergia e Inmunología',
   ],
   authors: [{ name: 'SCAI', url: 'https://www.scai.cl' }],
@@ -70,24 +76,25 @@ export const metadata: Metadata = {
     type: 'website',
     locale: SITE_LOCALE,
     url: SITE_URL,
-    siteName: SITE_NAME,
-    title: SITE_NAME,
+    siteName: SITE_EVENT_NAME,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
   twitter: {
     card: 'summary_large_image',
-    title: SITE_NAME,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     creator: '@scai.cl',
   },
   icons: {
     icon: [
-      { url: '/favicon.ico?v=scai', sizes: '48x48', type: 'image/x-icon' },
-      { url: '/icon-16.png?v=scai', type: 'image/png', sizes: '16x16' },
-      { url: '/icon.png?v=scai', type: 'image/png', sizes: '32x32' },
+      { url: `/favicon.ico?v=${ICON_V}`, sizes: '48x48', type: 'image/x-icon' },
+      { url: `/icon-16.png?v=${ICON_V}`, type: 'image/png', sizes: '16x16' },
+      { url: `/icon.png?v=${ICON_V}`, type: 'image/png', sizes: '32x32' },
+      { url: `/icon-192.png?v=${ICON_V}`, type: 'image/png', sizes: '192x192' },
     ],
-    shortcut: [{ url: '/favicon.ico?v=scai' }],
-    apple: [{ url: '/apple-icon.png?v=scai', type: 'image/png', sizes: '180x180' }],
+    shortcut: [{ url: `/favicon.ico?v=${ICON_V}` }],
+    apple: [{ url: `/apple-icon.png?v=${ICON_V}`, type: 'image/png', sizes: '180x180' }],
   },
   manifest: '/manifest.webmanifest',
   formatDetection: {

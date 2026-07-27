@@ -21,27 +21,27 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: 'portrait',
     icons: [
       {
-        src: '/icon-16.png?v=scai',
+        src: '/icon-16.png?v=scai3',
         sizes: '16x16',
         type: 'image/png',
       },
       {
-        src: '/icon.png?v=scai',
+        src: '/icon.png?v=scai3',
         sizes: '32x32',
         type: 'image/png',
       },
       {
-        src: '/apple-icon.png?v=scai',
+        src: '/apple-icon.png?v=scai3',
         sizes: '180x180',
         type: 'image/png',
       },
       {
-        src: '/icon-192.png?v=scai',
+        src: '/icon-192.png?v=scai3',
         sizes: '192x192',
         type: 'image/png',
       },
       {
-        src: '/icon-512.png?v=scai',
+        src: '/icon-512.png?v=scai3',
         sizes: '512x512',
         type: 'image/png',
       },
