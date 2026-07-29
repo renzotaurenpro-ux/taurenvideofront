@@ -9,7 +9,7 @@ import ScaiLogo from '../../Logotipo-SCAI.png'
 import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
 import { fetchPublishedCourse, checkCoursePurchase, type Course } from '@/lib/courses'
-import { formatCLP, resolvePricing } from '@/lib/pricing'
+import { coursePrice, formatCLP } from '@/lib/pricing'
 
 const IS_SANDBOX = process.env.NEXT_PUBLIC_MP_MODE !== 'production'
 
@@ -21,7 +21,7 @@ export default function CarritoPage() {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState('')
 
-  const { neto: priceNeto, iva: priceIva, total: priceTotal } = resolvePricing(course?.priceClp)
+  const price = coursePrice(course?.priceClp)
 
   useEffect(() => {
     if (authLoading) return
@@ -132,8 +132,7 @@ export default function CarritoPage() {
                   </div>
                 </div>
                 <div className="flex-shrink-0 text-right">
-                  <p className="text-xl sm:text-2xl font-black">{formatCLP(priceTotal)}</p>
-                  <p className="text-xs text-muted-foreground">{formatCLP(priceNeto)} + IVA</p>
+                  <p className="text-xl sm:text-2xl font-black">{formatCLP(price)}</p>
                 </div>
               </div>
             </div>
@@ -157,17 +156,9 @@ export default function CarritoPage() {
         <aside className="h-fit rounded-2xl sm:rounded-3xl border border-border bg-card p-5 sm:p-6">
           <h2 className="mb-5 font-bold text-base sm:text-lg">Resumen del pedido</h2>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between text-muted-foreground text-xs sm:text-sm">
-              <span>Subtotal</span>
-              <span>{isEmpty ? '$0' : formatCLP(priceNeto)}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground text-xs sm:text-sm">
-              <span>IVA (19%)</span>
-              <span>{isEmpty ? '$0' : formatCLP(priceIva)}</span>
-            </div>
             <div className="border-t border-border pt-3 flex justify-between font-bold text-sm sm:text-base">
               <span>Total a pagar</span>
-              <span style={{ color: 'var(--scai-teal)' }}>{isEmpty ? '$0' : formatCLP(priceTotal)}</span>
+              <span style={{ color: 'var(--scai-teal)' }}>{isEmpty ? '$0' : formatCLP(price)}</span>
             </div>
           </div>
 
@@ -185,7 +176,7 @@ export default function CarritoPage() {
           >
             {checkoutLoading
               ? <><Loader2 size={17} className="animate-spin" /> Redirigiendo a Mercado Pago...</>
-              : <><CreditCard size={17} /> Pagar {isEmpty ? '' : formatCLP(priceTotal)}</>
+              : <><CreditCard size={17} /> Pagar {isEmpty ? '' : formatCLP(price)}</>
             }
           </button>
 

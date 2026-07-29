@@ -22,7 +22,7 @@ const PRODUCT = {
   id: DEFAULT_COURSE_ID,
   title: 'III Jornadas Regionales de Inmunología Clínica',
   subtitle: 'Cuando el Sistema Inmune Falla: Desafíos en Errores Innatos de la Inmunidad',
-  priceNeto: 25000,
+  priceNeto: 30000,
 }
 
 const FALLBACK_MODULOS: LessonModulo[] = buildCourseLessons([]).modulos
@@ -227,7 +227,7 @@ export default function VerPage() {
                           Agrega el acceso al carrito para ver la grabación completa
                         </p>
                         <p className="mt-2 text-xs sm:text-sm leading-relaxed text-muted-foreground dark:text-white/45">
-                          Pago único de $29.750 ($25.000 + IVA) · Acceso inmediato
+                          Pago único de $30.000 · Acceso inmediato
                         </p>
                         <div className="mt-5">
                           <button

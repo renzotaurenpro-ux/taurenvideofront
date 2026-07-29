@@ -6,7 +6,7 @@ import {
   SITE_TITLE,
   SITE_URL,
 } from '@/lib/site-config'
-import { PRICE_NETO, PRICE_TOTAL } from '@/lib/pricing'
+import { PRICE_CLP } from '@/lib/pricing'
 
 export default function SeoJsonLd() {
   const organization = {
@@ -37,11 +37,11 @@ export default function SeoJsonLd() {
     offers: {
       '@type': 'Offer',
       url: `${SITE_URL}/carrito`,
-      price: PRICE_TOTAL,
+      price: PRICE_CLP,
       priceCurrency: 'CLP',
       availability: 'https://schema.org/InStock',
       category: 'Paid',
-      description: `$${PRICE_NETO.toLocaleString('es-CL')} + IVA`,
+      description: `$${PRICE_CLP.toLocaleString('es-CL')}`,
     },
     hasCourseInstance: {
       '@type': 'CourseInstance',
@@ -76,7 +76,7 @@ export default function SeoJsonLd() {
     offers: {
       '@type': 'Offer',
       url: `${SITE_URL}/carrito`,
-      price: PRICE_TOTAL,
+      price: PRICE_CLP,
       priceCurrency: 'CLP',
       availability: 'https://schema.org/InStock',
     },

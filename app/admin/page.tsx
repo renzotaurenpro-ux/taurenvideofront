@@ -70,7 +70,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState('')
 
   const [title, setTitle] = useState('')
-  const [priceClp, setPriceClp] = useState('25000')
+  const [priceClp, setPriceClp] = useState('30000')
   const [published, setPublished] = useState(true)
   const [description, setDescription] = useState('')
 
@@ -366,7 +366,7 @@ export default function AdminPage() {
                   <label className="block text-white/50 text-sm mb-2">Precio CLP *</label>
                   <input value={priceClp}
                     onChange={e => setPriceClp(e.target.value.replace(/[^0-9]/g, ''))}
-                    inputMode="numeric" placeholder="25000"
+                    inputMode="numeric" placeholder="30000"
                     disabled={step !== 'form'}
                     className={inputClass} style={inputStyle}
                     onFocus={e => e.target.style.borderColor = 'var(--scai-teal)'}

@@ -60,7 +60,7 @@ export default function OpenGraphImage() {
             {SITE_URL.replace('https://', '')}
           </div>
           <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 22 }}>
-            $25.000 + IVA · CONACEM
+            $30.000 · CONACEM
           </div>
         </div>
       </div>
