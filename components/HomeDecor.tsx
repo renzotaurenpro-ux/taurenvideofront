@@ -37,9 +37,6 @@ export function HeroDecor() {
           }}
         />
       </div>
-      <div className={`absolute left-[2%] top-[24%] h-32 w-32 sm:h-40 sm:w-40 md:h-48 md:w-48 opacity-[0.08] dark:opacity-[0.18] ${feather}`}>
-        <Image src={IMG.mol} alt="" fill className="object-contain" unoptimized />
-      </div>
     </div>
   )
 }

@@ -7,12 +7,6 @@ export type Ponente = {
 
 export const PONENTES: Ponente[] = [
   {
-    nombre: 'Dra. Ligia Rodríguez',
-    cargo: 'Inmunología Clínica',
-    cv: 'Especialista en Inmunodeficiencias Primarias. Docente universitaria y referente nacional en diagnóstico de errores innatos de la inmunidad.',
-    foto: '/doctores/ligia-rodriguez.png',
-  },
-  {
     nombre: 'Dra. Soledad Pérez Saldías',
     cargo: 'Inmunóloga Clínica · Tesorera SCAI',
     cv: 'Inmunóloga Clínica. Pregrado Universidad Austral de Chile, postgrado Universidad de Chile. Miembro del Directorio SCAI, cargo actual de Tesorera. Hospital Villarrica.',
@@ -41,6 +35,12 @@ export const PONENTES: Ponente[] = [
     cargo: 'Inmunoreumatóloga y Alergóloga pediatra',
     cv: 'Médico Pediatra. Inmunoreumatóloga y alergóloga pediatra. Profesor Adjunto Universidad Austral de Chile. Hospital Base San José Osorno.',
     foto: '/doctores/barbara-cid.png',
+  },
+  {
+    nombre: 'Dra. Ligia Rodríguez',
+    cargo: 'Inmunología Clínica',
+    cv: 'Especialista en Inmunodeficiencias Primarias. Docente universitaria y referente nacional en diagnóstico de errores innatos de la inmunidad.',
+    foto: '/doctores/ligia-rodriguez.png',
   },
   {
     nombre: 'Dr. Mervin Piñones',
