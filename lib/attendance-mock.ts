@@ -10,7 +10,7 @@ const EVENT = {
   type: 'CERTIFICADO DE ASISTENCIA',
   eventTitle: 'III Jornadas Regionales de Inmunología Clínica',
   eventSubtitle: 'Cuando el Sistema Inmune Falla: Desafíos en Errores Innatos de la Inmunidad',
-  eventDate: '19 de junio de 2026',
+  eventDate: 'durante el período de acceso online',
   modality: 'online',
   director1: 'Dra. Rocío Tordecilla Fernández',
   director1Role: 'Directora Sociedad Chilena de Alergía e Inmunología',

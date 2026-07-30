@@ -272,7 +272,7 @@ export default function Home() {
                 className="inline-block rounded-full border px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.15em]"
                 style={{ borderColor: 'rgba(18,180,198,0.35)', color: 'var(--scai-teal)' }}
               >
-                19 Junio 2026 · Online · Acreditado CONACEM
+                Online · Acreditado CONACEM
               </span>
             </div>
 

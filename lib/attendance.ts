@@ -43,7 +43,7 @@ export function resolveCertificateBodyText(
 ): string | null {
   const e = data.event
   if (!e?.eventTitle) return null
-  const eventDesc = `las ${e.eventTitle}, "${e.eventSubtitle}", realizadas en modalidad ${e.modality} el ${e.eventDate}.`
+  const eventDesc = `las ${e.eventTitle}, "${e.eventSubtitle}", realizadas en modalidad ${e.modality} ${e.eventDate}.`
   if (data.certificateType === 'EXAM') {
     return `En reconocimiento a haber aprobado el examen correspondiente a ${eventDesc}`
   }

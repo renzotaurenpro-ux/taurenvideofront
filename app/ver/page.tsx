@@ -338,8 +338,6 @@ export default function VerPage() {
                 <span className="hidden sm:inline">Sociedad Chilena de Alergia e Inmunología · SCAI</span>
                 <span className="sm:hidden">SCAI</span>
                 <span>·</span>
-                <span className="flex items-center gap-1"><Clock size={11} /> 19 Jun 2026</span>
-                <span>·</span>
                 <span>4 módulos · 15 ponentes</span>
                 <span>·</span>
                 <span>Acreditado CONACEM</span>
@@ -404,7 +402,7 @@ export default function VerPage() {
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mt-3">
                     {[
-                      { label: 'Fecha', value: '19 Jun 2026' },
+                      { label: 'Disponible hasta', value: '31 Oct 2026' },
                       { label: 'Módulos', value: '4' },
                       { label: 'Expositores', value: '15' },
                       { label: 'Idioma', value: 'Español' },

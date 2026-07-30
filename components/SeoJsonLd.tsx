@@ -47,7 +47,7 @@ export default function SeoJsonLd() {
       '@type': 'CourseInstance',
       name: SITE_EVENT_NAME,
       courseMode: 'online',
-      startDate: '2026-06-19',
+      endDate: '2026-10-31',
       location: {
         '@type': 'VirtualLocation',
         url: SITE_URL,
@@ -60,7 +60,7 @@ export default function SeoJsonLd() {
     '@type': 'Event',
     name: SITE_EVENT_NAME,
     description: SITE_EVENT_SUBTITLE,
-    startDate: '2026-06-19',
+    endDate: '2026-10-31',
     eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
     eventStatus: 'https://schema.org/EventScheduled',
     location: {
