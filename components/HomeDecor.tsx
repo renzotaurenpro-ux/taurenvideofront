@@ -7,7 +7,6 @@ const IMG = {
   bola: '/imagenes/iamgen oficial.jpg',
   lluvia: '/imagenes/Lluvia de Inmunoglobulina.png',
   adherida: '/imagenes/Inmunoglobulina adeherida.jpg',
-  mol: '/imagenes/Inmunoglobulina.png',
 } as const
 
 const feather =
