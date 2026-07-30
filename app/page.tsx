@@ -372,10 +372,10 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-10 sm:py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8">
             {[
-              { label: 'Fecha', value: '19 Junio 2026' },
+              { label: 'Contenido Disponible', value: 'Hasta 31 de Octubre de 2026' },
               { label: 'Modalidad', value: 'Online · Cupos limitados' },
               { label: 'Acreditación', value: 'CONACEM' },
-                { label: 'Inversión', value: `$${priceText} · Pago único` },
+              { label: 'Inversión', value: `$${priceText} · Pago único` },
             ].map(({ label, value }) => (
               <div key={label} className="pr-6">
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">{label}</p>
@@ -562,6 +562,9 @@ export default function Home() {
               <span style={{ color: 'var(--scai-gold)' }}>Jornadas</span><br />
               ahora
             </h2>
+            <p className="mt-5 text-sm sm:text-base text-foreground/70 dark:text-white/65">
+              Contenido disponible hasta el 31 de octubre de 2026
+            </p>
           </div>
           <div className="flex flex-col items-start gap-4">
             <Link

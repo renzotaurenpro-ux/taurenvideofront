@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, CreditCard, Shield, ShoppingCart, CalendarDays, Award, Users, Clock, CheckCircle2, Loader2 } from 'lucide-react'
+import { ArrowLeft, CreditCard, Shield, ShoppingCart, Award, Users, Clock, CheckCircle2, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { useAuth } from '@/lib/authContext'
@@ -126,7 +126,6 @@ export default function CarritoPage() {
                   </p>
                   <h2 className="font-bold text-sm sm:text-base leading-snug mb-1.5">{course!.title}</h2>
                   <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1"><CalendarDays size={11} style={{ color: 'var(--scai-teal)' }} />19 Junio 2026</div>
                     <div className="flex items-center gap-1"><Users size={11} style={{ color: 'var(--scai-teal)' }} />15 expositores</div>
                     <div className="flex items-center gap-1"><Award size={11} style={{ color: 'var(--scai-teal)' }} />CONACEM</div>
                   </div>
@@ -189,6 +188,9 @@ export default function CarritoPage() {
               <Clock size={12} className="flex-shrink-0" style={{ color: 'var(--scai-teal)' }} />
               Acceso inmediato tras el pago
             </div>
+            <p className="text-xs text-muted-foreground pt-1">
+              Contenido disponible hasta el 31 de octubre de 2026
+            </p>
           </div>
         </aside>
       </section>
