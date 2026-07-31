@@ -1,7 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-import { Play } from 'lucide-react'
 
 const IMG = {
   bola: '/imagenes/iamgen oficial.jpg',
@@ -43,22 +42,22 @@ export function HeroDecor() {
 export function HeroVisual() {
   return (
     <div className={`relative w-full ${featherLg}`}>
-      <div className="relative aspect-[4/5] sm:aspect-[5/6] lg:aspect-auto lg:h-[min(400px,50vh)] w-full">
-        <Image
-          src={IMG.bola}
-          alt=""
-          fill
-          priority
-          quality={88}
-          sizes="(max-width: 768px) 100vw, 45vw"
-          className="object-cover object-[24%_center] scale-[1.08] brightness-[0.9] contrast-[0.94] saturate-[0.82] dark:brightness-100 dark:contrast-100 dark:saturate-100"
+      <div className="relative aspect-[16/10] sm:aspect-[5/4] lg:aspect-auto lg:h-[min(420px,52vh)] w-full overflow-hidden rounded-2xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+        <video
+          src="/videos/home.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="absolute inset-0 h-full w-full object-cover"
         />
         <div
           className="absolute inset-0 dark:hidden"
           style={{
             background: `
-              linear-gradient(105deg, var(--background) 0%, color-mix(in srgb, var(--background) 40%, transparent) 38%, transparent 55%),
-              linear-gradient(to top, color-mix(in srgb, var(--background) 88%, transparent) 0%, color-mix(in srgb, var(--background) 35%, transparent) 22%, transparent 42%)
+              linear-gradient(105deg, var(--background) 0%, color-mix(in srgb, var(--background) 35%, transparent) 32%, transparent 55%),
+              linear-gradient(to top, color-mix(in srgb, var(--background) 80%, transparent) 0%, transparent 42%)
             `,
           }}
         />
@@ -66,25 +65,11 @@ export function HeroVisual() {
           className="absolute inset-0 hidden dark:block"
           style={{
             background: `
-              linear-gradient(105deg, rgba(14,32,53,0.55) 0%, transparent 45%),
-              linear-gradient(to top, rgba(11,25,40,0.82) 0%, rgba(11,25,40,0.28) 24%, transparent 44%)
+              linear-gradient(105deg, rgba(14,32,53,0.45) 0%, transparent 42%),
+              linear-gradient(to top, rgba(11,25,40,0.72) 0%, rgba(11,25,40,0.2) 28%, transparent 48%)
             `,
           }}
         />
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-[4] h-[38%]"
-          style={{
-            background: 'linear-gradient(to top, rgba(11,25,40,0.55) 0%, transparent 100%)',
-          }}
-        />
-        <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
-          <div
-            className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full border border-white/25 backdrop-blur-md"
-            style={{ background: 'rgba(11,25,40,0.45)', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}
-          >
-            <Play size={22} className="text-white/90 ml-1" fill="currentColor" />
-          </div>
-        </div>
         <div className="absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
           style={{ background: 'rgba(11,25,40,0.5)' }}>
           <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: 'var(--scai-teal)' }} />
@@ -106,29 +91,8 @@ export function HeroVisual() {
 
 export function HeroMobileVisual() {
   return (
-    <div className={`relative mt-8 md:hidden w-full max-w-sm mx-auto ${featherLg}`}>
-      <div className="relative aspect-[16/10] w-full">
-        <Image src={IMG.adherida} alt="" fill className="object-cover object-center brightness-[0.9] saturate-[0.85] dark:brightness-100 dark:saturate-100" sizes="100vw" quality={80} />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(to top, rgba(11,25,40,0.75) 0%, rgba(11,25,40,0.2) 30%, transparent 50%)',
-          }}
-        />
-        <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
-          <div
-            className="flex h-12 w-12 items-center justify-center rounded-full border border-white/25 backdrop-blur-md"
-            style={{ background: 'rgba(11,25,40,0.45)', boxShadow: '0 6px 24px rgba(0,0,0,0.3)' }}
-          >
-            <Play size={18} className="text-white/90 ml-0.5" fill="currentColor" />
-          </div>
-        </div>
-        <div className="absolute left-3 top-3 z-20 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 backdrop-blur-sm"
-          style={{ background: 'rgba(11,25,40,0.5)' }}>
-          <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: 'var(--scai-teal)' }} />
-          <span className="text-[10px] font-semibold text-white/85">Grabación</span>
-        </div>
-      </div>
+    <div className="relative mt-8 md:hidden w-full max-w-md mx-auto">
+      <HeroVisual />
     </div>
   )
 }

@@ -7,6 +7,8 @@ import { ShoppingCart, Check, X } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
 import {
   HeroDecor,
+  HeroVisual,
+  HeroMobileVisual,
   StatsDecor,
   ModulosDecor,
   QuoteDecor,
@@ -263,7 +265,7 @@ export default function Home() {
           <p className="text-[11px] text-muted-foreground tabular-nums dark:text-white/25">01</p>
         </div>
 
-        <div className="relative z-10 mx-auto w-full max-w-7xl flex-1 flex items-center py-14 md:py-0">
+        <div className="relative z-10 mx-auto w-full max-w-7xl flex-1 grid md:grid-cols-2 gap-8 md:gap-12 items-center py-14 md:py-0">
           <div>
             <div className="mb-7">
               <span
@@ -300,6 +302,11 @@ export default function Home() {
                 Ya tengo acceso →
               </Link>
             </div>
+            <HeroMobileVisual />
+          </div>
+
+          <div className="relative hidden md:block w-full max-w-lg lg:max-w-none mx-auto">
+            <HeroVisual />
           </div>
         </div>
 
