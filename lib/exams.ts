@@ -316,11 +316,12 @@ export async function resolveCourseExamAccess(): Promise<CourseExamAccess> {
     fetchMyCertificates().catch(() => [] as Certificate[]),
   ])
 
-  let exam = exams.find(e => e.published !== false) ?? exams[0] ?? null
-  let certificate = exam?.certificate ?? certs[0] ?? null
+  let exam: Exam | null = exams.find(e => e.published !== false) ?? exams[0] ?? null
+  let certificate: Certificate | null = exam?.certificate ?? certs[0] ?? null
 
   if (exam?.id) {
-    const status = await fetchExamStatus(exam.id).catch(() => null)
+    const examId = exam.id
+    const status = await fetchExamStatus(examId).catch(() => null)
     if (status) {
       exam = {
         ...exam,
@@ -332,12 +333,14 @@ export async function resolveCourseExamAccess(): Promise<CourseExamAccess> {
         certificate: status.certificate ?? exam.certificate,
         questions: status.canTakeExam ? exam.questions : [],
       }
-      certificate = status.certificate ?? certificate
+      if (status.certificate) certificate = status.certificate
     }
 
-    if ((exam.passed || !exam.canTakeExam) && !certificate) {
-      certificate = await issueCertificate(exam.id).catch(() => null)
-      if (!certificate) {
+    if (exam && (exam.passed || !exam.canTakeExam) && !certificate) {
+      const issued = await issueCertificate(examId).catch(() => null)
+      if (issued) {
+        certificate = issued
+      } else {
         const again = await fetchMyCertificates().catch(() => [] as Certificate[])
         certificate = again[0] ?? null
       }

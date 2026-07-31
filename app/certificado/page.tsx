@@ -6,9 +6,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { useRequireAuth } from '@/lib/useRequireAuth'
 import {
-  fetchMyCertificates,
-  fetchPublishedExam,
-  issueCertificate,
+  resolveCourseExamAccess,
   verifyCertificate,
   type Certificate,
   type CertVerifyResult,
@@ -39,19 +37,8 @@ export default function CertificadoPage() {
     let cancelled = false
     setLoading(true)
     ;(async () => {
-      let list = await fetchMyCertificates()
-      let latest = list?.[0] ?? null
-
-      if (!latest) {
-        const exam = await fetchPublishedExam().catch(() => null)
-        if (exam && (exam.passed || exam.canTakeExam === false || exam.certificate)) {
-          latest = exam.certificate ?? (await issueCertificate(exam.id).catch(() => null))
-          if (!latest) {
-            list = await fetchMyCertificates()
-            latest = list?.[0] ?? null
-          }
-        }
-      }
+      const access = await resolveCourseExamAccess().catch(() => null)
+      const latest: Certificate | null = access?.certificate ?? null
 
       if (!cancelled) setCert(latest)
 
