@@ -173,14 +173,21 @@ export type ExamSubmitResult = {
   certificate?: Certificate | null
 }
 
+function asArray(data: unknown): unknown[] {
+  if (Array.isArray(data)) return data
+  if (!data || typeof data !== 'object') return []
+  const o = data as Record<string, unknown>
+  if (Array.isArray(o.data)) return o.data
+  if (Array.isArray(o.exams)) return o.exams
+  if (Array.isArray(o.items)) return o.items
+  if (Array.isArray(o.results)) return o.results
+  if (Array.isArray(o.certificates)) return o.certificates
+  return []
+}
+
 function parseExamsList(data: unknown): ExamListItem[] {
-  const arr = Array.isArray(data)
-    ? data
-    : Array.isArray((data as { data?: unknown })?.data)
-      ? (data as { data: unknown[] }).data
-      : []
   const out: ExamListItem[] = []
-  for (const item of arr) {
+  for (const item of asArray(data)) {
     const full = normalizeExam(item)
     if (full) out.push(full)
   }
@@ -288,13 +295,74 @@ export async function fetchMyCertificates(): Promise<Certificate[]> {
   const res = await fetchAuth('/certificates/my')
   if (!res.ok) return []
   const data = await res.json().catch(() => null)
-  if (!Array.isArray(data)) return []
-  return data.map(normalizeCertificate).filter((c): c is Certificate => c !== null)
+  return asArray(data).map(normalizeCertificate).filter((c): c is Certificate => c !== null)
 }
 
 export function examHasCertificateAccess(exam: Pick<Exam, 'passed' | 'canTakeExam' | 'certificate'> | null | undefined): boolean {
   if (!exam) return false
   return exam.passed === true || exam.canTakeExam === false || !!exam.certificate
+}
+
+export type CourseExamAccess = {
+  exam: Exam | null
+  certificate: Certificate | null
+  passed: boolean
+  canTakeExam: boolean
+}
+
+export async function resolveCourseExamAccess(): Promise<CourseExamAccess> {
+  const [exams, certs] = await Promise.all([
+    fetchExams().catch(() => [] as ExamListItem[]),
+    fetchMyCertificates().catch(() => [] as Certificate[]),
+  ])
+
+  let exam = exams.find(e => e.published !== false) ?? exams[0] ?? null
+  let certificate = exam?.certificate ?? certs[0] ?? null
+
+  if (exam?.id) {
+    const status = await fetchExamStatus(exam.id).catch(() => null)
+    if (status) {
+      exam = {
+        ...exam,
+        title: status.title ?? exam.title,
+        courseId: status.courseId ?? exam.courseId,
+        canTakeExam: status.canTakeExam,
+        passed: status.passed,
+        lastAttempt: status.lastAttempt,
+        certificate: status.certificate ?? exam.certificate,
+        questions: status.canTakeExam ? exam.questions : [],
+      }
+      certificate = status.certificate ?? certificate
+    }
+
+    if ((exam.passed || !exam.canTakeExam) && !certificate) {
+      certificate = await issueCertificate(exam.id).catch(() => null)
+      if (!certificate) {
+        const again = await fetchMyCertificates().catch(() => [] as Certificate[])
+        certificate = again[0] ?? null
+      }
+      if (certificate) {
+        exam = { ...exam, certificate, passed: true, canTakeExam: false, questions: [] }
+      }
+    }
+  }
+
+  if (!exam && certificate) {
+    return {
+      exam: null,
+      certificate,
+      passed: true,
+      canTakeExam: false,
+    }
+  }
+
+  const passed = !!(exam && examHasCertificateAccess(exam)) || !!certificate
+  return {
+    exam,
+    certificate: certificate ?? exam?.certificate ?? null,
+    passed,
+    canTakeExam: passed ? false : exam?.canTakeExam === true,
+  }
 }
 
 export type CertVerifyResult = {

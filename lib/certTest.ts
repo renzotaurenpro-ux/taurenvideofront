@@ -1,4 +1,4 @@
-import { examHasCertificateAccess, fetchMyCertificates, fetchPublishedExam } from './exams'
+import { fetchMyCertificates, resolveCourseExamAccess } from './exams'
 
 export const CERT_PASSED_KEY = '__tauren_cert_passed_v1'
 
@@ -21,13 +21,13 @@ export function getCertPassedLocal(): boolean {
 
 export async function syncCertUnlocked(): Promise<boolean> {
   try {
-    const exam = await fetchPublishedExam()
-    if (examHasCertificateAccess(exam)) {
+    const certs = await fetchMyCertificates().catch(() => [])
+    if (certs.length > 0) {
       setCertPassedLocal(true)
       return true
     }
-    const certs = await fetchMyCertificates()
-    if (certs.length > 0) {
+    const access = await resolveCourseExamAccess()
+    if (access.passed || access.certificate) {
       setCertPassedLocal(true)
       return true
     }

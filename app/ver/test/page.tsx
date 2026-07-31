@@ -7,10 +7,10 @@ import { ArrowLeft, Award } from 'lucide-react'
 import { useAuth } from '@/lib/authContext'
 import { setCertPassedLocal } from '@/lib/certTest'
 import {
-  examHasCertificateAccess,
-  fetchPublishedExam,
   issueCertificate,
+  resolveCourseExamAccess,
   submitExam,
+  type Certificate,
   type Exam,
   type ExamSubmitResult,
 } from '@/lib/exams'
@@ -22,11 +22,13 @@ export default function VerTestPage() {
   const { firebaseUser, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [exam, setExam] = useState<Exam | null>(null)
+  const [certificate, setCertificate] = useState<Certificate | null>(null)
   const [selected, setSelected] = useState<Record<string, string>>({})
   const [result, setResult] = useState<ExamSubmitResult | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [purchased, setPurchased] = useState(false)
+  const [passed, setPassed] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -67,19 +69,24 @@ export default function VerTestPage() {
           }
         }
 
-        const full = await fetchPublishedExam()
-        if (!full) throw new Error('No se pudo cargar el examen. Revisa que esté publicado en el servidor.')
+        const access = await resolveCourseExamAccess()
         if (!cancelled) {
-          setExam(full)
+          setExam(access.exam)
+          setCertificate(access.certificate)
           setSelected({})
-          if (examHasCertificateAccess(full)) {
+          if (access.passed || access.certificate) {
+            setPassed(true)
             setCertPassedLocal(true)
             setResult({
               passed: true,
               canTakeExam: false,
-              certificate: full.certificate,
-              score: full.lastAttempt?.score,
+              certificate: access.certificate,
+              score: access.exam?.lastAttempt?.score,
             })
+          } else if (!access.exam) {
+            setError('No se pudo cargar el examen. Revisa que esté publicado en el servidor.')
+          } else {
+            setPassed(false)
           }
         }
       } catch (e: any) {
@@ -100,10 +107,9 @@ export default function VerTestPage() {
     )
   }
 
-  const canTake = exam?.canTakeExam === true && !exam.passed && !result?.passed
+  const canTake = !passed && exam?.canTakeExam === true && (exam.questions?.length ?? 0) > 0
   const questionsCount = exam?.questions?.length ?? 0
-  const passed = result?.passed === true || exam?.passed === true
-  const certificate = result?.certificate ?? exam?.certificate
+  const activeCert = result?.certificate ?? certificate ?? exam?.certificate
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -129,7 +135,7 @@ export default function VerTestPage() {
               Realizar examen
             </button>
           )}
-          {!loading && purchased && !error && passed && (
+          {!loading && purchased && passed && (
             <Link
               href="/certificado"
               className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-bold text-white border border-[color:rgba(18,180,198,0.45)]"
@@ -144,7 +150,7 @@ export default function VerTestPage() {
       <main className="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-10 space-y-5">
         <div>
           <p className="text-xs uppercase tracking-widest text-muted-foreground">Certificación</p>
-          <h1 className="mt-1 text-xl sm:text-2xl font-black">{exam?.title ?? exam?.name ?? 'Examen'}</h1>
+          <h1 className="mt-1 text-xl sm:text-2xl font-black">{exam?.title ?? exam?.name ?? activeCert?.exam?.title ?? 'Examen'}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {passed
               ? 'Ya aprobaste este examen. Tu certificado está disponible para descargar.'
@@ -170,10 +176,6 @@ export default function VerTestPage() {
           <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
             Cargando examen...
           </div>
-        ) : error ? (
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-sm text-red-400">
-            {error}
-          </div>
         ) : passed ? (
           <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
             <p className="text-sm font-semibold" style={{ color: '#4ade80' }}>
@@ -189,9 +191,9 @@ export default function VerTestPage() {
                 Puntaje: <span className="font-bold text-foreground">{result?.score ?? exam?.lastAttempt?.score}%</span>
               </p>
             )}
-            {certificate?.certificateCode && (
+            {activeCert?.certificateCode && (
               <p className="text-xs text-muted-foreground">
-                Código: <span className="font-mono text-foreground">{certificate.certificateCode}</span>
+                Código: <span className="font-mono text-foreground">{activeCert.certificateCode}</span>
               </p>
             )}
             <div className="flex flex-col sm:flex-row gap-2 pt-1">
@@ -203,6 +205,14 @@ export default function VerTestPage() {
                 Descargar certificado
               </Link>
             </div>
+          </div>
+        ) : error ? (
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 space-y-4">
+            <p className="text-sm text-red-400">{error}</p>
+            <Link href="/certificado" className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white"
+              style={{ background: 'var(--scai-teal)' }}>
+              Ir a mis certificados
+            </Link>
           </div>
         ) : exam && canTake ? (
           <>
@@ -276,21 +286,21 @@ export default function VerTestPage() {
                     if (!res) throw new Error('No se pudo validar el examen')
                     setResult(res)
                     if (res.passed) {
+                      setPassed(true)
                       setCertPassedLocal(true)
+                      let cert = res.certificate ?? null
+                      if (!cert) cert = await issueCertificate(exam.id).catch(() => null)
+                      if (cert) {
+                        setCertificate(cert)
+                        setResult(r => r ? { ...r, certificate: cert } : r)
+                      }
                       setExam(prev => prev ? {
                         ...prev,
                         passed: true,
                         canTakeExam: false,
                         questions: [],
-                        certificate: res.certificate ?? prev.certificate,
+                        certificate: cert ?? prev.certificate,
                       } : prev)
-                      if (!res.certificate) {
-                        const issued = await issueCertificate(exam.id).catch(() => null)
-                        if (issued) {
-                          setResult(r => r ? { ...r, certificate: issued } : r)
-                          setExam(prev => prev ? { ...prev, certificate: issued } : prev)
-                        }
-                      }
                     } else {
                       setExam(prev => prev ? {
                         ...prev,
@@ -311,7 +321,7 @@ export default function VerTestPage() {
               </button>
             </div>
           </>
-        ) : exam ? (
+        ) : (
           <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
             <p className="text-sm text-muted-foreground">
               No puedes rendir este examen en este momento.
@@ -321,7 +331,7 @@ export default function VerTestPage() {
               Ir a certificados
             </Link>
           </div>
-        ) : null}
+        )}
       </main>
     </div>
   )
