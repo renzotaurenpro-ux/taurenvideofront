@@ -1,8 +1,8 @@
-export const ATTENDANCE_EXAM_TOTAL = 16
+export const ATTENDANCE_EXAM_TOTAL = 15
 export const ATTENDANCE_EXAM_PASS_GRADE = 5.0
 export const ATTENDANCE_EXAM_MAX_GRADE = 7
 export const ATTENDANCE_EXAM_MAX_WRONG = 5
-export const ATTENDANCE_EXAM_MIN_CORRECT = 11
+export const ATTENDANCE_EXAM_MIN_CORRECT = 10
 
 export function calcAttendanceExamGrade(correct: number, total: number) {
   if (total <= 0) return 1

@@ -61,7 +61,7 @@ export function AttendanceExamRules() {
         ))}
       </div>
       <p className="text-xs text-white/50 leading-relaxed text-center sm:text-left">
-        Ejemplo: {ATTENDANCE_EXAM_MIN_CORRECT} correctas = nota 5,1 · puedes equivocarte hasta {ATTENDANCE_EXAM_MAX_WRONG} veces.
+        Ejemplo: {ATTENDANCE_EXAM_MIN_CORRECT} correctas = nota 5,0 · puedes equivocarte hasta {ATTENDANCE_EXAM_MAX_WRONG} veces.
       </p>
     </div>
   )
