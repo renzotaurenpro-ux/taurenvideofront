@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Image from 'next/image'
-import { QRCodeSVG } from 'qrcode.react'
-import ScaiLogo from '../../Logotipo-SCAI.png'
+import Link from 'next/link'
+import { CheckCircle2, Download, ArrowLeft } from 'lucide-react'
 import { useRequireAuth } from '@/lib/useRequireAuth'
 import {
   resolveCourseExamAccess,
@@ -11,6 +10,11 @@ import {
   type Certificate,
   type CertVerifyResult,
 } from '@/lib/exams'
+import { buildCourseAttendanceCertificate } from '@/lib/course-certificate'
+import type { AttendanceCertificateData } from '@/lib/attendance'
+import AttendanceCertificateCard from '@/components/AttendanceCertificateCard'
+import { downloadAttendanceCertificatePdf } from '@/lib/attendance-certificate-pdf'
+import PageBackground from '@/components/PageBackground'
 
 export default function CertificadoPage() {
   const { firebaseUser, profile, loading: authLoading, ready } = useRequireAuth()
@@ -19,17 +23,6 @@ export default function CertificadoPage() {
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(false)
   const certRef = useRef<HTMLDivElement | null>(null)
-
-  const displayName = useMemo(() => {
-    const fromVerify = verify?.user ? `${verify.user.firstName} ${verify.user.lastName}`.trim() : ''
-    if (fromVerify) return fromVerify
-    if (profile) return `${profile.firstName} ${profile.lastName}`.trim()
-    return firebaseUser?.email ?? 'Profesional acreditado'
-  }, [firebaseUser?.email, profile, verify?.user])
-
-  const displayEmail = useMemo(() => {
-    return verify?.user?.email ?? profile?.email ?? firebaseUser?.email ?? ''
-  }, [firebaseUser?.email, profile?.email, verify?.user?.email])
 
   useEffect(() => {
     if (!ready) return
@@ -53,213 +46,94 @@ export default function CertificadoPage() {
       if (!cancelled) setLoading(false)
     })()
     return () => { cancelled = true }
-  }, [authLoading, firebaseUser])
+  }, [authLoading, firebaseUser, ready])
 
-  const issuedAt = verify?.issuedAt ?? cert?.issuedAt
-  const issuedDate = issuedAt
-    ? new Date(issuedAt).toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' })
-    : new Date().toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' })
-
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.scairegionales.cl'
-  const code = cert?.certificateCode ?? verify?.certificateCode
-  const verifyUrl = code
-    ? `${origin}/certificado/verificar/${code}`
-    : null
-
-  const examTitle = verify?.exam?.title ?? cert?.exam?.title ?? 'Test de Inmunología Clínica'
+  const certificate: AttendanceCertificateData | null = useMemo(() => {
+    if (!cert) return null
+    return buildCourseAttendanceCertificate({
+      cert,
+      verify,
+      profile,
+      emailFallback: firebaseUser?.email ?? undefined,
+    })
+  }, [cert, verify, profile, firebaseUser?.email])
 
   async function downloadPdf() {
-    if (downloading) return
-    const node = certRef.current
-    if (!node) return
-
+    if (downloading || !certificate) return
     setDownloading(true)
     try {
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-        import('html2canvas'),
-        import('jspdf'),
-      ])
-
-      const canvas = await html2canvas(node, {
-        scale: Math.max(2, Math.ceil(window.devicePixelRatio || 2)),
-        backgroundColor: '#ffffff',
-        useCORS: true,
-        logging: false,
-      })
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.95)
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-
-      const pageW = pdf.internal.pageSize.getWidth()
-      const pageH = pdf.internal.pageSize.getHeight()
-
-      const imgW = pageW
-      const imgH = (canvas.height * imgW) / canvas.width
-      const y = Math.max(0, (pageH - imgH) / 2)
-
-      pdf.addImage(imgData, 'JPEG', 0, y, imgW, imgH, undefined, 'FAST')
-
-      const safeName = (displayName || 'certificado')
-        .replace(/[\\/:*?"<>|]+/g, '')
-        .replace(/\s+/g, ' ')
-        .trim()
-
-      const file = `certificado-${safeName}${code ? `-${code}` : ''}.pdf`
-      pdf.save(file)
+      await downloadAttendanceCertificatePdf(certificate, window.location.origin)
     } finally {
       setDownloading(false)
     }
   }
 
   return (
-    <>
-      <style>{`
-        @media print {
-          @page { size: A4 landscape; margin: 0; }
-          body { margin: 0; }
-          .no-print { display: none !important; }
-          .cert-wrapper { box-shadow: none !important; }
-        }
-      `}</style>
-
-      <div className="no-print p-4 flex items-center justify-center" style={{ background: '#F3F4F6' }}>
-        <button
-          onClick={downloadPdf}
-          disabled={loading || downloading}
-          className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60 disabled:cursor-not-allowed"
-          style={{ background: '#12B4C6' }}
+    <div className="relative min-h-[100dvh] min-h-screen w-full">
+      <PageBackground scene="login" />
+      <div className="relative z-10 mx-auto max-w-[840px] px-4 sm:px-6 pt-[max(4.5rem,calc(env(safe-area-inset-top,0px)+3.5rem))] pb-10">
+        <Link
+          href="/ver"
+          className="inline-flex items-center gap-1.5 text-xs text-white/55 hover:text-white/85 mb-4 transition-colors"
         >
-          {downloading ? 'Generando PDF...' : 'Descargar PDF'}
-        </button>
-      </div>
+          <ArrowLeft size={14} />
+          Volver al video
+        </Link>
 
-      <div className="flex items-center justify-center pb-10 print:p-0" style={{ background: '#F3F4F6' }}>
-        <div
-          ref={certRef}
-          className="cert-wrapper bg-white relative overflow-hidden"
-          style={{
-            width: '297mm',
-            minHeight: '210mm',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
-            fontFamily: "'Georgia', serif",
-          }}
-        >
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              border: '18px solid transparent',
-              borderImage: 'linear-gradient(135deg, #12B4C6 0%, #0a8a97 50%, #12B4C6 100%) 1',
-            }}
-          />
-          <div
-            className="absolute top-0 left-0 right-0 h-2"
-            style={{ background: 'linear-gradient(90deg, #12B4C6 0%, #0a8a97 100%)' }}
-          />
-          <div
-            className="absolute bottom-0 left-0 right-0 h-2"
-            style={{ background: 'linear-gradient(90deg, #0a8a97 0%, #12B4C6 100%)' }}
-          />
-
-          <div className="relative z-10 flex flex-col h-full px-16 py-10" style={{ minHeight: '210mm' }}>
-            <div className="flex items-start justify-between mb-6">
-              <Image
-                src={ScaiLogo}
-                alt="SCAI"
-                className="h-12 w-auto"
-                style={{ filter: 'brightness(0)' }}
-              />
-              <div className="text-right">
-                <p
-                  className="text-xs uppercase tracking-[0.2em] font-semibold"
-                  style={{ color: '#12B4C6' }}
-                >
-                  Sociedad Chilena de Alergia e Inmunología
-                </p>
-                <p className="text-xs mt-0.5 tracking-widest uppercase" style={{ color: '#9CA3AF' }}>www.scai.cl</p>
-              </div>
+        <div className="max-w-lg mx-auto space-y-2">
+          {loading ? (
+            <div className="rounded-2xl border border-white/10 px-4 py-3 text-sm text-white/60">
+              Cargando certificado...
             </div>
-
-            <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
-              <p
-                className="text-xs uppercase tracking-[0.35em] font-semibold mb-4"
-                style={{ color: '#12B4C6' }}
-              >
-                Certificado de Aprobación
+          ) : !certificate ? (
+            <div className="rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3 space-y-3">
+              <p className="text-sm text-red-300">
+                No encontramos un certificado emitido para tu cuenta.
               </p>
-
+              <Link
+                href="/ver/test"
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold text-white"
+                style={{ background: 'var(--scai-teal)' }}
+              >
+                Ir al examen
+              </Link>
+            </div>
+          ) : (
+            <>
               <div
-                className="w-16 h-px mb-6"
-                style={{ background: 'linear-gradient(90deg, transparent, #12B4C6, transparent)' }}
-              />
-
-              <p className="text-sm mb-2 tracking-wide" style={{ color: '#6B7280' }}>Se certifica que</p>
-
-              <p
-                className="font-black mb-3 leading-tight"
-                style={{ fontSize: '2.6rem', color: '#0B1928', fontFamily: "'Georgia', serif" }}
+                className="rounded-2xl border border-[rgba(18,180,198,0.35)] px-4 py-3 flex items-start gap-2.5"
+                style={{ background: 'rgba(18,180,198,0.1)' }}
               >
-                {loading ? '...' : displayName}
-              </p>
-
-              {!!displayEmail && (
-                <p className="text-xs mb-4" style={{ color: '#9CA3AF' }}>{displayEmail}</p>
-              )}
-
-              <p className="text-sm mb-1 tracking-wide" style={{ color: '#6B7280' }}>ha aprobado satisfactoriamente</p>
-              <p
-                className="font-bold text-lg mb-1"
-                style={{ color: '#0B1928' }}
-              >
-                III Jornadas Regionales de Inmunología Clínica
-              </p>
-              <p className="text-sm italic mb-2" style={{ color: '#6B7280' }}>
-                Cuando el Sistema Inmune Falla: Desafíos en Errores Innatos de la Inmunidad
-              </p>
-              {examTitle && (
-                <p className="text-xs mb-6" style={{ color: '#9CA3AF' }}>Examen: {examTitle}</p>
-              )}
-
-              <div
-                className="w-16 h-px mb-6"
-                style={{ background: 'linear-gradient(90deg, transparent, #12B4C6, transparent)' }}
-              />
-
-              <div className="flex items-end justify-center gap-16">
-                <div className="text-center">
-                  <div className="w-36 h-px mb-1.5" style={{ background: '#D1D5DB' }} />
-                  <p className="text-xs" style={{ color: '#6B7280' }}>Directiva SCAI</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-semibold mb-1" style={{ color: '#374151' }}>{loading ? '...' : issuedDate}</p>
-                  <div className="w-36 h-px mb-1.5" style={{ background: '#D1D5DB' }} />
-                  <p className="text-xs" style={{ color: '#6B7280' }}>Fecha de emisión</p>
+                <CheckCircle2 size={20} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-white">Certificado de Aprobación</p>
+                  <p className="text-xs text-white/70 mt-0.5">
+                    {certificate.recipient.fullName}
+                  </p>
+                  <p className="text-xs text-white/55 mt-0.5">Tu certificado está listo para descargar.</p>
                 </div>
               </div>
-            </div>
 
-            <div className="flex items-end justify-between mt-4 pt-4" style={{ borderTop: '1px solid #F3F4F6' }}>
-              <div>
-                <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: '#D1D5DB' }}>Código de verificación</p>
-                <p className="text-[10px] font-mono" style={{ color: '#6B7280' }}>
-                  {loading ? '...' : (code ?? '—')}
-                </p>
-              </div>
-              {verifyUrl && !loading && (
-                <div className="flex flex-col items-center gap-1">
-                  <QRCodeSVG
-                    value={verifyUrl}
-                    size={72}
-                    bgColor="#ffffff"
-                    fgColor="#0B1928"
-                    level="M"
-                  />
-                  <p className="text-[8px] uppercase tracking-widest" style={{ color: '#D1D5DB' }}>Verificar</p>
-                </div>
-              )}
-            </div>
-          </div>
+              <button
+                type="button"
+                onClick={downloadPdf}
+                disabled={downloading}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white disabled:opacity-60"
+                style={{ background: 'var(--scai-teal)', boxShadow: '0 6px 20px rgba(18,180,198,0.28)' }}
+              >
+                <Download size={16} />
+                {downloading ? 'Generando PDF...' : 'Descargar certificado PDF'}
+              </button>
+            </>
+          )}
         </div>
+
+        {certificate && (
+          <div className="mt-4 w-full">
+            <AttendanceCertificateCard ref={certRef} data={certificate} />
+          </div>
+        )}
       </div>
-    </>
+    </div>
   )
 }
