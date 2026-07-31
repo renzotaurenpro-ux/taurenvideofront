@@ -15,7 +15,7 @@ import { DEFAULT_COURSE_ID, resolveCourseAccess, type Course } from '@/lib/cours
 import { waitForFirebaseUser } from '@/lib/auth'
 import { buildCourseLessons, type LessonModulo } from '@/lib/bunnyLessons'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
-import { CERT_PASSED_KEY } from '@/lib/certTest'
+import { getCertPassedLocal, syncCertUnlocked } from '@/lib/certTest'
 import { PONENTES, ponenteFoto, ponenteIniciales } from '@/lib/ponentes'
 
 const PRODUCT = {
@@ -73,13 +73,23 @@ export default function VerPage() {
   const totalVideos = modulos.reduce((n, m) => n + m.videos.length, 0)
 
   useEffect(() => {
-    const sync = () => {
-      try { setCertUnlocked(sessionStorage.getItem(CERT_PASSED_KEY) === '1') } catch { setCertUnlocked(false) }
+    if (authLoading || !activeUser) return
+    let cancelled = false
+    setCertUnlocked(getCertPassedLocal())
+    syncCertUnlocked()
+      .then(v => { if (!cancelled) setCertUnlocked(v) })
+      .catch(() => {})
+    const onFocus = () => {
+      syncCertUnlocked()
+        .then(v => { if (!cancelled) setCertUnlocked(v) })
+        .catch(() => {})
     }
-    sync()
-    window.addEventListener('focus', sync)
-    return () => window.removeEventListener('focus', sync)
-  }, [])
+    window.addEventListener('focus', onFocus)
+    return () => {
+      cancelled = true
+      window.removeEventListener('focus', onFocus)
+    }
+  }, [authLoading, activeUser])
 
   useEffect(() => {
     if (authLoading) return

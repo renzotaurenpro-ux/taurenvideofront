@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { LogOut, Settings, Award, Play, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import ThemeToggle from '@/components/ThemeToggle'
-import { CERT_PASSED_KEY } from '@/lib/certTest'
+import { getCertPassedLocal, syncCertUnlocked } from '@/lib/certTest'
 
 export default function AuthBar() {
   const { firebaseUser, profile, loading, logout } = useAuth()
@@ -19,12 +19,21 @@ export default function AuthBar() {
 
   useEffect(() => {
     if (loading || !firebaseUser || !showVerActions) return
-    const sync = () => {
-      try { setCertUnlocked(sessionStorage.getItem(CERT_PASSED_KEY) === '1') } catch { setCertUnlocked(false) }
+    let cancelled = false
+    setCertUnlocked(getCertPassedLocal())
+    syncCertUnlocked()
+      .then(v => { if (!cancelled) setCertUnlocked(v) })
+      .catch(() => {})
+    const onFocus = () => {
+      syncCertUnlocked()
+        .then(v => { if (!cancelled) setCertUnlocked(v) })
+        .catch(() => {})
     }
-    sync()
-    window.addEventListener('focus', sync)
-    return () => window.removeEventListener('focus', sync)
+    window.addEventListener('focus', onFocus)
+    return () => {
+      cancelled = true
+      window.removeEventListener('focus', onFocus)
+    }
   }, [loading, firebaseUser, showVerActions])
 
   if (hideBar || loading || !firebaseUser) return null

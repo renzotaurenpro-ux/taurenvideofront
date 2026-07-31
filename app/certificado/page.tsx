@@ -5,7 +5,14 @@ import Image from 'next/image'
 import { QRCodeSVG } from 'qrcode.react'
 import ScaiLogo from '../../Logotipo-SCAI.png'
 import { useRequireAuth } from '@/lib/useRequireAuth'
-import { fetchMyCertificates, verifyCertificate, type Certificate, type CertVerifyResult } from '@/lib/exams'
+import {
+  fetchMyCertificates,
+  fetchPublishedExam,
+  issueCertificate,
+  verifyCertificate,
+  type Certificate,
+  type CertVerifyResult,
+} from '@/lib/exams'
 
 export default function CertificadoPage() {
   const { firebaseUser, profile, loading: authLoading, ready } = useRequireAuth()
@@ -32,18 +39,28 @@ export default function CertificadoPage() {
     let cancelled = false
     setLoading(true)
     ;(async () => {
-      const list = await fetchMyCertificates()
-      const latest = list?.[0] ?? null
-      if (!cancelled) {
-        setCert(latest)
+      let list = await fetchMyCertificates()
+      let latest = list?.[0] ?? null
+
+      if (!latest) {
+        const exam = await fetchPublishedExam().catch(() => null)
+        if (exam && (exam.passed || exam.canTakeExam === false || exam.certificate)) {
+          latest = exam.certificate ?? (await issueCertificate(exam.id).catch(() => null))
+          if (!latest) {
+            list = await fetchMyCertificates()
+            latest = list?.[0] ?? null
+          }
+        }
       }
+
+      if (!cancelled) setCert(latest)
 
       const code = latest?.certificateCode
       if (code) {
         const verified = await verifyCertificate(code).catch(() => null)
         if (!cancelled) setVerify(verified)
-      } else {
-        if (!cancelled) setVerify(null)
+      } else if (!cancelled) {
+        setVerify(null)
       }
 
       if (!cancelled) setLoading(false)
