@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { Maximize2, X } from 'lucide-react'
 
@@ -43,26 +44,112 @@ export function HeroDecor() {
   )
 }
 
-export function HeroVisual() {
-  const [open, setOpen] = useState(false)
+function HeroVideoLightbox({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (!open) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', onKey)
     return () => {
       document.body.style.overflow = prev
       window.removeEventListener('keydown', onKey)
     }
-  }, [open])
+  }, [open, onClose])
+
+  if (!mounted || !open) return null
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[200] flex flex-col"
+      style={{ background: 'rgba(4,10,18,0.96)' }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Video ampliado"
+    >
+      <div
+        className="flex items-center justify-between gap-3 px-4 sm:px-6 border-b border-white/10"
+        style={{
+          paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
+          paddingBottom: '0.75rem',
+          background: 'rgba(8,18,32,0.95)',
+        }}
+      >
+        <div className="min-w-0">
+          <p className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--scai-teal)' }}>
+            III Jornadas Regionales
+          </p>
+          <p className="text-sm font-semibold text-white truncate">Cuando el Sistema Inmune Falla</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex items-center gap-2 rounded-full px-3.5 py-2.5 text-sm font-semibold text-white border border-white/20 hover:bg-white/10 active:scale-[0.98] transition-colors flex-shrink-0"
+          style={{ background: 'rgba(18,180,198,0.18)', minHeight: 44 }}
+        >
+          <X size={18} />
+          Cerrar
+        </button>
+      </div>
+
+      <div
+        className="flex-1 flex items-center justify-center px-2 sm:px-6"
+        style={{
+          paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
+          minHeight: 0,
+        }}
+        onClick={onClose}
+      >
+        <div
+          className="relative w-full max-w-5xl overflow-hidden rounded-xl sm:rounded-2xl border border-white/15 bg-black shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
+          onClick={e => e.stopPropagation()}
+        >
+          <video
+            src={HOME_VIDEO}
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls
+            controlsList="nodownload"
+            className="w-full h-auto max-h-[min(70dvh,720px)] object-contain bg-black"
+          />
+        </div>
+      </div>
+
+      <div
+        className="sm:hidden px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2"
+        style={{ background: 'rgba(8,18,32,0.95)' }}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white"
+          style={{ background: 'var(--scai-teal)', minHeight: 48 }}
+        >
+          <X size={18} />
+          Cerrar video
+        </button>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
+export function HeroVisual() {
+  const [open, setOpen] = useState(false)
 
   return (
     <>
-      <div className={`relative w-full ${featherLg}`}>
+      <div className="relative w-full">
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -96,64 +183,31 @@ export function HeroVisual() {
               `,
             }}
           />
-          <div className="absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+          <div className="absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm max-w-[55%]"
             style={{ background: 'rgba(11,25,40,0.5)' }}>
-            <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: 'var(--scai-teal)' }} />
-            <span className="text-[11px] font-semibold text-white/85">Inmunología clínica</span>
+            <div className="h-1.5 w-1.5 rounded-full animate-pulse flex-shrink-0" style={{ background: 'var(--scai-teal)' }} />
+            <span className="text-[10px] sm:text-[11px] font-semibold text-white/85 truncate">Inmunología clínica</span>
           </div>
           <div
-            className="absolute right-3 top-3 z-20 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-semibold text-white/90 backdrop-blur-sm opacity-90 group-hover:opacity-100 transition-opacity"
-            style={{ background: 'rgba(11,25,40,0.55)', border: '1px solid rgba(255,255,255,0.15)' }}
+            className="absolute right-3 top-3 z-20 inline-flex items-center gap-1.5 rounded-full px-2.5 py-2 text-[11px] font-semibold text-white backdrop-blur-sm"
+            style={{ background: 'rgba(18,180,198,0.28)', border: '1px solid rgba(18,180,198,0.5)', minHeight: 36 }}
           >
-            <Maximize2 size={13} />
-            Ampliar
+            <Maximize2 size={14} />
+            <span>Ampliar</span>
           </div>
-          <div className="absolute inset-x-0 bottom-0 z-10 p-5 sm:p-6">
+          <div className="absolute inset-x-0 bottom-0 z-10 p-4 sm:p-6">
             <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'var(--scai-teal)' }}>
               III Jornadas Regionales
             </p>
-            <h3 className="text-lg sm:text-xl font-black text-white leading-snug">
+            <h3 className="text-base sm:text-xl font-black text-white leading-snug">
               Cuando el Sistema Inmune Falla
             </h3>
-            <p className="text-xs text-white/50 mt-1.5">15 expositores · 4 módulos · CONACEM</p>
+            <p className="text-[11px] sm:text-xs text-white/50 mt-1.5">15 expositores · 4 módulos · CONACEM</p>
           </div>
         </button>
       </div>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
-          style={{ background: 'rgba(4,10,18,0.92)', backdropFilter: 'blur(10px)' }}
-          onClick={() => setOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Video ampliado"
-        >
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            aria-label="Cerrar"
-            className="absolute top-4 right-4 z-[101] inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white/90 hover:bg-white/10 transition-colors"
-            style={{ background: 'rgba(11,25,40,0.7)' }}
-          >
-            <X size={18} />
-          </button>
-          <div
-            className="relative w-full max-w-5xl overflow-hidden rounded-2xl border border-white/15 shadow-[0_24px_80px_rgba(0,0,0,0.55)] bg-black"
-            onClick={e => e.stopPropagation()}
-          >
-            <video
-              src={HOME_VIDEO}
-              autoPlay
-              muted
-              loop
-              playsInline
-              controls
-              className="w-full h-auto max-h-[min(82vh,720px)] object-contain bg-black"
-            />
-          </div>
-        </div>
-      )}
+      <HeroVideoLightbox open={open} onClose={() => setOpen(false)} />
     </>
   )
 }
