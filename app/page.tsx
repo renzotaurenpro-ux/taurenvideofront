@@ -228,7 +228,7 @@ export default function Home() {
               style={{ background: 'var(--scai-teal)' }}
             >
               <ShoppingCart size={13} className="flex-shrink-0" />
-              <span className="hidden sm:inline">{`Comprar — $${priceText}`}</span>
+              <span className="hidden sm:inline">{`Comprar $${priceText}`}</span>
               <span className="sm:hidden tabular-nums">{`$${priceText}`}</span>
             </Link>
           </div>
