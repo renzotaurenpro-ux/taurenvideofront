@@ -45,6 +45,13 @@ export function useLessonPlayer(paid: boolean, bunnyMap: Record<string, string>)
       readyRef.current = false
       setVideoUrl('')
       setPlayerKey('init')
+      setBuffering(false)
+      return
+    }
+    if (!mapSig) {
+      readyRef.current = false
+      setVideoUrl('')
+      setBuffering(false)
       return
     }
     if (!readyRef.current) {

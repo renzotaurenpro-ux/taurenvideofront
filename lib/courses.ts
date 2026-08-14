@@ -79,7 +79,7 @@ function normalizeDuration(value: unknown): string | null {
 function normalizeEpisode(v: unknown): CourseEpisode | null {
   const o = asRecord(v)
   if (!o) return null
-  const id = String(o.id ?? '')
+  const id = String(o.id ?? o._id ?? o.bunnyVideoId ?? o.videoId ?? '')
   if (!id) return null
   const title = String(o.title ?? '')
   const orderRaw = parseOrder(o.order)
@@ -96,6 +96,8 @@ function normalizeEpisode(v: unknown): CourseEpisode | null {
 function extractVideoList(raw: Record<string, unknown>): unknown[] {
   if (Array.isArray(raw.videos)) return raw.videos
   if (Array.isArray(raw.episodes)) return raw.episodes
+  if (Array.isArray(raw.lessons)) return raw.lessons
+  if (Array.isArray(raw.items)) return raw.items
   return []
 }
 
@@ -111,6 +113,8 @@ function parseCoursePayload(data: unknown): Course | null {
   const o = asRecord(root.course) ?? asRecord(root.data) ?? root
   const id = String(o.id ?? root.courseId ?? '')
   if (!id) return null
+  const nested = extractVideos(o)
+  const fromRoot = o === root ? [] : extractVideos(root)
   return {
     id,
     title: String(o.title ?? ''),
@@ -118,7 +122,7 @@ function parseCoursePayload(data: unknown): Course | null {
     thumbnailUrl: o.thumbnailUrl == null ? null : String(o.thumbnailUrl),
     priceClp: typeof o.priceClp === 'number' ? o.priceClp : Number(o.priceClp) || 0,
     published: o.published !== false,
-    videos: extractVideos(o),
+    videos: nested.length ? nested : fromRoot,
   }
 }
 

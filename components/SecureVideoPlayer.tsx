@@ -22,6 +22,10 @@ function isYoutubeEmbed(url: string) {
   return url.startsWith('http') && url.includes('youtu')
 }
 
+function isHls(url: string) {
+  return /\.m3u8(\?|$)/i.test(url)
+}
+
 export default function SecureVideoPlayer({ videoUrl, mimeType, poster, onError, onReady }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [src, setSrc] = useState(videoUrl)
@@ -47,6 +51,35 @@ export default function SecureVideoPlayer({ videoUrl, mimeType, poster, onError,
     el.pause()
     el.autoplay = false
   }, [src])
+
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el || isEmbed || !src || !isHls(src)) return
+    if (el.canPlayType('application/vnd.apple.mpegurl')) {
+      el.src = src
+      return
+    }
+    let destroyed = false
+    let hls: { destroy: () => void } | null = null
+    void import('hls.js').then(({ default: Hls }) => {
+      if (destroyed || !Hls.isSupported() || !videoRef.current) {
+        if (!destroyed) onError?.()
+        return
+      }
+      const instance = new Hls({ enableWorker: true })
+      hls = instance
+      instance.loadSource(src)
+      instance.attachMedia(videoRef.current)
+      instance.on(Hls.Events.MANIFEST_PARSED, () => onReady?.())
+      instance.on(Hls.Events.ERROR, (_event, data) => {
+        if (data?.fatal) onError?.()
+      })
+    })
+    return () => {
+      destroyed = true
+      hls?.destroy()
+    }
+  }, [src, isEmbed, onError, onReady])
 
   const handleVideoError = useCallback(() => {
     const next = PLACEHOLDER_VIDEO_FALLBACKS[fallbackIdx]
@@ -91,8 +124,9 @@ export default function SecureVideoPlayer({ videoUrl, mimeType, poster, onError,
               key={embedSrc}
               src={embedSrc}
               className="absolute inset-0 h-full w-full"
-              allow="accelerometer; gyroscope; encrypted-media; picture-in-picture; autoplay"
+              allow="accelerometer; gyroscope; encrypted-media; picture-in-picture; autoplay; fullscreen"
               allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
               onLoad={() => onReady?.()}
             />
           )
@@ -101,7 +135,7 @@ export default function SecureVideoPlayer({ videoUrl, mimeType, poster, onError,
             <video
               ref={videoRef}
               key={src}
-              src={src}
+              {...(isHls(src) ? {} : { src })}
               controls={started}
               playsInline
               preload="metadata"
@@ -114,7 +148,7 @@ export default function SecureVideoPlayer({ videoUrl, mimeType, poster, onError,
               onPlay={() => setStarted(true)}
               onError={handleVideoError}
             >
-              <source src={src} type={mimeType ?? 'video/mp4'} />
+              {!isHls(src) ? <source src={src} type={mimeType ?? 'video/mp4'} /> : null}
             </video>
             {!started && poster && (
               <button

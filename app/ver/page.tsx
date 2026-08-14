@@ -114,15 +114,14 @@ export default function VerPage() {
     setInCart(hasItem(id))
     let cancelled = false
 
-    if (getCachedPurchase(id) === true) {
-      setPaid(true)
-      setCheckingAccess(false)
-    }
+    const cachedPaid = getCachedPurchase(id) === true
+    if (cachedPaid) setPaid(true)
 
     resolveCourseAccess(id, activeUser)
       .then(access => {
         if (cancelled) return
         if (!access.ok) {
+          if (!cachedPaid) setPaid(false)
           setCheckingAccess(false)
           if ('unauthorized' in access) router.replace('/login')
           return
@@ -184,12 +183,12 @@ export default function VerPage() {
 
             <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-black/10 dark:shadow-black/50 border border-border bg-card dark:bg-[rgba(8,15,26,0.55)]">
               <div className="relative z-10 p-2 sm:p-3">
-                {buffering && paid && (
+                {buffering && paid && videoUrl && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-background/70 dark:bg-black/40 pointer-events-none">
                     <div className="h-8 w-8 rounded-full border-2 border-border border-t-[color:var(--scai-teal)] animate-spin" />
                   </div>
                 )}
-                {paid ? (
+                {paid && videoUrl ? (
                   <SecureVideoPlayer
                     key={playerKey}
                     videoUrl={videoUrl}
@@ -198,6 +197,26 @@ export default function VerPage() {
                     onError={onVideoError}
                     onReady={onPlayerReady}
                   />
+                ) : paid ? (
+                  <div className="relative w-full overflow-hidden rounded-xl bg-[#0B1928]" style={{ aspectRatio: '16/9' }}>
+                    {clipActual?.thumbnail ? (
+                      <Image
+                        src={clipActual.thumbnail}
+                        alt=""
+                        fill
+                        className="object-cover opacity-40"
+                        sizes="(max-width: 768px) 100vw, 60vw"
+                        priority
+                      />
+                    ) : null}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      {checkingAccess ? (
+                        <div className="h-8 w-8 rounded-full border-2 border-white/30 border-t-[color:var(--scai-teal)] animate-spin" />
+                      ) : (
+                        <p className="text-white/70 text-sm px-6 text-center">No se pudo cargar el video. Recarga la página.</p>
+                      )}
+                    </div>
+                  </div>
                 ) : (
                   <div className="relative w-full overflow-hidden rounded-xl bg-[#0B1928]" style={{ aspectRatio: '16/9' }}>
                     <Image
