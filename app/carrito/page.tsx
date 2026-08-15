@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
 import { fetchPublishedCourse, checkCoursePurchase, type Course } from '@/lib/courses'
 import { coursePrice, formatCLP } from '@/lib/pricing'
+import SupportContact from '@/components/SupportContact'
 
 const IS_SANDBOX = process.env.NEXT_PUBLIC_MP_MODE !== 'production'
 
@@ -192,6 +193,7 @@ export default function CarritoPage() {
               Contenido disponible hasta el 31 de octubre de 2026
             </p>
           </div>
+          <SupportContact variant="inline" className="mt-5 pt-4 border-t border-border" />
         </aside>
       </section>
     </main>

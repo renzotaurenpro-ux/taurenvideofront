@@ -17,6 +17,8 @@ import { buildCourseLessons, type LessonModulo } from '@/lib/bunnyLessons'
 import { useLessonPlayer } from '@/lib/useLessonPlayer'
 import { getCertPassedLocal, syncCertUnlocked } from '@/lib/certTest'
 import { PONENTES, ponenteFoto, ponenteIniciales } from '@/lib/ponentes'
+import SupportContact from '@/components/SupportContact'
+import { SUPPORT_MAILTO, SUPPORT_WHATSAPP_URL } from '@/lib/site-config'
 
 const PRODUCT = {
   id: DEFAULT_COURSE_ID,
@@ -209,11 +211,17 @@ export default function VerPage() {
                         priority
                       />
                     ) : null}
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6">
                       {checkingAccess ? (
                         <div className="h-8 w-8 rounded-full border-2 border-white/30 border-t-[color:var(--scai-teal)] animate-spin" />
                       ) : (
-                        <p className="text-white/70 text-sm px-6 text-center">No se pudo cargar el video. Recarga la página.</p>
+                        <>
+                          <p className="text-white/70 text-sm text-center">No se pudo cargar el video. Recarga la página.</p>
+                          <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
+                            <a href={SUPPORT_MAILTO} className="text-[color:var(--scai-teal)] hover:underline">soporte@scairegionales.cl</a>
+                            <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="text-[color:var(--scai-teal)] hover:underline">WhatsApp +56 9 8501 3727</a>
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>
@@ -393,6 +401,9 @@ export default function VerPage() {
                   <Award size={16} style={{ color: certUnlocked ? 'var(--scai-teal)' : undefined }} className={certUnlocked ? '' : 'opacity-40'} />
                   Descargar certificado
                 </a>
+              </div>
+              <div className="mt-3 lg:hidden">
+                <SupportContact variant="inline" />
               </div>
             </div>
 
@@ -637,6 +648,10 @@ export default function VerPage() {
               <p className="text-xs text-muted-foreground dark:text-white/40 mb-1 font-semibold uppercase tracking-wide">Organiza</p>
               <p className="text-sm text-foreground/80 dark:text-white/70">Sociedad Chilena de Alergia e Inmunología</p>
               <p className="text-xs mt-1 text-[color:var(--scai-teal)]">www.scai.cl · @scai.cl</p>
+            </div>
+
+            <div className="rounded-2xl p-4 sm:p-5 border border-border bg-card shadow-sm dark:bg-[rgba(14,32,53,0.75)] dark:backdrop-blur-md">
+              <SupportContact variant="card" />
             </div>
 
             <Link href="/ver/test" prefetch={false} className="w-full flex items-center justify-center gap-2 border border-primary/35 bg-card text-foreground hover:bg-primary/10 dark:bg-primary/10 dark:text-white/70 dark:hover:bg-primary/15 dark:hover:text-white text-sm font-medium py-3 rounded-xl transition-all active:scale-95 shadow-sm">

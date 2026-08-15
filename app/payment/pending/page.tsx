@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Clock, ArrowRight } from 'lucide-react'
 import ScaiLogo from '../../../Logotipo-SCAI.png'
+import SupportContact from '@/components/SupportContact'
 import { useRequireAuth } from '@/lib/useRequireAuth'
 
 function PendingContent() {
@@ -52,6 +53,7 @@ function PendingContent() {
             Ir al video
             <ArrowRight size={17} />
           </Link>
+          <SupportContact variant="compact" className="pt-2 border-t border-white/10 justify-center items-center" />
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@ import ScaiLogo from '../../../Logotipo-SCAI.png'
 import { clearCart } from '@/lib/cart'
 import { fetchPublishedCourse, checkCoursePurchase } from '@/lib/courses'
 import { useRequireAuth } from '@/lib/useRequireAuth'
+import SupportContact from '@/components/SupportContact'
 
 function SuccessContent() {
   const { firebaseUser, ready } = useRequireAuth()
@@ -81,6 +82,7 @@ function SuccessContent() {
               Ver grabación
               <ArrowRight size={17} />
             </Link>
+            <SupportContact variant="compact" className="pt-2 border-t border-white/10 items-center" />
           </div>
         ) : (
           <div className="rounded-2xl border p-8 space-y-5"
@@ -103,6 +105,7 @@ function SuccessContent() {
               Ir al video
               <ArrowRight size={17} />
             </Link>
+            <SupportContact variant="compact" className="pt-2 border-t border-white/10 items-center" />
           </div>
         )}
       </div>

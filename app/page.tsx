@@ -16,6 +16,7 @@ import {
   CtaDecor,
 } from '@/components/HomeDecor'
 import ScaiLogo from '../Logotipo-SCAI.png'
+import SupportContact from '@/components/SupportContact'
 import { fetchPublishedCourse } from '@/lib/courses'
 import { PONENTES, ponenteFoto, ponenteIniciales } from '@/lib/ponentes'
 import { coursePrice } from '@/lib/pricing'
@@ -606,6 +607,7 @@ export default function Home() {
               <a href="https://instagram.com/scai.cl" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">@scai.cl</a>
             </div>
           </div>
+          <SupportContact variant="footer" />
           <p className="text-[11px] text-muted-foreground/80">
             Sitio desarrollado por{' '}
             <a

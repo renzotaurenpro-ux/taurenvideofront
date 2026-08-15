@@ -13,6 +13,7 @@ import { setSessionCookie, syncAuthLogin, profileFromFirebaseUser } from '@/lib/
 import { prefetchPurchase } from '@/lib/api'
 import { DEFAULT_COURSE_ID } from '@/lib/courses'
 import PageBackground from '@/components/PageBackground'
+import SupportContact from '@/components/SupportContact'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -165,6 +166,7 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+        <SupportContact variant="compact" className="mt-4 items-center text-center" />
       </div>
     </div>
   )

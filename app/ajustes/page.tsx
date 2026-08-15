@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/authContext'
 import { fetchAuth } from '@/lib/api'
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
+import SupportContact from '@/components/SupportContact'
 
 type Tab = 'perfil' | 'seguridad' | 'cuenta'
 
@@ -166,6 +167,9 @@ export default function AjustesPage() {
                 <Link href="/ver" className="text-xs text-white/25 hover:text-white/60 transition-colors">Video</Link>
                 <span className="text-white/10">·</span>
                 <Link href="/carrito" className="text-xs text-white/25 hover:text-white/60 transition-colors">Carrito</Link>
+              </div>
+              <div className="p-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <SupportContact variant="compact" />
               </div>
             </div>
           </div>
