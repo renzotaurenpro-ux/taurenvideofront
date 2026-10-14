@@ -205,10 +205,15 @@ export async function resolveCourseAccess(courseId: string, user?: User | null):
 }
 
 export async function checkCoursePurchase(courseId: string, user?: User | null): Promise<boolean> {
-  const result = await resolveCourseAccess(courseId, user)
-  if (result.ok && result.paid) return true
-  if (result.ok && !result.paid) return false
-  return false
+  const signal = AbortSignal.timeout(API_TIMEOUT_MS)
+  try {
+    const res = await fetchAuth(`/purchases/check/course/${encodeURIComponent(courseId)}`, { signal }, user)
+    if (!res.ok) return false
+    const data = await res.json().catch(() => null)
+    return data?.purchased === true
+  } catch {
+    return false
+  }
 }
 
 export async function fetchCourseWatch(courseId: string, user?: User | null): Promise<Course | null> {

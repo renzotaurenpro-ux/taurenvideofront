@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { CheckCircle, Loader2, ArrowRight } from 'lucide-react'
 import ScaiLogo from '../../../Logotipo-SCAI.png'
 import { clearCart } from '@/lib/cart'
+import { clearAllPurchaseCache, setCachedPurchase } from '@/lib/api'
 import { fetchPublishedCourse, checkCoursePurchase } from '@/lib/courses'
 import { useRequireAuth } from '@/lib/useRequireAuth'
 import SupportContact from '@/components/SupportContact'
@@ -24,6 +25,7 @@ function SuccessContent() {
     if (!ready) return
 
     clearCart()
+    clearAllPurchaseCache()
 
     async function verify() {
       if (!firebaseUser) { setChecking(false); return }
@@ -31,12 +33,13 @@ function SuccessContent() {
         const course = await fetchPublishedCourse()
         if (!course) { setChecking(false); return }
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 8; i++) {
           if (await checkCoursePurchase(course.id)) {
+            setCachedPurchase(course.id, true)
             setPurchased(true)
             break
           }
-          if (i < 4) await new Promise(r => setTimeout(r, 2000))
+          if (i < 7) await new Promise(r => setTimeout(r, 2000))
         }
       } catch {
         setPurchased(false)

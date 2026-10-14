@@ -42,13 +42,33 @@ export function getCachedPurchase(courseId: string): boolean | null {
   const entry = map[courseId]
   if (!entry) return null
   if (Date.now() - entry.ts > SESSION_MS) return null
-  return entry.purchased
+  if (!entry.purchased) {
+    clearCachedPurchase(courseId)
+    return null
+  }
+  return true
 }
 
 export function setCachedPurchase(courseId: string, purchased: boolean) {
+  if (!purchased) {
+    clearCachedPurchase(courseId)
+    return
+  }
   const map = lsGetPurchaseMap()
-  map[courseId] = { ts: Date.now(), purchased }
+  map[courseId] = { ts: Date.now(), purchased: true }
   lsSetPurchaseMap(map)
+}
+
+export function clearCachedPurchase(courseId: string) {
+  const map = lsGetPurchaseMap()
+  if (!(courseId in map)) return
+  delete map[courseId]
+  lsSetPurchaseMap(map)
+}
+
+export function clearAllPurchaseCache() {
+  if (typeof window === 'undefined') return
+  try { localStorage.removeItem(PURCHASE_LS_KEY) } catch {}
 }
 
 let warmupReady = false

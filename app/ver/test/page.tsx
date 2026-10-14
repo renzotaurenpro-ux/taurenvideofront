@@ -58,8 +58,8 @@ export default function VerTestPage() {
           const cached = getCachedPurchase(course.id)
           let hasPurchase: boolean
 
-          if (cached !== null) {
-            hasPurchase = cached
+          if (cached === true) {
+            hasPurchase = true
             checkCoursePurchase(course.id)
               .then(v => setCachedPurchase(course.id, v))
               .catch(() => {})

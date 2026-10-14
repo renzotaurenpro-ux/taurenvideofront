@@ -128,7 +128,8 @@ export default function VerPage() {
           if ('unauthorized' in access) router.replace('/login')
           return
         }
-        setCachedPurchase(id, access.paid)
+        if (access.paid) setCachedPurchase(id, true)
+        else setCachedPurchase(id, false)
         setPaid(access.paid)
         if (access.paid && 'course' in access) {
           applyLessons(access.course, setModulos, setLessonMap, true)
